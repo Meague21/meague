@@ -709,11 +709,19 @@ main{padding:14px 14px 92px}
  * 烧脑数学 · 教材内容数据（北师大版 2024 新课标版 三年级上册）
  * ===================================================================== */
 window.MD = {
-  version: "3.0.0",
+  version: "3.1.0",
   textbook: { grade: "三年级", term: "上册", edition: "北师大版（新课标）" },
 
   /* ---------------- 版本日志（应用内展示） ---------------- */
   changelog: [
+    { ver: "v3.1.0", date: "2026-08-15", items: [
+      "修复：首页「今日推荐」一直显示加载中的问题",
+      "修复：学习时长统计口径不一（今日时长与足迹对不上）——统一按活动足迹计时并封顶",
+      "修复：加减法/口诀闯关只有第一关——改为真正闯关制，通关可「挑战下一关」，爱心用完可重闯",
+      "新增「几何小达人」游戏 + 补充对称/图形运动/观察物体/立体表面积知识",
+      "新增「课外延伸」练习：和差/和倍/差倍/相遇/追及/鸡兔同笼/盈亏/工程/折扣/利息等常考应用题",
+      "家园积分更透明：头部显示最近积分变动，领养/喂养消耗一目了然"
+    ]},
     { ver: "v3.0.0", date: "2026-08-15", items: [
       "家园大改版：农场（养动物）/森林（种树）/花园（种花）三大场景，配专属插画背景",
       "宠物以悬浮头像框展示，待领养预留位；点开看成长阶段/进度/距下阶营养/喂养/改名",
@@ -1557,7 +1565,22 @@ window.MD = {
       { n: "体积/容积进率", v: "1立方米=1000立方分米，1立方分米=1000立方厘米", ex: "例：2立方米 = 2000立方分米" },
       { n: "容积与体积", v: "1立方分米=1升，1立方厘米=1毫升，1升=1000毫升", ex: "例：2升 = 2000毫升" },
       { n: "时间进率", v: "1天=24小时，1小时=60分，1分=60秒", ex: "例：2小时 = 120分 = 7200秒" },
-      { n: "人民币进率", v: "1元=10角=100分，1角=10分", ex: "例：3元5角 = 35角 = 350分" } ]}
+      { n: "人民币进率", v: "1元=10角=100分，1角=10分", ex: "例：3元5角 = 35角 = 350分" } ]},
+    { cat: "图形与对称", icon: "🪞", g: 3, items: [
+      { n: "轴对称图形", v: "沿对称轴对折，两边完全重合", ex: "例：正方形、圆、等腰三角形都是轴对称图形" },
+      { n: "对称轴条数", v: "长方形2条，正方形4条，圆无数条", ex: "例：等边三角形有3条对称轴" },
+      { n: "平移", v: "沿直线移动，形状大小不变", ex: "例：电梯上升、推拉窗户" },
+      { n: "旋转", v: "绕一个点转动，形状大小不变", ex: "例：风车转动、钟表指针" } ]},
+    { cat: "观察物体（空间）", icon: "🧊", g: 4, items: [
+      { n: "三视图", v: "从正面/上面/侧面看到的形状", ex: "例：正方体从三个方向看都是正方形" },
+      { n: "正方体特征", v: "6个面、12条棱、8个顶点", ex: "例：每个面都是相同的正方形" },
+      { n: "长方体特征", v: "6个面、12条棱、8个顶点", ex: "例：相对的面完全相同" },
+      { n: "球", v: "从任意方向看都是圆形", ex: "例：足球、乒乓球" } ]},
+    { cat: "立体图形表面积", icon: "📦", g: 5, items: [
+      { n: "长方体表面积", v: "（长×宽+长×高+宽×高）×2", ex: "例：长4宽3高2，(12+8+6)×2=52" },
+      { n: "正方体表面积", v: "棱长×棱长×6", ex: "例：棱长3，3×3×6=54" },
+      { n: "圆柱侧面积", v: "底面周长×高", ex: "例：底面周长12.56高5，=62.8" },
+      { n: "圆柱表面积", v: "侧面积+2个底面积", ex: "例：侧面积+上下两个圆" } ]}
   ];
 })();
 /* =====================================================================
@@ -7673,6 +7696,142 @@ window.QE = (function () {
   });
 })();
 /* =====================================================================
+ * 烧脑数学 · 课外延伸（常考应用题型 / 真题拓展）
+ * EXTEND.gen() 随机返回一道经典应用题（含解题思路）。
+ * ===================================================================== */
+window.EXTEND = (function () {
+  function R(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+  function P(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  var GEN = [
+    /* 归一问题 */
+    function () {
+      var unit = R(3, 9), n = R(3, 8), m = R(n + 1, n + 5);
+      return { q: "买 " + n + " 支同样的钢笔要 " + (unit * n) + " 元。照这样计算，买 " + m + " 支要多少元？",
+        ans: String(unit * m), explain: "先求单价：" + (unit * n) + "÷" + n + "=" + unit + " 元，再算 " + unit + "×" + m + "=" + (unit * m) + " 元。（归一问题）" };
+    },
+    /* 归总问题 */
+    function () {
+      var a = R(4, 8), b = R(3, 7), per = R(5, 9);
+      var total = a * per, nper = per + R(1, 3);
+      return { q: "修一条路，每天修 " + per + " 米，" + a + " 天修完。如果每天修 " + nper + " 米，几天修完？",
+        ans: String(Math.round(total / nper * 10) / 10), explain: "先求总长：" + per + "×" + a + "=" + total + " 米，再除以每天 " + nper + " 米。（归总问题，结果可能不是整数）" };
+    },
+    /* 和差问题 */
+    function () {
+      var big = R(20, 60), small = R(8, big - 6);
+      var sum = big + small, diff = big - small;
+      return { q: "两个数的和是 " + sum + "，差是 " + diff + "。较大的数是多少？",
+        ans: String(big), explain: "大数 =（和+差）÷2 =（" + sum + "+" + diff + "）÷2 = " + big + "。（和差问题）" };
+    },
+    /* 和倍问题 */
+    function () {
+      var k = R(2, 4), x = R(5, 15), sum = x * (k + 1);
+      return { q: "甲乙两数的和是 " + sum + "，甲是乙的 " + k + " 倍。乙是多少？",
+        ans: String(x), explain: "乙 = 和÷(倍数+1) = " + sum + "÷" + (k + 1) + "=" + x + "。（和倍问题）" };
+    },
+    /* 差倍问题 */
+    function () {
+      var k = R(2, 4), x = R(6, 16), diff = x * (k - 1);
+      return { q: "甲比乙多 " + diff + "，甲是乙的 " + k + " 倍。乙是多少？",
+        ans: String(x), explain: "乙 = 差÷(倍数−1) = " + diff + "÷" + (k - 1) + "=" + x + "。（差倍问题）" };
+    },
+    /* 相遇问题 */
+    function () {
+      var v1 = R(40, 70), v2 = R(50, 80), t = R(3, 8), total = (v1 + v2) * t;
+      return { q: "甲乙两人从相距 " + total + " 米的两地同时相向而行，甲每分走 " + v1 + " 米，乙每分走 " + v2 + " 米。几分钟后相遇？",
+        ans: String(t), explain: "相遇时间 = 总路程÷速度和 = " + total + "÷(" + v1 + "+" + v2 + ") = " + t + " 分。（相遇问题）" };
+    },
+    /* 追及问题 */
+    function () {
+      var gap = R(2, 6) * 30, vf = R(60, 90), vs = vf - R(10, 30);
+      var t = gap / (vf - vs);
+      return { q: "弟弟先走，领先 " + gap + " 米。哥哥每分走 " + vf + " 米，弟弟每分走 " + vs + " 米。哥哥几分钟追上？",
+        ans: String(t), explain: "追及时间 = 路程差÷速度差 = " + gap + "÷(" + vf + "−" + vs + ") = " + t + " 分。（追及问题）" };
+    },
+    /* 植树问题（两端都种） */
+    function () {
+      var sp = P([4, 5, 6]), n = R(4, 9), total = sp * n;
+      return { q: "在 " + total + " 米的路一边种树，每隔 " + sp + " 米一棵，两端都种。共多少棵？",
+        ans: String(n + 1), explain: "段数 = " + total + "÷" + sp + "=" + n + "，两端都种棵数 = 段数+1 = " + (n + 1) + "。（植树问题）" };
+    },
+    /* 鸡兔同笼 */
+    function () {
+      var chick = R(3, 8), rab = R(3, 8), heads = chick + rab, legs = chick * 2 + rab * 4;
+      return { q: "鸡兔同笼，共 " + heads + " 个头，" + legs + " 条腿。兔有几只？",
+        ans: String(rab), explain: "假设全是鸡：" + heads + "×2=" + (heads * 2) + " 条腿，差 " + (legs - heads * 2) + " 条，每换一只兔多 2 条，兔 = " + (legs - heads * 2) + "÷2=" + rab + "。（鸡兔同笼）" };
+    },
+    /* 盈亏问题 */
+    function () {
+      var n = R(4, 8), p1 = R(3, 6), p2 = p1 + R(1, 3), extra = n * (p2 - p1);
+      return { q: "分糖果，每人分 " + p1 + " 颗多 " + extra + " 颗；每人分 " + p2 + " 颗正好分完。有几个小朋友？",
+        ans: String(n), explain: "人数 = 盈÷每人差 = " + extra + "÷(" + p2 + "−" + p1 + ") = " + n + "。（盈亏问题）" };
+    },
+    /* 年龄问题 */
+    function () {
+      var f = R(30, 45), s = R(6, 12);
+      var diff = f - s, yrs = (f - 2 * s) >= 0 ? (f - 2 * s) : 0;
+      return { q: "爸爸 " + f + " 岁，儿子 " + s + " 岁。几年后爸爸的年龄是儿子的 2 倍？",
+        ans: String(f - 2 * s), explain: "设 x 年后：" + f + "+x = 2(" + s + "+x)，解得 x = " + (f - 2 * s) + "。（年龄问题，年龄差不变）" };
+    },
+    /* 还原问题 */
+    function () {
+      var end = R(20, 60), a = R(5, 15), b = R(3, 10);
+      var start = end + a - b;
+      return { q: "一个数先加上 " + a + "，再减去 " + b + "，结果是 " + end + "。这个数原来是多少？",
+        ans: String(start), explain: "倒着算：" + end + "+" + b + "−" + a + " = " + start + "。（还原问题）" };
+    },
+    /* 按比例分配 */
+    function () {
+      var a = P([2, 3, 4]), b = P([2, 3, 5]); if (a === b) b = a + 1;
+      var per = R(5, 12), total = (a + b) * per;
+      return { q: "把 " + total + " 本书按 " + a + "∶" + b + " 分给甲乙两组。乙组分到多少本？",
+        ans: String(b * per), explain: "总份数 " + a + "+" + b + "=" + (a + b) + "，每份 " + total + "÷" + (a + b) + "=" + per + "，乙 " + b + " 份 = " + (b * per) + "。（按比例分配）" };
+    },
+    /* 工程问题 */
+    function () {
+      var pairs = [[3, 6], [2, 6], [4, 4]];
+      var pr = P(pairs);
+      return { q: "一项工程，甲独做 " + pr[0] + " 天完成，乙独做 " + pr[1] + " 天完成。两人合作几天完成？",
+        ans: String(Math.round(1 / (1 / pr[0] + 1 / pr[1]) * 10) / 10), explain: "合作时间 = 1÷(1/" + pr[0] + "+1/" + pr[1] + ")。（工程问题，把工作总量看作 1）" };
+    },
+    /* 折扣问题 */
+    function () {
+      var price = P([80, 100, 120, 200]), z = P([7, 8, 9]);
+      return { q: "一件衣服原价 " + price + " 元，打 " + z + " 折出售。现价多少元？",
+        ans: String(price * z / 10), explain: "现价 = 原价×折扣 = " + price + "×" + (z * 10) + "% = " + (price * z / 10) + " 元。（折扣问题）" };
+    },
+    /* 浓度问题 */
+    function () {
+      var salt = P([10, 20, 25]), water = P([80, 100, 175]);
+      var pct = Math.round(salt / (salt + water) * 100);
+      return { q: salt + " 克盐溶在 " + water + " 克水里，盐水的浓度是多少？（填百分数）",
+        ans: pct + "%", accept: [pct + "%", String(pct)], input: "text", explain: "浓度 = 盐÷盐水 = " + salt + "÷" + (salt + water) + " = " + pct + "%。（浓度问题）" };
+    },
+    /* 利息问题 */
+    function () {
+      var ben = P([1000, 2000, 5000]), rate = P([2, 3, 5]), yr = R(2, 3);
+      return { q: "存 " + ben + " 元，年利率 " + rate + "%，存 " + yr + " 年。到期利息多少元？",
+        ans: String(ben * rate / 100 * yr), explain: "利息 = 本金×利率×存期 = " + ben + "×" + rate + "%×" + yr + " = " + (ben * rate / 100 * yr) + " 元。（利息问题）" };
+    },
+    /* 平均数问题 */
+    function () {
+      var n = R(3, 5), avg = R(80, 95), total = avg * n;
+      var a = R(70, 90), b = R(70, 90);
+      var rest = total - a - b;
+      return { q: n + " 个数平均数是 " + avg + "，其中两个是 " + a + " 和 " + b + "，其余数的和是多少？",
+        ans: String(rest), explain: "总和 = " + avg + "×" + n + "=" + total + "，减去 " + a + "+" + b + " 得 " + rest + "。（平均数问题）" };
+    }
+  ];
+
+  function gen() {
+    var q = P(GEN)();
+    return { type: "yingyong", q: q.q, input: q.input || "num", ans: q.ans, accept: q.accept, explain: q.explain, kp: "课外延伸" };
+  }
+
+  return { gen: gen, GEN: GEN };
+})();
+/* =====================================================================
  * 烧脑数学 · 数学游戏模块
  * ===================================================================== */
 window.GAMES = (function () {
@@ -7729,8 +7888,7 @@ window.GAMES = (function () {
    * ===================================================== */
   function gameChengkou() {
     stage.innerHTML =
-      '<h3 style="text-align:center;margin:10px 0 6px">✖️ 口诀大闯关</h3>' +
-      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:14px">3 条命，连击加分，越答越难！</div>' +
+      '<h3 style="text-align:center;margin:10px 0 6px">✖️ 口诀大闯关 · 选玩法</h3>' +
       '<div style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto">' +
       '<button class="btn green block" data-ck="mul">✖️ 乘法口诀</button>' +
       '<button class="btn blue block" data-ck="div">➗ 除法口诀</button>' +
@@ -7742,37 +7900,34 @@ window.GAMES = (function () {
     });
 
     function run(mode) {
-      var lives = 3, score = 0, combo = 0, level = 1, solved = 0;
-      function hud() {
-        return '<div class="game-hud">' +
-          '<span class="hud-item">❤️ ' + "❤".repeat(lives) + "♡".repeat(3 - lives) + '</span>' +
-          '<span class="hud-item">🔥 连击 ×' + combo + '</span>' +
-          '<span class="hud-item">🏅 第' + level + '关</span>' +
-          '<span class="hud-item">⭐ ' + score + '</span>' +
-          '</div>';
-      }
+      var QN = 8, lvl = 1, hearts = 3, qi = 0, score = 0, cur = null, locked = false;
+      function hiF() { return Math.min(9, 3 + lvl); }
       function genQ() {
-        var hi = Math.min(9, 3 + level); /* 关卡越高数越大 */
         var useDiv = mode === "div" || (mode === "mix" && Math.random() < 0.5);
         if (useDiv) {
-          var b = rnd(2, hi), q = rnd(2, hi), a = b * q;
+          var b = rnd(2, hiF()), q = rnd(2, hiF()), a = b * q;
           return { txt: a + ' ÷ ' + b + ' = ?', ans: q, full: a + ' ÷ ' + b + ' = ' + q };
         }
-        var x = rnd(2, hi), y = rnd(2, hi);
+        var x = rnd(2, hiF()), y = rnd(2, hiF());
         return { txt: x + ' × ' + y + ' = ?', ans: x * y, full: x + ' × ' + y + ' = ' + (x * y) };
       }
-      function round() {
-        clearTimer();
-        var cur = genQ(), ans = cur.ans;
-        var opts = shuffle([ans, ans + rnd(1, 3) * (Math.random() < 0.5 ? 1 : -1) || ans + 2, ans + rnd(1, 4), ans - rnd(1, 4)])
-          .filter(function (v, i, arr) { return arr.indexOf(v) === i && v > 0; });
+      function hud() {
+        return '<div class="game-hud">' +
+          '<span class="hud-item">🏅 第 <b>' + lvl + '</b> 关</span>' +
+          '<span class="hud-item">❤️ ' + "❤".repeat(hearts) + "♡".repeat(3 - hearts) + '</span>' +
+          '<span class="hud-item">📋 ' + qi + '/' + QN + '</span>' +
+          '<span class="hud-item">⭐ ' + score + '</span></div>';
+      }
+      function nextQ() {
+        locked = false;
+        cur = genQ();
+        var opts = [cur.ans];
         while (opts.length < 4) {
-          var cand = ans + rnd(-9, 12);
-          if (cand > 0 && opts.indexOf(cand) === -1) opts.push(cand);
+          var c = cur.ans + rnd(-6, 8);
+          if (c > 0 && opts.indexOf(c) === -1) opts.push(c);
         }
-        opts = shuffle(opts.slice(0, 4));
+        opts = shuffle(opts);
         stage.innerHTML = hud() +
-          '<div style="text-align:center;font-size:13px;color:#a8a9b5">' + (mode === "div" ? "想乘法算除法！" : "算一算，点出正确答案！") + '</div>' +
           '<div class="game-q">' + cur.txt + '</div>' +
           '<div class="game-opts">' + opts.map(function (o) {
             return '<button class="game-opt" data-v="' + o + '">' + o + '</button>';
@@ -7781,50 +7936,57 @@ window.GAMES = (function () {
         stage.querySelector("#gBack").onclick = exitGame;
         stage.querySelectorAll(".game-opt").forEach(function (btn) {
           btn.onclick = function () {
+            if (locked) return;
+            locked = true;
             var v = parseInt(btn.dataset.v, 10);
-            if (v === ans) {
-              combo++; solved++;
-              var gain = 10 + (combo >= 3 ? 5 : 0);
-              score += gain;
-              if (window.SND) SND.correct();
+            if (v === cur.ans) {
+              score++; if (window.SND) SND.correct();
               btn.classList.add("correct");
-              stage.querySelector(".game-q").innerHTML = cur.full + " 🎉";
-              /* 阶段性升级：每答对 5 题升一关 */
-              if (solved % 5 === 0) { level++; toast("🎊 进入第 " + level + " 关，数字更大啦！"); if (window.SND) SND.levelup(); }
-              disableOpts();
-              setTimeout(round, 700);
+              qi++;
+              setTimeout(function () { if (qi >= QN) stageClear(); else nextQ(); }, 450);
             } else {
-              btn.classList.add("wrong");
-              btn.disabled = true;
-              combo = 0; lives--;
               if (window.SND) SND.wrong();
-              stage.querySelector(".game-hud").innerHTML = hud().replace(/^<div class="game-hud">|<\/div>$/g, "");
-              if (lives <= 0) {
-                disableOpts();
-                stage.querySelector(".game-q").innerHTML = cur.full + "（正确答案）";
-                setTimeout(function () {
-                  setBest("chengkou", score);
-                  gameOver('<div class="go-emoji">' + (score >= 100 ? "🏆" : "💪") + '</div><div style="color:#6b6e7f;font-size:14px">闯到第 ' + level + ' 关</div>', score,
-                    gameChengkou, exitGame);
-                }, 1200);
-              }
+              hearts--;
+              btn.classList.add("wrong");
+              stage.querySelectorAll(".game-opt").forEach(function (x) { if (parseInt(x.dataset.v, 10) === cur.ans) x.classList.add("correct"); x.disabled = true; });
+              setTimeout(function () { if (hearts <= 0) stageFail(); else nextQ(); }, 800);
             }
           };
         });
-        function disableOpts() {
-          stage.querySelectorAll(".game-opt").forEach(function (b) { b.disabled = true; });
-        }
       }
-      round();
+      function stageClear() {
+        if (window.SND) SND.levelup();
+        GARDEN.addPoints(1, "口诀第" + lvl + "关");
+        stage.innerHTML =
+          '<div class="game-over" style="text-align:center;padding-top:40px">' +
+          '<div style="font-size:50px">🎉</div>' +
+          '<div style="font-size:18px;font-weight:800;color:#06a37c;margin-top:8px">第 ' + lvl + ' 关通过！</div>' +
+          '<div style="font-size:13px;color:#6b6e7f;margin-top:6px">口诀越来越熟 · 累计 ' + score + ' 分</div>' +
+          '<div class="result-btns" style="max-width:300px;margin:20px auto 0;display:flex;flex-direction:column;gap:10px">' +
+          '<button class="btn block" id="nextLv">🚀 挑战第 ' + (lvl + 1) + ' 关（数字更大）</button>' +
+          '<button class="btn ghost block" id="exitG">退出</button></div></div>';
+        stage.querySelector("#nextLv").onclick = function () { lvl++; qi = 0; hearts = 3; nextQ(); };
+        stage.querySelector("#exitG").onclick = exitGame;
+      }
+      function stageFail() {
+        setBest("chengkou", score);
+        stage.innerHTML =
+          '<div class="game-over" style="text-align:center;padding-top:40px">' +
+          '<div style="font-size:50px">💪</div>' +
+          '<div style="font-size:17px;font-weight:800;color:#e85d04;margin-top:8px">爱心用完了</div>' +
+          '<div style="font-size:13px;color:#6b6e7f;margin-top:6px">停在第 ' + lvl + ' 关 · 累计 ' + score + ' 分</div>' +
+          '<div class="result-btns" style="max-width:300px;margin:20px auto 0;display:flex;flex-direction:column;gap:10px">' +
+          '<button class="btn block" id="retryLv">🔄 重闯第 ' + lvl + ' 关</button>' +
+          '<button class="btn ghost block" id="exitG">退出</button></div></div>';
+        stage.querySelector("#retryLv").onclick = function () { qi = 0; hearts = 3; nextQ(); };
+        stage.querySelector("#exitG").onclick = exitGame;
+      }
+      nextQ();
     }
   }
-
-  /* =====================================================
-   * 游戏二：加减法速度挑战（60 秒）
-   * ===================================================== */
   function gameJiasuan() {
     stage.innerHTML =
-      '<h3 style="text-align:center;margin:10px 0 16px">⚡ 加减法速度挑战 · 选难度</h3>' +
+      '<h3 style="text-align:center;margin:10px 0 16px">⚡ 加减法闯关 · 选难度</h3>' +
       '<div style="display:flex;flex-direction:column;gap:10px;max-width:320px;margin:0 auto">' +
       '<button class="btn green block" data-js="20">🌱 20 以内加减</button>' +
       '<button class="btn blue block" data-js="100">🚀 100 以内加减</button>' +
@@ -7838,84 +8000,98 @@ window.GAMES = (function () {
     });
 
     function run(mode) {
-      var left = 60, score = 0, ans = 0, level = 1;
-      function genTwo(lo, hi) {
-        var add = Math.random() < 0.5, a, b;
-        if (add) { a = rnd(lo, Math.floor((hi + lo) / 2)); b = rnd(lo, hi - a > lo ? hi - a : lo); }
-        else { a = rnd(Math.max(lo * 2, lo + 1), hi); b = rnd(lo, a - lo); }
-        return { txt: a + (add ? " + " : " − ") + b, ans: add ? a + b : a - b };
+      var QN = 8, lvl = 1, hearts = 3, qi = 0, score = 0, ans = 0, locked = false;
+      function hiRange() {
+        if (mode === "20") return Math.min(20, 8 + lvl * 3);
+        if (mode === "100") return Math.min(99, 30 + lvl * 15);
+        if (mode === "999") return Math.min(999, 200 + lvl * 150);
+        if (mode === "9999") return Math.min(9999, 1500 + lvl * 1500);
+        return Math.min(100, 20 + lvl * 15); /* lian */
+      }
+      function genQ() {
+        var H = hiRange(), add = Math.random() < 0.5, a, b, txt;
+        if (mode === "lian") {
+          var k = rnd(1, 3), x, y, z;
+          if (k === 1) { x = rnd(2, H); y = rnd(2, H); z = rnd(2, H); txt = x + " + " + y + " + " + z; ans = x + y + z; }
+          else if (k === 2) { x = rnd(Math.floor(H * 0.6), H + 40); y = rnd(2, Math.floor(x / 3)); z = rnd(2, Math.floor((x - y) / 2)); txt = x + " − " + y + " − " + z; ans = x - y - z; }
+          else { x = rnd(2, H); y = rnd(2, H); z = rnd(2, x + y - 1); txt = x + " + " + y + " − " + z; ans = x + y - z; }
+          return txt;
+        }
+        if (add) { a = rnd(1, Math.floor(H / 2)); b = rnd(1, Math.max(1, H - a)); ans = a + b; txt = a + " + " + b; }
+        else { a = rnd(2, H); b = rnd(1, a - 1); ans = a - b; txt = a + " − " + b; }
+        return txt;
+      }
+      function hud() {
+        return '<div class="game-hud">' +
+          '<span class="hud-item">🏅 第 <b>' + lvl + '</b> 关</span>' +
+          '<span class="hud-item">❤️ ' + "❤".repeat(hearts) + "♡".repeat(3 - hearts) + '</span>' +
+          '<span class="hud-item">📋 ' + qi + '/' + QN + '</span>' +
+          '<span class="hud-item">⭐ ' + score + '</span></div>';
       }
       function nextQ() {
-        var q;
-        if (mode === "lian") {
-          var H = Math.min(100, 20 + level * 15);
-          var kind = rnd(1, 3), a, b, c, txt;
-          if (kind === 1) { a = rnd(5, H); b = rnd(5, H); c = rnd(5, H); txt = a + " + " + b + " + " + c; q = { txt: txt, ans: a + b + c }; }
-          else if (kind === 2) { a = rnd(40, H + 60); b = rnd(5, Math.floor(a / 3)); c = rnd(5, Math.floor((a - b) / 2)); txt = a + " − " + b + " − " + c; q = { txt: txt, ans: a - b - c }; }
-          else { a = rnd(20, H + 30); b = rnd(5, H); c = rnd(5, a + b - 5); txt = a + " + " + b + " − " + c; q = { txt: txt, ans: a + b - c }; }
-        } else if (mode === "999") {
-          q = genTwo(100, 999);
-        } else if (mode === "9999") {
-          q = genTwo(1000, 9999);
-        } else if (mode === "100") {
-          q = genTwo(5, Math.min(99, 40 + level * 12));
-        } else {
-          q = genTwo(1, Math.min(20, 10 + level * 3));
+        locked = false;
+        var txt = genQ();
+        stage.innerHTML = hud() +
+          '<div class="game-q">' + txt + ' = ?</div>' +
+          '<div class="game-input-row"><input class="game-input" id="gInput" inputmode="numeric" autocomplete="off">' +
+          '<button class="btn" id="gOk">确定</button></div>' +
+          '<div style="margin-top:14px;text-align:center"><button id="gBack" style="color:#a8a9b5;font-size:13px">← 退出游戏</button></div>';
+        stage.querySelector("#gBack").onclick = exitGame;
+        var inp = stage.querySelector("#gInput");
+        function submit() {
+          if (locked) return;
+          var v = inp.value.trim();
+          if (v === "") return;
+          locked = true;
+          if (parseInt(v, 10) === ans) {
+            score++; if (window.SND) SND.correct();
+            stage.querySelector(".game-q").style.color = "#06c190";
+            qi++;
+            setTimeout(function () { if (qi >= QN) stageClear(); else nextQ(); }, 400);
+          } else {
+            if (window.SND) SND.wrong();
+            hearts--;
+            stage.querySelector(".game-q").style.color = "#ef476f";
+            setTimeout(function () {
+              if (hearts <= 0) stageFail();
+              else { toast("正确答案是 " + ans + "，再试一次！"); nextQ(); }
+            }, 700);
+          }
         }
-        ans = q.ans;
-        stage.querySelector(".game-q").textContent = q.txt + " = ?";
-        var inp = stage.querySelector(".game-input");
-        inp.value = "";
+        stage.querySelector("#gOk").onclick = submit;
+        inp.onkeydown = function (e) { if (e.key === "Enter") submit(); };
         inp.focus();
       }
-      stage.innerHTML =
-        '<div class="game-hud">' +
-        '<span class="hud-item">⏱ <b id="gTime">60</b> 秒</span>' +
-        '<span class="hud-item">🏅 第<b id="gLevel">1</b>关</span>' +
-        '<span class="hud-item">✅ 答对 <b id="gScore">0</b> 题</span>' +
-        '</div>' +
-        '<div class="game-q"></div>' +
-        '<div class="game-input-row"><input class="game-input" id="gInput" inputmode="numeric" autocomplete="off">' +
-        '<button class="btn" id="gOk">确定</button></div>' +
-        '<div style="margin-top:14px;text-align:center"><button id="gBack" style="color:#a8a9b5;font-size:13px">← 退出游戏</button></div>';
-      stage.querySelector("#gBack").onclick = exitGame;
-      var inp = stage.querySelector("#gInput");
-
-      function submit() {
-        var v = inp.value.trim();
-        if (v === "") return;
-        if (parseInt(v, 10) === ans) {
-          score++;
-          if (window.SND) SND.correct();
-          stage.querySelector("#gScore").textContent = score;
-          stage.querySelector(".game-q").style.color = "#06c190";
-          if (score % 5 === 0) { level++; stage.querySelector("#gLevel").textContent = level; toast("🎊 升到第 " + level + " 关！"); if (window.SND) SND.levelup(); }
-        } else {
-          if (window.SND) SND.wrong();
-          stage.querySelector(".game-q").style.color = "#ef476f";
-        }
-        setTimeout(function () { stage.querySelector(".game-q").style.color = ""; }, 220);
-        nextQ();
+      function stageClear() {
+        if (window.SND) SND.levelup();
+        GARDEN.addPoints(1, "闯关第" + lvl + "关");
+        stage.innerHTML =
+          '<div class="game-over" style="text-align:center;padding-top:40px">' +
+          '<div style="font-size:50px">🎉</div>' +
+          '<div style="font-size:18px;font-weight:800;color:#06a37c;margin-top:8px">第 ' + lvl + ' 关通过！</div>' +
+          '<div style="font-size:13px;color:#6b6e7f;margin-top:6px">本关答对 ' + qi + ' 题 · 累计 ' + score + ' 分</div>' +
+          '<div class="result-btns" style="max-width:300px;margin:20px auto 0;display:flex;flex-direction:column;gap:10px">' +
+          '<button class="btn block" id="nextLv">🚀 挑战第 ' + (lvl + 1) + ' 关（更难）</button>' +
+          '<button class="btn ghost block" id="exitG">退出</button></div></div>';
+        stage.querySelector("#nextLv").onclick = function () { lvl++; qi = 0; hearts = 3; nextQ(); };
+        stage.querySelector("#exitG").onclick = exitGame;
       }
-      stage.querySelector("#gOk").onclick = submit;
-      inp.onkeydown = function (e) { if (e.key === "Enter") submit(); };
+      function stageFail() {
+        setBest("jiasuan_" + mode, score);
+        stage.innerHTML =
+          '<div class="game-over" style="text-align:center;padding-top:40px">' +
+          '<div style="font-size:50px">💪</div>' +
+          '<div style="font-size:17px;font-weight:800;color:#e85d04;margin-top:8px">爱心用完了</div>' +
+          '<div style="font-size:13px;color:#6b6e7f;margin-top:6px">停在第 ' + lvl + ' 关 · 累计 ' + score + ' 分</div>' +
+          '<div class="result-btns" style="max-width:300px;margin:20px auto 0;display:flex;flex-direction:column;gap:10px">' +
+          '<button class="btn block" id="retryLv">🔄 重闯第 ' + lvl + ' 关</button>' +
+          '<button class="btn ghost block" id="exitG">退出</button></div></div>';
+        stage.querySelector("#retryLv").onclick = function () { qi = 0; hearts = 3; nextQ(); };
+        stage.querySelector("#exitG").onclick = exitGame;
+      }
       nextQ();
-
-      timer = setInterval(function () {
-        left--;
-        var t = stage.querySelector("#gTime");
-        if (t) t.textContent = left;
-        if (left <= 0) {
-          clearTimer();
-          setBest("jiasuan_" + mode, score);
-          confetti();
-          gameOver('<div class="go-emoji">⏰</div><div style="color:#6b6e7f;font-size:14px">时间到！你一共答对 ' + score + ' 题</div>',
-            score, gameJiasuan, exitGame);
-        }
-      }, 1000);
     }
   }
-
   /* =====================================================
    * 游戏三：凑十好朋友
    * ===================================================== */
@@ -8894,6 +9070,74 @@ window.GAMES = (function () {
     nextRound();
   }
 
+  /* =====================================================
+   * 游戏：几何小达人（图形特征/对称/角/空间）
+   * ===================================================== */
+  function gameGeo() {
+    var GEO_QS = [
+      { q: "长方形有几条边？", opts: ["3", "4", "5", "6"], ans: "4", e: "长方形有 4 条边。" },
+      { q: "正方形有几个直角？", opts: ["2", "3", "4", "0"], ans: "4", e: "正方形 4 个角都是直角。" },
+      { q: "三角形有几条边？", opts: ["2", "3", "4", "5"], ans: "3", e: "三角形有 3 条边。" },
+      { q: "三角形的内角和是多少度？", opts: ["90°", "180°", "270°", "360°"], ans: "180°", e: "三角形内角和是 180°。" },
+      { q: "圆有几条对称轴？", opts: ["1", "2", "4", "无数条"], ans: "无数条", e: "圆有无数条对称轴。" },
+      { q: "正方形有几条对称轴？", opts: ["1", "2", "4", "无数条"], ans: "4", e: "正方形有 4 条对称轴。" },
+      { q: "长方形有几条对称轴？", opts: ["1", "2", "4", "无数条"], ans: "2", e: "长方形有 2 条对称轴。" },
+      { q: "等边三角形的每个角是多少度？", opts: ["45°", "60°", "90°", "120°"], ans: "60°", e: "等边三角形三角都是 60°。" },
+      { q: "直角是多少度？", opts: ["45°", "90°", "180°", "360°"], ans: "90°", e: "直角是 90°。" },
+      { q: "平角是多少度？", opts: ["90°", "180°", "270°", "360°"], ans: "180°", e: "平角是 180°。" },
+      { q: "下面哪个是轴对称图形？", opts: ["平行四边形", "等腰三角形", "任意三角形", "梯形"], ans: "等腰三角形", e: "等腰三角形沿高对折能重合。" },
+      { q: "正方体有几个面？", opts: ["4", "6", "8", "12"], ans: "6", e: "正方体有 6 个面。" },
+      { q: "正方体有几条棱？", opts: ["6", "8", "12", "16"], ans: "12", e: "正方体有 12 条棱。" },
+      { q: "长方体有几个顶点？", opts: ["6", "8", "10", "12"], ans: "8", e: "长方体有 8 个顶点。" },
+      { q: "圆柱的侧面展开是什么形状？", opts: ["圆形", "长方形", "三角形", "梯形"], ans: "长方形", e: "圆柱侧面展开是长方形。" },
+      { q: "下面哪个物体接近圆柱？", opts: ["足球", "易拉罐", "魔方", "金字塔"], ans: "易拉罐", e: "易拉罐是圆柱形。" },
+      { q: "球的任意方向看过去都是什么形状？", opts: ["圆形", "正方形", "三角形", "长方形"], ans: "圆形", e: "球从哪看都是圆。" },
+      { q: "一个正方形边长扩大 2 倍，面积扩大几倍？", opts: ["2", "4", "6", "8"], ans: "4", e: "面积 = 边长×边长，扩大 2×2=4 倍。" },
+      { q: "周长是 20 厘米的正方形，边长是多少？", opts: ["4", "5", "10", "20"], ans: "5", e: "边长 = 周长÷4 = 20÷4 = 5。" },
+      { q: "下面哪种运动是旋转？", opts: ["电梯上升", "风车转动", "推拉窗户", "滑滑梯"], ans: "风车转动", e: "风车绕中心转动是旋转。" }
+    ];
+    var idx = 0, score = 0, hearts = 3, order = shuffle(GEO_QS.slice());
+    function nextQ() {
+      if (idx >= order.length) { finish(); return; }
+      var q = order[idx];
+      var opts = shuffle(q.opts.slice());
+      stage.innerHTML =
+        '<div class="game-hud">' +
+        '<span class="hud-item">❤️ ' + "❤".repeat(hearts) + "♡".repeat(3 - hearts) + '</span>' +
+        '<span class="hud-item">📋 ' + (idx + 1) + '/' + order.length + '</span>' +
+        '<span class="hud-item">⭐ ' + score + '</span></div>' +
+        '<div class="game-q" style="font-size:17px">' + q.q + '</div>' +
+        '<div class="game-opts">' + opts.map(function (o) {
+          return '<button class="game-opt" data-v="' + o + '">' + o + '</button>';
+        }).join("") + '</div>' +
+        '<div style="margin-top:14px;text-align:center"><button id="gBack" style="color:#a8a9b5;font-size:13px">← 退出游戏</button></div>';
+      stage.querySelector("#gBack").onclick = exitGame;
+      var locked = false;
+      stage.querySelectorAll(".game-opt").forEach(function (btn) {
+        btn.onclick = function () {
+          if (locked) return; locked = true;
+          if (btn.dataset.v === q.ans) {
+            score++; if (window.SND) SND.correct();
+            btn.classList.add("correct");
+            idx++;
+            setTimeout(nextQ, 500);
+          } else {
+            if (window.SND) SND.wrong();
+            hearts--;
+            btn.classList.add("wrong");
+            stage.querySelectorAll(".game-opt").forEach(function (x) { if (x.dataset.v === q.ans) x.classList.add("correct"); x.disabled = true; });
+            setTimeout(function () { idx++; if (hearts <= 0) finish(); else nextQ(); }, 900);
+          }
+        };
+      });
+    }
+    function finish() {
+      setBest("geo", score);
+      confetti();
+      gameOver('<div class="go-emoji">📐</div><div style="color:#6b6e7f;font-size:14px">答对 ' + score + ' 道几何题</div>', score, gameGeo, exitGame);
+    }
+    nextQ();
+  }
   /* ---------- 游戏入口 ---------- */
   /* lv: low=低年级(1-2) mid=中年级(3-4) high=高年级(5-6) */
   var GAME_DEFS = [
@@ -8913,7 +9157,8 @@ window.GAMES = (function () {
     { id: "g24", icon: "🎯", name: "24 点挑战", desc: "用 4 个数算出 24，选出对的算式", lv: "high", cat: "logic", run: game24 },
     { id: "fenshu", icon: "⚖️", name: "分数比大小", desc: "通分比一比，看哪个分数大", lv: "high", cat: "calc", run: gameFenshu },
     { id: "gen", icon: "√", name: "平方立方挑战", desc: "平方/立方/开平方/开立方，背公式练运用", lv: "high", cat: "calc", run: gameGen },
-    { id: "f2s", icon: "🔁", name: "分数化小数", desc: "把分数化成小数，除法用起来", lv: "high", cat: "calc", run: gameF2s }
+    { id: "f2s", icon: "🔁", name: "分数化小数", desc: "把分数化成小数，除法用起来", lv: "high", cat: "calc", run: gameF2s },
+    { id: "geo", icon: "📐", name: "几何小达人", desc: "图形特征/对称/角/空间，答题闯关", lv: "mid", cat: "geo", run: gameGeo }
   ];
   var CAT_NAME = { calc: "口算计算", logic: "思维逻辑", geo: "空间几何", app: "应用实践" };
 
@@ -10546,21 +10791,32 @@ window.GARDEN = (function () {
 
   /* ---------- 学习轨迹 ---------- */
   var curAct = null;
+  var MAX_ACT_SEC = 3600; /* 单条活动计时封顶 60 分钟，避免挂机虚高 */
   function startActivity(type, detail) { endActivity(); curAct = { type: type, detail: detail, ts: Date.now() }; }
   function endActivity() {
     if (!curAct) return;
     var sec = Math.round((Date.now() - curAct.ts) / 1000);
+    if (sec < 0) sec = 0;
+    if (sec > MAX_ACT_SEC) sec = MAX_ACT_SEC;
     state.activities.unshift({ ts: curAct.ts, type: curAct.type, detail: curAct.detail, sec: sec });
     if (state.activities.length > 80) state.activities.length = 80;
     save(state);
     curAct = null;
   }
+  /* 某一天的学习时长（只按活动足迹累加，与足迹口径完全一致） */
+  function dayStudySec(k) {
+    var sum = 0;
+    state.activities.forEach(function (a) { if (dayKey(new Date(a.ts)) === k) sum += (a.sec || 0); });
+    return sum;
+  }
+  function todayStudySec() { return dayStudySec(dayKey()); }
 
   /* ---------- 统计 ---------- */
   function checkedDays() {
     var set = {};
     Object.keys(state.earnedByDay).forEach(function (k) { if (state.earnedByDay[k] > 0) set[k] = 1; });
     Object.keys(state.secByDay).forEach(function (k) { if (state.secByDay[k] > 0) set[k] = 1; });
+    state.activities.forEach(function (a) { set[dayKey(new Date(a.ts))] = 1; });
     return set;
   }
   function streak() {
@@ -10579,7 +10835,7 @@ window.GARDEN = (function () {
   }
   function todayStats() {
     var k = dayKey();
-    return { earned: state.earnedByDay[k] || 0, cap: DAILY_CAP, sec: state.secByDay[k] || 0,
+    return { earned: state.earnedByDay[k] || 0, cap: DAILY_CAP, sec: todayStudySec(),
       sess: state.sessByDay[k] || 0, correct: state.correctByDay[k] || 0, wrong: state.wrongByDay[k] || 0 };
   }
   function lastDays(n) {
@@ -10587,7 +10843,7 @@ window.GARDEN = (function () {
     for (var i = n - 1; i >= 0; i--) {
       var d = new Date(); d.setDate(d.getDate() - i);
       var k = dayKey(d);
-      arr.push({ key: k, label: (d.getMonth() + 1) + "/" + d.getDate(), sec: state.secByDay[k] || 0,
+      arr.push({ key: k, label: (d.getMonth() + 1) + "/" + d.getDate(), sec: dayStudySec(k),
         earned: state.earnedByDay[k] || 0, sess: state.sessByDay[k] || 0, correct: state.correctByDay[k] || 0,
         wrong: state.wrongByDay[k] || 0, checked: !!(checkedDays()[k]) });
     }
@@ -10643,6 +10899,7 @@ window.GARDEN = (function () {
     checkin: checkin, isCheckedInToday: isCheckedInToday, isHungry: isHungry,
     checkedDays: checkedDays, streak: streak,
     fmtTime: fmtTime, todayStats: todayStats, lastDays: lastDays, totals: totals,
+    todayStudySec: todayStudySec, dayStudySec: dayStudySec,
     exportAll: exportAll, importAll: importAll
   };
 })();
@@ -11435,6 +11692,8 @@ window.THINK = (function () {
     if (name === "think") renderThinkHome();
     if (name === "formulas") renderFormulas();
     if (name === "garden") renderGardenHome();
+    if (name === "home") renderHome();
+    if (name !== "learn" && name !== "practice" && window.GARDEN) GARDEN.endActivity();
     try { localStorage.setItem("snmath_tab", name); } catch (e) {}
     window.scrollTo(0, 0);
     updateFab();
@@ -11743,6 +12002,7 @@ window.THINK = (function () {
       '<button class="mode-card" id="modeQuick"><span class="m-icon">⏱️</span><span style="flex:1"><span class="m-title">口算速练 60 秒</span><br><span class="m-sub">口算/竖式/脱式三件套，偶尔出验算，限时挑战</span></span><span class="unit-arrow">›</span></button>' +
       '<button class="mode-card" id="modeTest"><span class="m-icon">📝</span><span style="flex:1"><span class="m-title">' + esc(currentBook().label) + '综合测试</span><br><span class="m-sub">全册抽 20 题（混入本年级真题）</span></span><span class="unit-arrow">›</span></button>' +
       '<button class="mode-card" id="modeReal"><span class="m-icon">🏆</span><span style="flex:1"><span class="m-title">真题挑战</span><br><span class="m-sub">按年级精选真题，12 道测真实水平</span></span><span class="unit-arrow">›</span></button>' +
+      '<button class="mode-card" id="modeExtend"><span class="m-icon">🌟</span><span style="flex:1"><span class="m-title">课外延伸</span><br><span class="m-sub">和差/和倍/相遇/鸡兔同笼…常考应用题</span></span><span class="unit-arrow">›</span></button>' +
       '<button class="mode-card" id="modeWrong"' + (wbCount ? '' : ' style="opacity:.75"') + '>' +
       '<span class="m-icon">📒</span><span style="flex:1"><span class="m-title">错题本' + (wbCount ? '（' + wbCount + ' 题待巩固）' : '') + '</span><br>' +
       '<span class="m-sub">做错的题自动收录，举一反三消灭它</span></span><span class="unit-arrow">›</span></button>';
@@ -11773,6 +12033,7 @@ window.THINK = (function () {
     $("#modeQuick").onclick = startQuickSession;
     $("#modeTest").onclick = startTestSession;
     $("#modeReal").onclick = renderRealSetup;
+    $("#modeExtend").onclick = startExtensionSession;
     $("#modeWrong").onclick = renderWrongBook;
     $("#modePicword").onclick = renderPicwordHome;
     $("#modeLife").onclick = startLifeSession;
@@ -11871,6 +12132,21 @@ window.THINK = (function () {
   function startLifeSession() {
     var qs = LIFE.session(10).map(function (q) { q.type = q.type || "yingyong"; return q; });
     startSession({ title: "生活场景数学", unit: null, questions: qs });
+  }
+
+  /* 课外延伸：常考应用题型 */
+  function startExtensionSession() {
+    var qs = [], seen = {};
+    var guard = 0;
+    while (qs.length < 12 && guard < 200) {
+      guard++;
+      var q = EXTEND.gen();
+      var key = q.q.replace(/\d+/g, "#");
+      if (seen[key]) continue;
+      seen[key] = 1;
+      qs.push(q);
+    }
+    startSession({ title: "课外延伸 · 常考应用题", unit: null, questions: qs });
   }
 
   /* 真题挑战：按年级选择，做该年级真题 */
@@ -12781,6 +13057,10 @@ window.THINK = (function () {
       '<div style="flex:1"><div class="gp-cap">今日积分 ' + today.earned + ' / ' + today.cap + (G.isCapped() ? ' · 已满，休息一下吧🌿' : '') + '</div>' +
       '<div class="gp-bar"><i style="width:' + pct + '%"></i></div>' +
       '<div class="gp-cap" style="margin-top:6px">今日学习 ' + G.fmtTime(today.sec) + ' · 连续打卡 ' + G.streak() + ' 天🔥</div></div></div>';
+    var recentLedger = G.state().ledger.slice(0, 3).map(function (l) {
+      return '<span style="color:' + (l.n >= 0 ? '#06a37c' : '#e85d04') + '">' + (l.n >= 0 ? '+' : '') + l.n + '</span> ' + l.reason;
+    }).join(' · ');
+    html += '<div class="card" style="font-size:11px;color:#8a8b99;padding:8px 12px">💰 最近变动：' + (recentLedger || '暂无') + '<br><span style="color:#b8bac4">领养/喂养会消耗积分；完整明细见「报告」</span></div>';
     var checked = G.isCheckedInToday();
     html += '<button class="checkin-btn' + (checked ? ' done' : '') + '" id="checkinBtn">' +
       (checked ? '✅ 今日已打卡 · ' + (u ? u.name : '') + ' 的小动物吃饱啦' : '🍽️ 点我打卡 · 小动物饿着肚子呢（+' + G.CHECKIN_BONUS + '分）') + '</button>';
