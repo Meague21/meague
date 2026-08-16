@@ -709,11 +709,19 @@ main{padding:14px 14px 92px}
  * 烧脑数学 · 教材内容数据（北师大版 2024 新课标版 三年级上册）
  * ===================================================================== */
 window.MD = {
-  version: "3.1.0",
+  version: "3.2.0",
   textbook: { grade: "三年级", term: "上册", edition: "北师大版（新课标）" },
 
   /* ---------------- 版本日志（应用内展示） ---------------- */
   changelog: [
+    { ver: "v3.2.0", date: "2026-08-16", items: [
+      "新增「单位换算大闯关」游戏：长度/质量/时间/面积/体积容积/综合，分基础/进阶难度",
+      "无尽游戏全部设上限：分数比大小/24点/凑十/破十等 10 题一局自动结算",
+      "游戏合并精简：凑十+破十合并为「20以内加减」；翻翻乐+算盘+时钟合并为「益智游乐园」",
+      "新增「逻辑推理关」「生活应用关」两个思维/应用游戏",
+      "思维题库按奥数路线补 5 类：周期规律/分类与对应/位置与方向/数阵图填数/计数组合（共55主题）",
+      "应用题情境再扩容，乘法/除法各增 3 种生活情境，随机性更强"
+    ]},
     { ver: "v3.1.0", date: "2026-08-15", items: [
       "修复：首页「今日推荐」一直显示加载中的问题",
       "修复：学习时长统计口径不一（今日时长与足迹对不上）——统一按活动足迹计时并封顶",
@@ -7476,20 +7484,26 @@ window.QE = (function () {
   }
   function wordMul(g) {
     var f = R(MULF[g][0], MULF[g][1]), n = R(MULA[g][0], MULA[g][1]), it = P(ITEMS), p = P(PEOPLE);
-    var tpl = R(1, 5);
+    var tpl = R(1, 8);
     if (tpl === 1) return mk(f * n, "每盒有 " + f + " 支铅笔，" + n + " 盒一共有多少支？", f + "×" + n + "=" + (f * n) + "（支）", "求几个相同加数的和用乘法。");
     if (tpl === 2) return mk(f * n, "每排坐 " + f + " 人，坐了 " + n + " 排。一共坐了多少人？", f + "×" + n + "=" + (f * n) + "（人）", "每排人数×排数。");
     if (tpl === 3) return mk(f * n, p + "每天看 " + f + " 页书，看了 " + n + " 天。一共看了多少页？", f + "×" + n + "=" + (f * n) + "（页）", "每天×天数。");
     if (tpl === 4) return mk(f * n, "每个篮子装 " + f + " 个" + it + "，" + n + " 个篮子一共装多少个？", f + "×" + n + "=" + (f * n) + "（个）", "每篮×篮数。");
-    return mk(f * n, "一辆车坐 " + f + " 人，" + n + " 辆车一共坐多少人？", f + "×" + n + "=" + (f * n) + "（人）", "每辆×辆数。");
+    if (tpl === 5) return mk(f * n, "一辆车坐 " + f + " 人，" + n + " 辆车一共坐多少人？", f + "×" + n + "=" + (f * n) + "（人）", "每辆×辆数。");
+    if (tpl === 6) return mk(f * n, p + "买了 " + n + " 包" + it + "，每包 " + f + " 个。一共买了多少个？", f + "×" + n + "=" + (f * n) + "（个）", "每包×包数。");
+    if (tpl === 7) return mk(f * n, "每周上 " + f + " 节体育课，" + n + " 周一共上多少节？", f + "×" + n + "=" + (f * n) + "（节）", "每周×周数。");
+    return mk(f * n, "每层楼住 " + f + " 户，" + n + " 层楼一共住多少户？", f + "×" + n + "=" + (f * n) + "（户）", "每层×层数。");
   }
   function wordDiv(g) {
-    var divisor = R(MULF[g][0], MULF[g][1]), quotient = R(MULA[g][0], Math.min(MULA[g][1], 20)), it = P(ITEMS);
+    var divisor = R(MULF[g][0], MULF[g][1]), quotient = R(MULA[g][0], Math.min(MULA[g][1], 20)), it = P(ITEMS), p = P(PEOPLE);
     var total = divisor * quotient;
-    var tpl = R(1, 3);
+    var tpl = R(1, 6);
     if (tpl === 1) return mk(quotient, "把 " + total + " 个" + it + "平均分给 " + divisor + " 个小朋友，每人分几个？", total + "÷" + divisor + "=" + quotient + "（个）", "平均分用除法。");
     if (tpl === 2) return mk(quotient, total + " 个" + it + "，每 " + divisor + " 个装一袋，可以装几袋？", total + "÷" + divisor + "=" + quotient + "（袋）", "总数÷每份。");
-    return mk(quotient, "有 " + total + " 人做游戏，每 " + divisor + " 人分一组，可以分几组？", total + "÷" + divisor + "=" + quotient + "（组）", "总人数÷每组人数。");
+    if (tpl === 3) return mk(quotient, "有 " + total + " 人做游戏，每 " + divisor + " 人分一组，可以分几组？", total + "÷" + divisor + "=" + quotient + "（组）", "总人数÷每组人数。");
+    if (tpl === 4) return mk(quotient, p + "有 " + total + " 元钱，买同样的笔记本花了 " + divisor + " 元一本，能买几本？", total + "÷" + divisor + "=" + quotient + "（本）", "总价÷单价。");
+    if (tpl === 5) return mk(quotient, total + " 本书平均放进 " + divisor + " 个书架，每个书架放几本？", total + "÷" + divisor + "=" + quotient + "（本）", "总数÷书架数。");
+    return mk(quotient, "一条 " + total + " 米的绳子，每 " + divisor + " 米剪一段，能剪几段？", total + "÷" + divisor + "=" + quotient + "（段）", "总长÷每段长。");
   }
   function mk(ans, qtext, step, explain) {
     return { q: qtext, input: "num", ans: String(ans), steps: [step], explain: explain };
@@ -8096,8 +8110,10 @@ window.GAMES = (function () {
    * 游戏三：凑十好朋友
    * ===================================================== */
   function gameCushi() {
-    var score = 0, streak = 0;
+    var score = 0, streak = 0, roundNum = 0;
     function round() {
+      roundNum++;
+      if (roundNum > 10) { setBest("cushi", score); confetti(); if (window.GARDEN) GARDEN.addPoints(score >= 80 ? 1.5 : 1, "凑十法"); gameOver('<div class="go-emoji">🟡</div><div style="color:#6b6e7f;font-size:14px">10 题得分 ' + score + '</div>', score, gameCushi, exitGame); return; }
       var a = rnd(1, 9), need = 10 - a;
       var opts = shuffle([need, need + 1, need - 1, rnd(1, 9)].filter(function (v, i, arr) {
         return v >= 1 && v <= 9 && arr.indexOf(v) === i;
@@ -8147,8 +8163,10 @@ window.GAMES = (function () {
    * 游戏四：破十小达人
    * ===================================================== */
   function gamePoshi() {
-    var score = 0;
+    var score = 0, roundNum = 0;
     function round() {
+      roundNum++;
+      if (roundNum > 10) { setBest("poshi", score); confetti(); if (window.GARDEN) GARDEN.addPoints(score >= 80 ? 1.5 : 1, "破十法"); gameOver('<div class="go-emoji">🔟</div><div style="color:#6b6e7f;font-size:14px">10 题得分 ' + score + '</div>', score, gamePoshi, exitGame); return; }
       var M = rnd(11, 18), S = rnd(7, 9);
       var ones = M - 10;
       var step1 = 10 - S, step2 = step1 + ones;
@@ -8240,6 +8258,7 @@ window.GAMES = (function () {
     var score = 0, roundNum = 0;
     function round() {
       roundNum++;
+      if (roundNum > 10) { setBest("g24", score); confetti(); if (window.GARDEN) GARDEN.addPoints(score >= 5 ? 1.5 : 1, "24点"); gameOver('<div class="go-emoji">🎯</div><div style="color:#6b6e7f;font-size:14px">10 题答对 ' + score + ' 题</div>', score, game24, exitGame); return; }
       // 找一组有解的 4 个数
       var nums = null, sol = null, tries = 0;
       while (!sol && tries < 300) {
@@ -8309,6 +8328,7 @@ window.GAMES = (function () {
     var score = 0, roundNum = 0;
     function round() {
       roundNum++;
+      if (roundNum > 10) { setBest("fenshu", score); confetti(); if (window.GARDEN) GARDEN.addPoints(score >= 80 ? 1.5 : 1, "分数比大小"); gameOver('<div class="go-emoji">⚖️</div><div style="color:#6b6e7f;font-size:14px">10 题得分 ' + score + '</div>', score, gameFenshu, exitGame); return; }
       var d = rnd(3, 12);
       var n1 = rnd(1, d - 1), n2 = rnd(1, d - 1);
       // 有时同分母，有时异分母
@@ -9138,17 +9158,263 @@ window.GAMES = (function () {
     }
     nextQ();
   }
+  /* =====================================================
+   * 游戏：单位换算大闯关（分单位类型 + 难度）
+   * ===================================================== */
+  function gameUnit() {
+    stage.innerHTML =
+      '<h3 style="text-align:center;margin:10px 0 6px">📏 单位换算大闯关</h3>' +
+      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:12px">先选单位类型，再选难度</div>' +
+      '<div class="section-title" style="margin-top:4px"><span class="bar" style="background:#ff9f43"></span>选单位类型</div>' +
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:340px;margin:0 auto">' +
+      '<button class="btn block" data-uc="length">📏 长度</button>' +
+      '<button class="btn block" data-uc="mass">⚖️ 质量</button>' +
+      '<button class="btn block" data-uc="time">⏰ 时间</button>' +
+      '<button class="btn block" data-uc="area">🟦 面积</button>' +
+      '<button class="btn block" data-uc="volume">🧊 体积容积</button>' +
+      '<button class="btn block" data-uc="mix">🔀 综合</button>' +
+      '</div>' +
+      '<div class="section-title" style="margin-top:14px"><span class="bar" style="background:#3a86ff"></span>选难度</div>' +
+      '<div style="display:flex;gap:8px;max-width:340px;margin:0 auto">' +
+      '<button class="btn green block" data-ul="1">🌱 基础</button>' +
+      '<button class="btn blue block" data-ul="2">🚀 进阶</button>' +
+      '</div>' +
+      '<div style="margin-top:16px;text-align:center"><button class="btn ghost" id="gBack">← 返回</button></div>';
+    stage.querySelector("#gBack").onclick = exitGame;
+    var selCat = null, selLv = 1;
+    stage.querySelectorAll("[data-uc]").forEach(function (b) {
+      b.onclick = function () { selCat = b.dataset.uc; stage.querySelectorAll("[data-uc]").forEach(function (x) { x.style.outline = x === b ? "3px solid #ffb703" : ""; }); };
+    });
+    stage.querySelectorAll("[data-ul]").forEach(function (b) {
+      b.onclick = function () { selLv = parseInt(b.dataset.ul, 10); stage.querySelectorAll("[data-ul]").forEach(function (x) { x.style.outline = x === b ? "3px solid #ffb703" : ""; }); };
+    });
+    /* 默认选中 */
+    selCat = "length";
+    stage.querySelector('[data-uc="length"]').style.outline = "3px solid #ffb703";
+    stage.querySelector('[data-ul="1"]').style.outline = "3px solid #ffb703";
+    /* 点击进入游戏（点难度即开始） */
+    stage.querySelectorAll("[data-ul]").forEach(function (b) {
+      b.onclick = function () { selLv = parseInt(b.dataset.ul, 10); startRun(); };
+    });
+
+    function startRun() {
+      if (!selCat) selCat = "length";
+      var UNITS = {
+        length: [["千米", "米", 1000], ["米", "分米", 10], ["米", "厘米", 100], ["分米", "厘米", 10], ["厘米", "毫米", 10]],
+        mass: [["吨", "千克", 1000], ["千克", "克", 1000]],
+        time: [["天", "小时", 24], ["小时", "分钟", 60], ["分钟", "秒", 60]],
+        area: [["平方米", "平方分米", 100], ["平方分米", "平方厘米", 100], ["公顷", "平方米", 10000]],
+        volume: [["立方米", "立方分米", 1000], ["立方分米", "立方厘米", 1000], ["升", "毫升", 1000]]
+      };
+      var cats = selCat === "mix" ? ["length", "mass", "time", "area", "volume"] : [selCat];
+      var QN = 10, qi = 0, score = 0, lvl = selLv, ans = 0, locked = false;
+      function genQ() {
+        var c = cats[Math.floor(Math.random() * cats.length)];
+        var pairs = UNITS[c];
+        var pair = pairs[Math.floor(Math.random() * pairs.length)];
+        var big = pair[0], small = pair[1], rate = pair[2];
+        var toSmall = Math.random() < 0.5;
+        var val, q, a;
+        if (toSmall) {
+          val = lvl === 1 ? rnd(2, 9) : rnd(2, 30);
+          a = val * rate;
+          q = val + " " + big + " = （  ）" + small;
+        } else {
+          val = (lvl === 1 ? rnd(2, 9) : rnd(2, 30)) * rate;
+          a = val / rate;
+          q = val + " " + small + " = （  ）" + big;
+        }
+        ans = a;
+        return q;
+      }
+      function nextQ() {
+        if (qi >= QN) { finish(); return; }
+        locked = false;
+        var q = genQ();
+        stage.innerHTML =
+          '<div class="game-hud">' +
+          '<span class="hud-item">🎯 难度' + (lvl === 1 ? "基础" : "进阶") + '</span>' +
+          '<span class="hud-item">📋 ' + (qi + 1) + '/' + QN + '</span>' +
+          '<span class="hud-item">⭐ ' + score + '</span></div>' +
+          '<div class="game-q" style="font-size:19px">' + q + '</div>' +
+          '<div class="game-input-row"><input class="game-input" id="gInput" inputmode="numeric" autocomplete="off">' +
+          '<button class="btn" id="gOk">确定</button></div>' +
+          '<div style="margin-top:14px;text-align:center"><button id="gBack" style="color:#a8a9b5;font-size:13px">← 退出游戏</button></div>';
+        stage.querySelector("#gBack").onclick = exitGame;
+        var inp = stage.querySelector("#gInput");
+        function submit() {
+          if (locked) return;
+          var v = inp.value.trim();
+          if (v === "") return;
+          locked = true;
+          if (parseFloat(v) === ans) { score++; if (window.SND) SND.correct(); stage.querySelector(".game-q").style.color = "#06c190"; }
+          else { if (window.SND) SND.wrong(); stage.querySelector(".game-q").style.color = "#ef476f"; }
+          qi++;
+          setTimeout(function () { stage.querySelector(".game-q").style.color = ""; nextQ(); }, 450);
+        }
+        stage.querySelector("#gOk").onclick = submit;
+        inp.onkeydown = function (e) { if (e.key === "Enter") submit(); };
+        inp.focus();
+      }
+      function finish() {
+        setBest("unit", score);
+        confetti();
+        stage.innerHTML =
+          '<div class="game-over" style="text-align:center;padding-top:40px">' +
+          '<div style="font-size:50px">' + (score >= 8 ? "🏆" : score >= 5 ? "🎉" : "💪") + '</div>' +
+          '<div style="font-size:17px;font-weight:800;color:#4a2c3d;margin-top:8px">答对 ' + score + ' / ' + QN + '</div>' +
+          '<div class="result-btns" style="max-width:300px;margin:20px auto 0;display:flex;flex-direction:column;gap:10px">' +
+          '<button class="btn block" id="againU">🔄 再来一组</button>' +
+          '<button class="btn ghost block" id="exitU">退出</button></div></div>';
+        stage.querySelector("#againU").onclick = function () { qi = 0; score = 0; nextQ(); };
+        stage.querySelector("#exitU").onclick = exitGame;
+        if (window.GARDEN) GARDEN.addPoints(score >= 8 ? 1.5 : 1, "单位换算");
+      }
+      nextQ();
+    }
+  }
+  /* =====================================================
+   * 合并游戏一：20 以内加减（凑十 + 破十）
+   * ===================================================== */
+  function game20AddSub() {
+    stage.innerHTML =
+      '<h3 style="text-align:center;margin:10px 0 16px">🌱 20 以内加减</h3>' +
+      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:14px">凑十法做加法，破十法做减法</div>' +
+      '<div style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto">' +
+      '<button class="btn green block" id="mCushi">🟡 凑十法（加法）</button>' +
+      '<button class="btn blue block" id="mPoshi">🔟 破十法（减法）</button>' +
+      '<button class="btn ghost block" id="gBack">← 返回</button></div>';
+    stage.querySelector("#gBack").onclick = exitGame;
+    stage.querySelector("#mCushi").onclick = function () { gameCushi(); };
+    stage.querySelector("#mPoshi").onclick = function () { gamePoshi(); };
+  }
+
+  /* =====================================================
+   * 合并游戏二：益智游乐园（翻翻乐 + 算盘 + 时钟）
+   * ===================================================== */
+  function gameBrainPark() {
+    stage.innerHTML =
+      '<h3 style="text-align:center;margin:10px 0 16px">🎡 益智游乐园</h3>' +
+      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:14px">三种玩法任选</div>' +
+      '<div style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto">' +
+      '<button class="btn block" id="mFanpai">🃏 记忆翻翻乐</button>' +
+      '<button class="btn block" id="mAbacus">🧮 算盘拨数</button>' +
+      '<button class="btn block" id="mClock">⏰ 认识时钟</button>' +
+      '<button class="btn ghost block" id="gBack">← 返回</button></div>';
+    stage.querySelector("#gBack").onclick = exitGame;
+    stage.querySelector("#mFanpai").onclick = function () { gameFanpai(); };
+    stage.querySelector("#mAbacus").onclick = function () { gameAbacus(); };
+    stage.querySelector("#mClock").onclick = function () { gameClock(); };
+  }
+  /* =====================================================
+   * 游戏：逻辑推理关（思维逻辑）
+   * ===================================================== */
+  function gameLogic() {
+    var QN = 10, qi = 0, score = 0, ans = "", locked = false;
+    function genQ() {
+      var kind = rnd(1, 3);
+      if (kind === 1) { /* 高矮排序 */
+        var names = shuffle(["小明", "小红", "小刚"]);
+        var tall = names[0], mid = names[1], short = names[2];
+        var askTall = Math.random() < 0.5;
+        ans = askTall ? tall : short;
+        return { q: tall + "比" + mid + "高，" + mid + "比" + short + "高。谁" + (askTall ? "最高" : "最矮") + "？", opts: names };
+      }
+      if (kind === 2) { /* 真假 */
+        var persons = shuffle(["小明", "小红"]);
+        ans = persons[1];
+        return { q: persons[0] + "说：“我们俩都在说谎。”已知一人说真话一人说谎。谁说真话？", opts: persons };
+      }
+      /* 对应 */
+      var items = shuffle([["小明", "猫"], ["小红", "狗"]]);
+      var hint = Math.random() < 0.5;
+      if (hint) { ans = items[1][1]; return { q: items[0][0] + "和" + items[1][0] + "各养一只宠物（猫和狗）。" + items[0][0] + "不养猫。" + items[1][0] + "养什么？", opts: ["猫", "狗"] }; }
+      ans = items[0][1];
+      return { q: items[0][0] + "和" + items[1][0] + "各养一只宠物（猫和狗）。" + items[1][0] + "养狗。" + items[0][0] + "养什么？", opts: ["猫", "狗"] };
+    }
+    function nextQ() {
+      if (qi >= QN) { finish(); return; }
+      locked = false;
+      var q = genQ();
+      var opts = shuffle(q.opts.slice());
+      stage.innerHTML =
+        '<div class="game-hud"><span class="hud-item">📋 ' + (qi + 1) + '/' + QN + '</span><span class="hud-item">⭐ ' + score + '</span></div>' +
+        '<div class="game-q" style="font-size:16px;line-height:1.6">' + q.q + '</div>' +
+        '<div class="game-opts">' + opts.map(function (o) { return '<button class="game-opt" data-v="' + o + '">' + o + '</button>'; }).join("") + '</div>' +
+        '<div style="margin-top:14px;text-align:center"><button id="gBack" style="color:#a8a9b5;font-size:13px">← 退出游戏</button></div>';
+      stage.querySelector("#gBack").onclick = exitGame;
+      stage.querySelectorAll(".game-opt").forEach(function (btn) {
+        btn.onclick = function () {
+          if (locked) return; locked = true;
+          if (btn.dataset.v === ans) { score++; if (window.SND) SND.correct(); btn.classList.add("correct"); }
+          else { if (window.SND) SND.wrong(); btn.classList.add("wrong"); stage.querySelectorAll(".game-opt").forEach(function (x) { if (x.dataset.v === ans) x.classList.add("correct"); }); }
+          qi++;
+          setTimeout(nextQ, 600);
+        };
+      });
+    }
+    function finish() {
+      setBest("logic", score); confetti();
+      if (window.GARDEN) GARDEN.addPoints(score >= 8 ? 1.5 : 1, "逻辑推理");
+      gameOver('<div class="go-emoji">🧩</div><div style="color:#6b6e7f;font-size:14px">答对 ' + score + ' / ' + QN + '</div>', score, gameLogic, exitGame);
+    }
+    nextQ();
+  }
+
+  /* =====================================================
+   * 游戏：生活应用关（应用实践）
+   * ===================================================== */
+  function gameLife() {
+    var QN = 10, qi = 0, score = 0, cur = null, locked = false;
+    function nextQ() {
+      if (qi >= QN) { finish(); return; }
+      locked = false;
+      cur = window.LIFE ? LIFE.gen() : null;
+      if (!cur) { finish(); return; }
+      var inputHtml;
+      if (cur.input === "choice" && cur.options) {
+        inputHtml = '<div class="game-opts">' + shuffle(cur.options.slice()).map(function (o) { return '<button class="game-opt" data-v="' + o + '">' + o + '</button>'; }).join("") + '</div>';
+      } else if (cur.input === "judge") {
+        inputHtml = '<div style="display:flex;gap:10px;justify-content:center"><button class="judge-btn" data-v="对" style="flex:0 0 80px">✔ 对</button><button class="judge-btn" data-v="错" style="flex:0 0 80px">✘ 错</button></div>';
+      } else {
+        inputHtml = '<div class="game-input-row"><input class="game-input" id="gInput" inputmode="numeric" autocomplete="off"><button class="btn" id="gOk">确定</button></div>';
+      }
+      stage.innerHTML =
+        '<div class="game-hud"><span class="hud-item">📋 ' + (qi + 1) + '/' + QN + '</span><span class="hud-item">⭐ ' + score + '</span></div>' +
+        '<div class="game-q" style="font-size:15px;line-height:1.6">' + cur.q + '</div>' +
+        inputHtml +
+        '<div id="glfb" style="text-align:center;font-size:13px;margin-top:10px;min-height:18px"></div>' +
+        '<div style="margin-top:10px;text-align:center"><button id="gBack" style="color:#a8a9b5;font-size:13px">← 退出游戏</button></div>';
+      stage.querySelector("#gBack").onclick = exitGame;
+      function check(val) {
+        if (locked) return; locked = true;
+        var ok = String(val).trim() === String(cur.ans) || (cur.accept && cur.accept.indexOf(String(val).trim()) >= 0) || (cur.input === "num" && parseFloat(val) === parseFloat(cur.ans));
+        var fb = stage.querySelector("#glfb");
+        if (ok) { score++; if (window.SND) SND.correct(); fb.textContent = "🎉 对啦！"; fb.style.color = "#059e76"; }
+        else { if (window.SND) SND.wrong(); fb.textContent = "🤔 答案是 " + cur.ans + "。" + (cur.explain || ""); fb.style.color = "#e85d04"; }
+        qi++;
+        setTimeout(nextQ, ok ? 700 : 1600);
+      }
+      stage.querySelectorAll(".game-opt,.judge-btn").forEach(function (btn) { btn.onclick = function () { check(btn.dataset.v); }; });
+      var okbtn = stage.querySelector("#gOk");
+      if (okbtn) { var inp = stage.querySelector("#gInput"); okbtn.onclick = function () { check(inp.value); }; inp.onkeydown = function (e) { if (e.key === "Enter") check(inp.value); }; inp.focus(); }
+    }
+    function finish() {
+      setBest("lifegame", score); confetti();
+      if (window.GARDEN) GARDEN.addPoints(score >= 8 ? 1.5 : 1, "生活应用");
+      gameOver('<div class="go-emoji">🛒</div><div style="color:#6b6e7f;font-size:14px">答对 ' + score + ' / ' + QN + '</div>', score, gameLife, exitGame);
+    }
+    nextQ();
+  }
   /* ---------- 游戏入口 ---------- */
   /* lv: low=低年级(1-2) mid=中年级(3-4) high=高年级(5-6) */
   var GAME_DEFS = [
     { id: "jiasuan", icon: "⚡", name: "加减法速度挑战", desc: "60 秒限时，看你能答对多少题", lv: "low", cat: "calc", run: gameJiasuan },
-    { id: "cushi", icon: "🟡", name: "凑十好朋友", desc: "凑十法练习，十格阵图帮你看得懂", lv: "low", cat: "calc", run: gameCushi },
-    { id: "poshi", icon: "🔟", name: "破十小达人", desc: "破十法分步算，十几减 9 不再怕", lv: "low", cat: "calc", run: gamePoshi },
+    { id: "addsub20", icon: "🌱", name: "20以内加减", desc: "凑十法加法 + 破十法减法", lv: "low", cat: "calc", run: game20AddSub },
     { id: "chengkou", icon: "✖️", name: "乘法口诀大闯关", desc: "随机口诀题，3 条命，连击有加分！", lv: "low", cat: "calc", run: gameChengkou },
-    { id: "fanpai", icon: "🃏", name: "记忆翻翻乐", desc: "算式配答案，翻牌考记忆", lv: "low", cat: "calc", run: gameFanpai },
-    { id: "abacus", icon: "🧮", name: "算盘拨数", desc: "在算盘上拨珠表示数字，认识数位", lv: "low", cat: "calc", run: gameAbacus },
-    { id: "clock", icon: "⏰", name: "时钟练习", desc: "看钟面读时间，认识时针分针", lv: "low", cat: "app", run: gameClock },
     { id: "shushu", icon: "🔢", name: "数感大冒险", desc: "数的组成/数位/比大小/常识，10题不重复", lv: "mid", cat: "logic", run: gameShushu },
+    { id: "brainpark", icon: "🎡", name: "益智游乐园", desc: "翻翻乐 / 算盘 / 时钟 三合一", lv: "low", cat: "logic", run: gameBrainPark },
+    { id: "logicgame", icon: "🧩", name: "逻辑推理关", desc: "排序/真假/对应，推理闯关", lv: "mid", cat: "logic", run: gameLogic },
     { id: "huajian", icon: "✂️", name: "分数化简", desc: "把分数化成最简分数，约分练习", lv: "mid", cat: "calc", run: gameHuajian },
     { id: "daji", icon: "🧊", name: "积木搭搭乐", desc: "自由搭 / 照样子搭，随时换一组新目标", lv: "mid", cat: "geo", run: function () { if (window.BLOCKS) BLOCKS.genBuilder(stage, { mode: "copy", onExit: exitGame }); } },
     { id: "zhouchang", icon: "📐", name: "周长面积小达人", desc: "60 秒算周长和面积，公式用起来", lv: "mid", cat: "geo", run: gameZhouchang },
@@ -9158,7 +9424,9 @@ window.GAMES = (function () {
     { id: "fenshu", icon: "⚖️", name: "分数比大小", desc: "通分比一比，看哪个分数大", lv: "high", cat: "calc", run: gameFenshu },
     { id: "gen", icon: "√", name: "平方立方挑战", desc: "平方/立方/开平方/开立方，背公式练运用", lv: "high", cat: "calc", run: gameGen },
     { id: "f2s", icon: "🔁", name: "分数化小数", desc: "把分数化成小数，除法用起来", lv: "high", cat: "calc", run: gameF2s },
-    { id: "geo", icon: "📐", name: "几何小达人", desc: "图形特征/对称/角/空间，答题闯关", lv: "mid", cat: "geo", run: gameGeo }
+    { id: "geo", icon: "📐", name: "几何小达人", desc: "图形特征/对称/角/空间，答题闯关", lv: "mid", cat: "geo", run: gameGeo },
+    { id: "unit", icon: "📏", name: "单位换算闯关", desc: "长度/质量/时间/面积/体积，分难度换算", lv: "mid", cat: "app", run: gameUnit },
+    { id: "lifegame", icon: "🛒", name: "生活应用关", desc: "生活里的数学应用题闯关", lv: "mid", cat: "app", run: gameLife }
   ];
   var CAT_NAME = { calc: "口算计算", logic: "思维逻辑", geo: "空间几何", app: "应用实践" };
 
@@ -11615,6 +11883,79 @@ window.THINK = (function () {
         var li = ben * rate / 100 * yr;
         return { type: "num", q: "把 " + ben + " 元存入银行，年利率 " + rate + "%，存 " + yr + " 年。到期可得利息多少元？", input: "num", ans: String(li),
           explain: ben + "×" + rate + "%×" + yr + " = " + li + "（元）。" }; } }
+    ,
+    /* ---------------- 周期规律（奥数） ---------------- */
+    { id: "zhouqi", name: "周期规律", icon: "🔁", color: "#3a86ff", level: "中年级",
+      desc: "按周期重复排列，用除法找余数定位。",
+      points: [ { t: "周期问题", html: "事物按固定周期重复。求第 N 个，用 <b>N÷周期</b>，看<b>余数</b>对应周期里的第几个；余数为 0 则是周期最后一个。" } ],
+      examples: [ { tag: "例题", q: "○△□○△□…第 8 个是什么？", steps: ["周期是 3", "8÷3=2…2", "余 2 对应第 2 个△"], explain: "余数定位。" } ],
+      gen: function () {
+        var pats = [["○", "△", "□"], ["红", "黄", "蓝"], ["☆", "★"], ["春", "夏", "秋", "冬"]];
+        var pat = P(pats), len = pat.length, n = rnd(len + 2, len * 5);
+        var rem = n % len, idx = rem === 0 ? len - 1 : rem - 1;
+        var ans = pat[idx];
+        var opts = pat.slice(); while (opts.length < 4) opts.push("无");
+        return { type: "xuanze", q: "按 " + pat.join("、") + " 的规律反复排列，第 " + n + " 个是什么？", input: "choice", options: QE.shuffle(opts.slice(0, Math.max(len, 3))), ans: ans,
+          explain: "周期是 " + len + "，" + n + "÷" + len + "=" + Math.floor(n / len) + "…" + rem + (rem === 0 ? "，余 0 是周期最后一个" : "，余 " + rem + " 对应第 " + rem + " 个") + "，是 " + ans + "。" };
+      } },
+
+    /* ---------------- 分类与对应 ---------------- */
+    { id: "fenlei", name: "分类与对应", icon: "🗂️", color: "#06d6a0", level: "低年级",
+      desc: "按标准分类，一一对应比较多少。",
+      points: [ { t: "分类与对应", html: "按同一标准把物体分类；一一对应可以比较两组谁多谁少、多几个。" } ],
+      examples: [ { tag: "例题", q: "5 个杯子配 3 个盖子，还差几个盖子？", steps: ["一一对应", "5−3=2"], explain: "差 2 个。" } ],
+      gen: function () {
+        var kind = R(1, 2);
+        if (kind === 1) { var a = R(4, 9), b = R(1, a - 1);
+          return { type: "num", q: a + " 只小兔，每只配 1 根胡萝卜，现在有 " + (a - b) + " 根胡萝卜，还差几根？", input: "num", ans: String(b), explain: "一一对应：" + a + "−" + (a - b) + "=" + b + "（根）。" }; }
+        var items = [["苹果", "水果"], ["白菜", "蔬菜"], ["铅笔", "文具"], ["玫瑰", "花"], ["金鱼", "动物"]];
+        var it = P(items);
+        var wrong = P(["水果", "蔬菜", "文具", "花", "动物"].filter(function (x) { return x !== it[1]; }));
+        return { type: "xuanze", q: "" + it[0] + " 应该分到哪一类？", input: "choice", options: QE.shuffle([it[1], wrong]), ans: it[1], explain: it[0] + " 属于 " + it[1] + "。" };
+      } },
+
+    /* ---------------- 位置与方向 ---------------- */
+    { id: "weizhi", name: "位置与方向", icon: "🧭", color: "#ff7a2f", level: "低年级",
+      desc: "排队的位置、东南西北方向。",
+      points: [ { t: "位置与方向", html: "排队问题注意“从前/从后数”；方向有东、南、西、北，上北下南左西右东。" } ],
+      examples: [ { tag: "例题", q: "小明前面有 3 人，后面有 4 人，这队一共几人？", steps: ["3+4+小明自己", "=8"], explain: "别忘了加自己。" } ],
+      gen: function () {
+        var kind = R(1, 2);
+        if (kind === 1) { var f = R(2, 7), b = R(2, 7);
+          return { type: "num", q: "排队时，小红前面有 " + f + " 人，后面有 " + b + " 人。这一队一共有多少人？", input: "num", ans: String(f + b + 1), explain: "前面+后面+自己：" + f + "+" + b + "+1=" + (f + b + 1) + "（人）。" }; }
+        var dirs = [["面向东，向右转后面向哪？", "南"], ["面向北，向后转后面向哪？", "南"], ["面向西，向左转后面向哪？", "南"], ["面向南，向右转后面向哪？", "西"]];
+        var d = P(dirs);
+        return { type: "xuanze", q: d[0], input: "choice", options: QE.shuffle(["东", "南", "西", "北"]), ans: d[1], explain: "按方向转动判断。" };
+      } },
+
+    /* ---------------- 数阵图与填数 ---------------- */
+    { id: "shuzhen", name: "数阵图填数", icon: "🔢", color: "#8338ec", level: "高年级",
+      desc: "在图形里填数，让每条线/每行和相等。",
+      points: [ { t: "数阵图", html: "填数让每条线上的和相等。先确定中心/公共位置，再用总和分配。" } ],
+      examples: [ { tag: "例题", q: "把 1~5 填入十字，使横竖和相等，中心填几？", steps: ["中心放中间数", "放 3"], explain: "中心常放中位数。" } ],
+      gen: function () {
+        var kind = R(1, 2);
+        if (kind === 1) { var a = R(2, 6), b = R(2, 6), c = R(2, 6), s = a + b + c;
+          return { type: "num", q: "三角形每条边上三个数的和都相等。已知两个角是 " + a + " 和 " + b + "，三个顶点数的和是 " + s + "，第三个角是几？", input: "num", ans: String(c), explain: s + "−" + a + "−" + b + "=" + c + "。" }; }
+        var m = R(2, 5);
+        var magic = 3 * m + 3; /* 简化：三阶幻和提示 */
+        return { type: "num", q: "一个三阶幻方（每行每列每斜线和相等）中心数是 " + m + "，那么每行的和是多少？", input: "num", ans: String(3 * m), explain: "三阶幻方每行和 = 中心数×3 = " + m + "×3=" + (3 * m) + "。" };
+      } },
+
+    /* ---------------- 计数与组合（奥数） ---------------- */
+    { id: "zuhe", name: "计数与组合", icon: "🎲", color: "#e63999", level: "高年级",
+      desc: "有序计数、搭配组合，不重不漏。",
+      points: [ { t: "计数与组合", html: "分类相加、分步相乘；组合不计顺序，排列计顺序。" } ],
+      examples: [ { tag: "例题", q: "3 件上衣 2 条裤子，几种搭配？", steps: ["3×2", "=6"], explain: "分步相乘。" } ],
+      gen: function () {
+        var kind = R(1, 3);
+        if (kind === 1) { var a = R(2, 4), b = R(2, 4);
+          return { type: "num", q: a + " 种主食、" + b + " 种饮料，各选一种，共有多少种搭配？", input: "num", ans: String(a * b), explain: "分步相乘：" + a + "×" + b + "=" + (a * b) + "。" }; }
+        if (kind === 2) { var n = R(3, 5);
+          return { type: "num", q: n + " 个人互相握手一次，共握多少次？", input: "num", ans: String(n * (n - 1) / 2), explain: "组合不计顺序：" + n + "×" + (n - 1) + "÷2=" + (n * (n - 1) / 2) + "。" }; }
+        var n3 = R(2, 4);
+        return { type: "num", q: "用 1、2、3 组成没有重复数字的两位数，最多能组成几个？（数字够用时）", input: "num", ans: "6", explain: "十位 3 种、个位 2 种：3×2=6 个。" };
+      } }
   ];
 
   return { topics: topics };
@@ -12877,12 +13218,12 @@ window.THINK = (function () {
   var thinkSkill = "all";
   var SKILL_NAME = { guilv: "找规律", tuili: "逻辑推理", jishu: "枚举计数", jvqv: "经典趣题", yingyong: "应用问题", jisuan: "计算技巧" };
   var SKILL_OF = {
-    guilv: "guilv", dengcha: "guilv", dengchaxiang: "guilv", qishuhe: "guilv",
+    guilv: "guilv", dengcha: "guilv", dengchaxiang: "guilv", qishuhe: "guilv", zhouqi: "guilv",
     daihuan: "tuili", tuili: "tuili", zhenjia: "tuili", daotui: "tuili",
     paixu: "jishu", fangzhen: "jishu", shuduan: "jishu", shujiao: "jishu", shusanjiao: "jishu", shujuxing: "jishu",
-    yema: "jishu", shuzi: "jishu", pailie: "jishu", huanpai: "jishu", fenzu: "jishu",
+    yema: "jishu", shuzi: "jishu", pailie: "jishu", huanpai: "jishu", fenzu: "jishu", fenlei: "jishu", shuzhen: "jishu", zuhe: "jishu",
     nianling: "jvqv", jitu: "jvqv", hecha: "jvqv", yingkui: "jvqv", zhishu: "jvqv", hebei: "jvqv", chabei: "jvqv",
-    qiege: "jvqv", shuaye: "jvqv", louti: "jvqv", nianling2: "jvqv", yushu: "jvqv",
+    qiege: "jvqv", shuaye: "jvqv", louti: "jvqv", nianling2: "jvqv", yushu: "jvqv", weizhi: "jvqv",
     xingcheng: "yingyong", gongcheng: "yingyong", pingjun: "yingyong", shizhong: "yingyong", nongdu: "yingyong",
     zhekou: "yingyong", lirun: "yingyong", zuche: "yingyong", yunshu: "yingyong", niuchi: "yingyong", zhushui: "yingyong",
     shuiliu: "yingyong", huanxing: "yingyong", hezuo: "yingyong", lilv: "yingyong",
