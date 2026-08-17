@@ -63,12 +63,12 @@ input,select,textarea{
   background:var(--bg);color:var(--ink);outline:none;font-family:inherit;transition:border .15s}
 input:focus,select:focus,textarea:focus{border-color:var(--accent);background:var(--card)}
 textarea{resize:vertical;min-height:84px}
-label.fld{display:block;font-size:12.5px;color:var(--sub);margin:10px 0 4px;font-weight:600}
+label.fld{display:block;font-size:12px;color:var(--sub);margin:8px 0 3px;font-weight:600}
 .row{display:flex;gap:8px}.row>*{flex:1}
 .empty{text-align:center;color:var(--sub);padding:26px 0;font-size:13.5px}
 .empty .big{font-size:34px;margin-bottom:6px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{padding:7px 13px;border-radius:20px;background:var(--line);font-size:13.5px;color:var(--ink);cursor:pointer;
+.chip{padding:6px 10px;border-radius:18px;background:var(--line);font-size:12.5px;color:var(--ink);cursor:pointer;
   border:1.5px solid transparent;transition:all .12s;user-select:none}
 .chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
 .divider{height:1px;background:var(--line);margin:12px 0}
@@ -247,13 +247,14 @@ label.fld{display:block;font-size:12.5px;color:var(--sub);margin:10px 0 4px;font
 .focus-scene input.fl{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);color:#fff;
   text-align:center;border-radius:20px;padding:8px 14px;font-size:13.5px;max-width:300px;margin:0 auto 6px;display:block}
 .focus-scene input.fl::placeholder{color:rgba(255,255,255,.7)}
-.focus-ring{width:190px;height:190px;margin:6px auto;position:relative}
+.focus-ring{width:172px;height:172px;margin:2px auto;position:relative}
 .focus-ring svg{transform:rotate(-90deg)}
 .focus-ring .t{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.focus-ring .t b{font-size:38px;font-variant-numeric:tabular-nums;letter-spacing:1px;text-shadow:0 2px 8px rgba(0,0,0,.2)}
+.focus-ring .t b{font-size:34px;font-variant-numeric:tabular-nums;letter-spacing:1px;text-shadow:0 2px 8px rgba(0,0,0,.2)}
 .focus-ring .t span{font-size:12px;opacity:.9;margin-top:2px}
-.focus-durs{display:flex;gap:8px;justify-content:center;margin-top:10px}
-.focus-durs .chip{background:rgba(255,255,255,.16);color:#fff;border-color:transparent}
+.focus-durs{display:flex;gap:8px;justify-content:flex-start;margin-top:10px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.focus-durs::-webkit-scrollbar{display:none}
+.focus-durs .chip{background:rgba(13,17,28,.55);color:#fff;border-color:rgba(255,255,255,.25)}
 .focus-durs .chip.on{background:rgba(255,255,255,.92);color:#333;font-weight:700}
 .focus-ctrl{display:flex;gap:10px;justify-content:center;margin-top:12px}
 .focus-ctrl .btn{background:rgba(255,255,255,.92);color:#333}
@@ -265,7 +266,7 @@ label.fld{display:block;font-size:12.5px;color:var(--sub);margin:10px 0 4px;font
   border-radius:12px;padding:6px 10px;max-width:150px;z-index:1;box-shadow:0 2px 8px rgba(0,0,0,.15);display:none}
 .pet-bubble.show{display:block;animation:fadein .3s}
 .sound-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
-.sound-row .chip{background:rgba(255,255,255,.14);color:#fff;border-color:transparent;font-size:12.5px;padding:6px 11px}
+.sound-row .chip{background:rgba(13,17,28,.55);color:#fff;border-color:rgba(255,255,255,.25);font-size:12.5px;padding:6px 11px}
 .sound-row .chip.on{background:rgba(255,255,255,.92);color:#333;font-weight:700}
 .hatch-mini{display:flex;align-items:center;gap:10px;background:var(--card);border-radius:14px;box-shadow:var(--shadow);
   padding:12px 14px;margin-bottom:14px;cursor:pointer}
@@ -393,18 +394,32 @@ label.fld{display:block;font-size:12.5px;color:var(--sub);margin:10px 0 4px;font
 .kpi{background:var(--bg);border-radius:12px;padding:9px 10px;text-align:center}
 .kpi .k{font-size:11px;color:var(--sub)}
 .kpi .v{font-size:16px;font-weight:700;margin-top:1px;font-variant-numeric:tabular-nums}
-.proj-row{display:flex;gap:8px;overflow-x:auto;padding:2px;margin-bottom:10px;scrollbar-width:none}
+.proj-row{display:flex;gap:8px;overflow-x:auto;padding:2px;margin-bottom:10px;margin-top:40px;scrollbar-width:none}
 .proj-row::-webkit-scrollbar{display:none}
 .proj-chip{flex-shrink:0;display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:20px;
   background:var(--line);font-size:13px;font-weight:600;color:var(--ink);cursor:pointer;border:1.5px solid transparent;white-space:nowrap}
 .proj-chip.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
 .proj-chip .del{margin-left:2px;color:var(--red);font-size:12px}
-.focus-scene .proj-row .proj-chip{background:rgba(255,255,255,.16);color:#fff;border-color:transparent}
-.focus-scene .proj-row .proj-chip.on{background:rgba(255,255,255,.92);color:#333}
-.focus-scene .proj-row .proj-chip .del{color:#e05252}
-.focus-scene .bg-btn{position:absolute;top:14px;left:14px;z-index:2;border:none;background:rgba(255,255,255,.2);
+.focus-scene .proj-row .proj-chip{background:rgba(13,17,28,.6);color:#fff;border-color:rgba(255,255,255,.28);backdrop-filter:blur(6px)}
+.focus-scene .proj-row .proj-chip.on{background:rgba(255,255,255,.95);color:#333;border-color:transparent}
+.focus-scene .proj-row .proj-chip .del{color:#ff9b9b}
+.focus-scene .focus-durs .chip{background:rgba(13,17,28,.6);border-color:rgba(255,255,255,.28);backdrop-filter:blur(6px)}
+.focus-scene .focus-durs .chip.on{background:rgba(255,255,255,.95);color:#333}
+.focus-scene .sound-row .chip{background:rgba(13,17,28,.6);border-color:rgba(255,255,255,.28);backdrop-filter:blur(6px)}
+.focus-scene .sound-row .chip.on{background:rgba(255,255,255,.95);color:#333}
+.focus-scene select{background:rgba(13,17,28,.6);color:#fff;border-color:rgba(255,255,255,.3)}
+.focus-scene select option{color:#333;background:#fff}
+.focus-scene .bg-btn{right:14px;left:auto;background:rgba(13,17,28,.6);border:1px solid rgba(255,255,255,.28)}
+.focus-scene .bg-btn{position:absolute;top:14px;z-index:2;border:none;background:rgba(255,255,255,.2);
   color:#fff;border-radius:16px;padding:6px 11px;font-size:12px;cursor:pointer;backdrop-filter:blur(4px)}
 .import-hint{font-size:12px;color:var(--sub);background:var(--bg);border-radius:10px;padding:8px 10px;margin-bottom:8px}
+
+.chips-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}
+.chips-grid .chip{padding:7px 3px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}
+.bud-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.bud-grid .b-item{background:var(--bg);border-radius:10px;padding:7px 9px}
+.bud-grid .b-item .t{font-size:11.5px;color:var(--sub);margin-bottom:3px}
+.bud-grid input{padding:7px 9px;font-size:13.5px}
 </style>
 </head>
 <body>
@@ -554,10 +569,10 @@ label.fld{display:block;font-size:12.5px;color:var(--sub);margin:10px 0 4px;font
           <div class="proj-row" id="projRow"></div>
           <input class="fl" id="focusLabel" placeholder="这次专注做什么？（可不填）">
           <div class="focus-ring">
-            <svg width="190" height="190">
-              <circle cx="95" cy="95" r="84" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="11"/>
-              <circle id="focusArc" cx="95" cy="95" r="84" fill="none" stroke="#ffffff" stroke-width="11"
-                stroke-linecap="round" stroke-dasharray="527.8" stroke-dashoffset="0"/>
+            <svg width="172" height="172">
+              <circle cx="86" cy="86" r="76" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="10"/>
+              <circle id="focusArc" cx="86" cy="86" r="76" fill="none" stroke="#ffffff" stroke-width="10"
+                stroke-linecap="round" stroke-dasharray="477.5" stroke-dashoffset="0"/>
             </svg>
             <div class="t"><b id="focusTimeText">25:00</b><span id="focusStateText">点击开始专注</span></div>
           </div>
@@ -705,9 +720,18 @@ label.fld{display:block;font-size:12.5px;color:var(--sub);margin:10px 0 4px;font
 <div id="toastEl"></div>
 <script>
 /* ============ 小管家 · 数据层 ============ */
-const VERSION = 'v1.2.0';
+const VERSION = 'v1.2.1';
 
 const CHANGELOG = [
+  { ver: 'v1.2.1', date: '2026-08-17', items: [
+    '电商新增「选文件导入」：支持 .csv/.txt/.tsv/.json 文件直接导入（腾讯文档可导出 CSV）',
+    '粘贴解析加固：清理特殊空白字符与换行符，修复粘贴乱码',
+    '记销售新增「单价」字段：填单价×数量自动算销售额',
+    '餐饮细项「早餐/午餐/晚餐」合并为「三餐」，选项更精简',
+    '大类/细项/账户改为 4 列紧凑网格，预算分类输入改 2 列布局（文字不再被截断）',
+    '专注页修复：背景按钮与项目条不再重叠、时长行支持左右滑动、修复「1.83小时」时长显示错误',
+    '背景图上选项卡全面增强可读性（深色底+描边+遮罩），专注环缩小整页显示更完整',
+  ]},
   { ver: 'v1.2.0', date: '2026-08-17', items: [
     '电商账本升级为「店铺盈亏」：新增平台/店铺/退款/推广费维度，对齐腾讯文档表格口径（销售额/纯销售额/推广/利润）',
     '店铺盈亏总览：KPI 六指标 + 店铺盈亏矩阵（红绿一目了然）+ 平台对比 + 推广 ROI 分析',
@@ -892,10 +916,11 @@ function applyFocusBg() {
   const fb = document.getElementById('focusBg');
   if (!fb) return;
   const v = bgValueOf('focus');
+  const SCRIM = 'linear-gradient(180deg,rgba(8,12,22,.42),rgba(8,12,22,.28) 45%,rgba(8,12,22,.5)),';
   if (v && BG_IMAGES[v]) {
-    fb.style.cssText = 'background-image:url(' + BG_IMAGES[v].data + ');background-size:cover;background-position:center';
+    fb.style.cssText = 'background-image:' + SCRIM + 'url(' + BG_IMAGES[v].data + ');background-size:cover;background-position:center';
   } else if (v && v.indexOf('idb:') === 0) {
-    IDB.get(v.slice(4)).then(url => { if (url) fb.style.cssText = 'background-image:url(' + url + ');background-size:cover;background-position:center'; });
+    IDB.get(v.slice(4)).then(url => { if (url) fb.style.cssText = 'background-image:' + SCRIM + 'url(' + url + ');background-size:cover;background-position:center'; });
   } else {
     fb.style.cssText = 'background:' + sceneBgCSS(v || 'starry');
   }
@@ -1058,7 +1083,7 @@ const BG_IMAGES = {
 };/* ============ 记账 · 分类体系 / 日常账本 / 电商账本 ============ */
 const CATS = {
   expense: [
-    { name: '餐饮', icon: '🍜', subs: ['早餐', '午餐', '晚餐', '买菜', '外卖', '出去吃', '加餐', '水果', '零食', '饮品'] },
+    { name: '餐饮', icon: '🍜', subs: ['三餐', '买菜', '外卖', '出去吃', '加餐', '水果', '零食', '饮品'] },
     { name: '购物', icon: '🛍️', subs: ['衣物', '日用品', '文具', '吃的', '数码', '杂物'] },
     { name: '交通', icon: '🚌', subs: ['公交', '地铁', '打车', '共享单车', '火车', '飞机', '加油', '过路费'] },
     { name: '生活', icon: '🏠', subs: ['水费', '电费', '燃气', '物业', '房租', '维修', '家居'] },
@@ -1222,10 +1247,10 @@ function openLedgerForm(id) {
     <label class="fld">金额（元）</label>
     <input type="number" id="lfAmount" inputmode="decimal" step="0.01" placeholder="0.00" value="${rec ? rec.amount : ''}">
     <label class="fld">大类</label>
-    <div class="chips" id="lfCats"></div>
-    <div id="lfSubWrap"><label class="fld">细项</label><div class="chips" id="lfSubs"></div></div>
+    <div class="chips chips-grid" id="lfCats"></div>
+    <div id="lfSubWrap"><label class="fld">细项</label><div class="chips chips-grid" id="lfSubs"></div></div>
     <label class="fld">账户</label>
-    <div class="chips" id="lfAccts"></div>
+    <div class="chips chips-grid" id="lfAccts"></div>
     <div class="row">
       <div><label class="fld">日期</label><input type="date" id="lfDate" value="${rec ? rec.date : todayStr()}"></div>
     </div>
@@ -1394,7 +1419,10 @@ function openEcomForm(id) {
     <label class="fld">商品名称</label>
     <input id="efProduct" placeholder="例如：手工皂礼盒" value="${rec ? esc(rec.product) : ''}">
     <div class="row">
-      <div><label class="fld">数量</label><input type="number" id="efQty" min="1" value="${rec ? rec.qty : 1}" oninput="ecomCalc()"></div>
+      <div><label class="fld">数量</label><input type="number" id="efQty" min="1" value="${rec ? rec.qty : 1}" oninput="ecomAutoRev()"></div>
+      <div><label class="fld">单价（选填）</label><input type="number" id="efPrice" step="0.01" placeholder="自动算销售额" value="${rec && rec.qty ? (rec.revenue / rec.qty) : ''}" oninput="ecomAutoRev()"></div>
+    </div>
+    <div class="row">
       <div><label class="fld">销售额（元）</label><input type="number" id="efRevenue" step="0.01" value="${rec ? rec.revenue : ''}" oninput="ecomCalc()"></div>
       <div><label class="fld">退款</label><input type="number" id="efRefund" step="0.01" value="${rec ? (rec.refund || '') : ''}" oninput="ecomCalc()"></div>
     </div>
@@ -1443,6 +1471,14 @@ function delStore(name) {
   DB.stores = DB.stores.filter(s => s !== name); saveDB(); manageStores();
 }
 function efVal(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function ecomAutoRev() {
+  const qty = efVal('efQty'), price = efVal('efPrice');
+  if (qty > 0 && price > 0) {
+    const el = document.getElementById('efRevenue');
+    el.value = Math.round(qty * price * 100) / 100;
+  }
+  ecomCalc();
+}
 function ecomCalc() {
   const rev = efVal('efRevenue'), refund = efVal('efRefund');
   const nn = rev - refund;
@@ -1498,6 +1534,7 @@ const IMPORT_COL_MAP = [
   { key: 'note', names: ['备注', '说明'] },
 ];
 function parseImportTable(text) {
+  text = text.replace(/\r/g, '').replace(/[\u00a0\u200b\ufeff]/g, ' ');
   const lines = text.trim().split(/\n/).map(l => l.trim()).filter(Boolean);
   if (!lines.length) return null;
   const sep = lines[0].includes('\t') ? '\t' : (lines[0].includes(',') ? ',' : null);
@@ -1542,10 +1579,12 @@ function openEcomImport() {
   openModal('📋 表格粘贴导入', `
     <div class="import-hint">从腾讯文档 / Excel 选中数据行（含表头）→ 复制 → 粘贴到下方。<br>自动识别：日期/平台/店铺/商品/销售额/退款/成本/佣金/运费/推广/利润 等列。</div>
     <textarea id="impText" style="min-height:150px;font-size:12.5px" placeholder="粘贴表格内容…（第一行需为表头）"></textarea>
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:8px">
       <span id="impPreview" style="font-size:12.5px;color:var(--sub)"></span>
+      <button class="btn gray sm" onclick="document.getElementById('impFile').click()">📁 选文件</button>
       <button class="btn" onclick="doEcomImport()">导入</button>
     </div>
+    <input type="file" id="impFile" accept=".csv,.txt,.json,.tsv" style="display:none" onchange="importEcomFile(this)">
   `);
   document.getElementById('impText').addEventListener('input', () => {
     const r = parseImportTable(document.getElementById('impText').value);
@@ -1554,6 +1593,45 @@ function openEcomImport() {
     if (r.error) { el.textContent = '⚠️ ' + r.error; return; }
     el.textContent = '识别到 ' + r.rows.length + ' 行数据，可导入';
   });
+}
+function importEcomFile(input) {
+  const f = input.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    let text = String(reader.result).replace(/^\uFEFF/, '');
+    // JSON 数据包：数组或 {ecom:[...]}
+    if (f.name.toLowerCase().endsWith('.json') || text.trim().startsWith('{') || text.trim().startsWith('[')) {
+      try {
+        const d = JSON.parse(text);
+        const arr = Array.isArray(d) ? d : (d.ecom || []);
+        if (!arr.length) { toast('JSON 中没有 ecom 记录'); return; }
+        let n = 0;
+        arr.forEach(r => {
+          if (!(r.revenue > 0 || r.profit > 0)) return;
+          if (r.store && !DB.stores.includes(r.store)) DB.stores.push(r.store);
+          DB.ecom.push({
+            id: uid(), date: r.date || todayStr(), platform: r.platform || '', store: r.store || '',
+            product: r.product || (r.store || '导入') + '·整单', qty: r.qty || 1,
+            revenue: +r.revenue || 0, refund: +r.refund || 0, cost: +r.cost || 0, fee: +r.fee || 0,
+            shipping: +r.shipping || 0, promo: +r.promo || 0, other: +r.other || 0, note: r.note || '',
+            createdAt: Date.now(),
+          });
+          n++;
+        });
+        saveDB(); closeModal(); renderEcom();
+        toast('已从文件导入 ' + n + ' 条记录');
+        return;
+      } catch (e) { /* 非 JSON 走文本解析 */ }
+    }
+    document.getElementById('impText').value = text;
+    const r = parseImportTable(text);
+    const el = document.getElementById('impPreview');
+    if (r && !r.error) el.textContent = '文件识别到 ' + r.rows.length + ' 行，点「导入」确认';
+    else el.textContent = '⚠️ ' + ((r && r.error) || '未识别到表格结构，请确认文件含表头');
+  };
+  reader.readAsText(f, 'utf-8');
+  input.value = '';
 }
 function doEcomImport() {
   const r = parseImportTable(document.getElementById('impText').value);
@@ -1742,11 +1820,8 @@ function openBudgetModal() {
     <label class="fld">月度总预算（元，0 = 不设）</label>
     <input type="number" id="budMonthly" step="1" value="${b.monthly || ''}">
     <label class="fld">分类预算（只填需要管控的）</label>
-    <div class="row">${cats.slice(0, 6).map(c =>
-      '<div style="margin-bottom:8px"><div style="font-size:11.5px;color:var(--sub);margin-bottom:3px">' + catIcon(c, 'expense') + ' ' + c + '</div>' +
-      '<input type="number" class="bud-cat" data-cat="' + c + '" step="1" placeholder="不限" value="' + (b.byCat[c] || '') + '"></div>').join('')}</div>
-    <div class="row">${cats.slice(6).map(c =>
-      '<div style="margin-bottom:8px"><div style="font-size:11.5px;color:var(--sub);margin-bottom:3px">' + catIcon(c, 'expense') + ' ' + c + '</div>' +
+    <div class="bud-grid">${cats.map(c =>
+      '<div class="b-item"><div class="t">' + catIcon(c, 'expense') + ' ' + c + '</div>' +
       '<input type="number" class="bud-cat" data-cat="' + c + '" step="1" placeholder="不限" value="' + (b.byCat[c] || '') + '"></div>').join('')}</div>
     <button class="btn block" style="margin-top:10px" onclick="saveBudgets()">保存预算</button>
   `);
@@ -2071,7 +2146,7 @@ function renderSoundRow() {
 }
 
 /* ---------- 专注计时 ---------- */
-const FOCUS_CIRC = 2 * Math.PI * 84; // 527.8
+const FOCUS_CIRC = 2 * Math.PI * 76; // 477.5
 let focus = { running: false, mode: 'work', totalSec: 0, remainSec: 0, timer: null, startedAt: 0, selectedMin: 0 };
 const PET_CHEERS = ['专注的你最棒了～', '我在旁边陪着你哦', '深呼吸，慢慢来', '坚持住，蛋蛋在吸收能量！', '喵～加油加油', '再专注一会儿就休息啦', '你比昨天更专注了'];
 
@@ -2079,8 +2154,9 @@ function focusDurations() {
   const work = DB.settings.focusWork || 25;
   if (!focus.selectedMin) focus.selectedMin = work;
   const quick = [10, 15, 30, 45, 60];
+  const durLabel = m => m < 60 ? m + ' 分钟' : Math.floor(m / 60) + ' 小时' + (m % 60 ? ' ' + (m % 60) + ' 分' : '');
   let selOpts = '';
-  for (let m = 5; m <= 240; m += 5) selOpts += '<option value="' + m + '"' + (m === focus.selectedMin ? ' selected' : '') + '>' + (m >= 60 ? (m / 60) + ' 小时' + (m % 60 ? ' ' + (m % 60) + ' 分' : '') : m + ' 分钟') + '</option>';
+  for (let m = 5; m <= 240; m += 5) selOpts += '<option value="' + m + '"' + (m === focus.selectedMin ? ' selected' : '') + '>' + durLabel(m) + '</option>';
   document.getElementById('focusDurs').innerHTML =
     quick.map(m => '<span class="chip' + (focus.selectedMin === m ? ' on' : '') + '" onclick="pickFocusDur(' + m + ')">' + m + ' 分</span>').join('') +
     '<select id="focusDurSelect" style="width:auto;max-width:118px;padding:6px 8px;font-size:12.5px;border-radius:16px" onchange="pickFocusDur(parseInt(this.value))">' + selOpts + '</select>';
