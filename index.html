@@ -709,11 +709,18 @@ main{padding:14px 14px 92px}
  * 烧脑数学 · 教材内容数据（北师大版 2024 新课标版 三年级上册）
  * ===================================================================== */
 window.MD = {
-  version: "3.3.0",
+  version: "3.4.0",
   textbook: { grade: "三年级", term: "上册", edition: "北师大版（新课标）" },
 
   /* ---------------- 版本日志（应用内展示） ---------------- */
   changelog: [
+    { ver: "v3.4.0", date: "2026-08-18", items: [
+      "修复：逻辑推理「养宠物对应题」答案错误（前提与答案矛盾）",
+      "单位换算扩容：新增人民币纸币兑换（5/10/20/50/100 元互换），每题附进率解析",
+      "思维新增 4 个和差倍专题：和差求两数/和倍求较大数/差倍求和/年龄和差（共59主题）",
+      "口算速度挑战、速算挑战：输满位数自动提交，不用每次点确定，键盘不反复弹出",
+      "题库加考试题型：估算、简便运算（25×4、99×n+n、125×8）融入各单元"
+    ]},
     { ver: "v3.3.0", date: "2026-08-16", items: [
       "修复：思维闯关无法提交答案（新主题随机函数报错）",
       "修复：答案含符号（分数/百分号/时间）时键盘只能输数字——现自动切换全键盘",
@@ -7584,6 +7591,33 @@ window.QE = (function () {
   }
 
   /* ============ 按单元批量注册 ============ */
+  /* ---------- 估算（考试常考） ---------- */
+  function gusuan(grade) {
+    var a, b;
+    if (grade <= 2) { a = R(18, 89); b = R(11, 60); }
+    else { a = R(120, 890); b = R(110, 700); }
+    var ra = Math.round(a / 10) * 10, rb = Math.round(b / 10) * 10;
+    var est = ra + rb;
+    return { q: "估算：" + a + " + " + b + " ≈ （  ）（把两个数都看成最接近的整十数）", input: "num", ans: String(est),
+      explain: a + "≈" + ra + "，" + b + "≈" + rb + "，" + ra + "+" + rb + "=" + est + "。" };
+  }
+  /* ---------- 简便运算（考试常考） ---------- */
+  function jianbianq(grade) {
+    var kind = R(1, 3);
+    if (kind === 1) { /* 25×4×n */
+      var n = R(2, 9);
+      return { q: "用简便方法计算：25 × 4 × " + n + " = （  ）", input: "num", ans: String(100 * n),
+        explain: "先算 25×4=100，再 100×" + n + "=" + (100 * n) + "。" };
+    }
+    if (kind === 2) { /* 99×n + n */
+      var n2 = R(3, 15);
+      return { q: "用简便方法计算：99 × " + n2 + " + " + n2 + " = （  ）", input: "num", ans: String(100 * n2),
+        explain: "99×" + n2 + "+" + n2 + " = " + n2 + "×(99+1) = " + n2 + "×100 = " + (100 * n2) + "。" };
+    }
+    var n3 = R(3, 12);
+    return { q: "用简便方法计算：125 × 8 × " + n3 + " = （  ）", input: "num", ans: String(1000 * n3),
+      explain: "先算 125×8=1000，再 1000×" + n3 + "=" + (1000 * n3) + "。" };
+  }
   function registerFor(grade, unitId) {
     var ops = grade === 1 ? ["add", "sub"] : ["add", "sub", "mul", "div"];
     /* 应用题：每个运算注册 2 个变体入口（内部情境随机） */
@@ -7602,6 +7636,11 @@ window.QE = (function () {
     for (var t = 0; t < 2; t++) QE.regVariant(unitId, "tiankong", "计算填空", function () { var q = tiankong(grade); q.type = "tiankong"; return q; });
     for (var p = 0; p < 2; p++) QE.regVariant(unitId, "panduan", "计算判断", function () { var q = panduan(grade); q.type = "panduan"; return q; });
     for (var x = 0; x < 2; x++) QE.regVariant(unitId, "xuanze", "计算选择", function () { var q = xuanze(grade); q.type = "xuanze"; return q; });
+    /* 考试题型：估算 + 简便运算（二年级及以上） */
+    if (grade >= 2) {
+      QE.regVariant(unitId, "tiankong", "估算", function () { var q = gusuan(grade); q.type = "tiankong"; return q; });
+      if (grade >= 3) QE.regVariant(unitId, "tiankong", "简便运算", function () { var q = jianbianq(grade); q.type = "tiankong"; return q; });
+    }
   }
 
   if (window.MD && MD.books) {
@@ -8086,6 +8125,8 @@ window.GAMES = (function () {
         }
         stage.querySelector("#gOk").onclick = submit;
         inp.onkeydown = function (e) { if (e.key === "Enter") submit(); };
+        var _ansLen = String(ans).length;
+        inp.oninput = function () { if (!locked && inp.value.trim().length >= _ansLen) setTimeout(function () { if (!locked) submit(); }, 150); };
         inp.focus();
       }
       function stageClear() {
@@ -8592,7 +8633,10 @@ window.GAMES = (function () {
         stage.querySelector("#suanTip").innerHTML = "💡 想一想，能不能用巧算？";
         var inp = stage.querySelector(".game-input");
         inp.value = "";
+        suanLocked = false;
         inp.focus();
+        var _sl = String(cur.ans).length;
+        inp.oninput = function () { if (!suanLocked && inp.value.trim().length >= _sl) setTimeout(function () { if (!suanLocked) submit(); }, 150); };
       }
       stage.innerHTML =
         '<div class="game-hud">' +
@@ -8606,9 +8650,12 @@ window.GAMES = (function () {
         '<div style="margin-top:12px;text-align:center"><button id="gBack" style="color:#a8a9b5;font-size:13px">← 退出游戏</button></div>';
       stage.querySelector("#gBack").onclick = exitGame;
       var inp = stage.querySelector("#gInput");
+      var suanLocked = false;
       function submit() {
+        if (suanLocked) return;
         var v = inp.value.trim();
         if (v === "") return;
+        suanLocked = true;
         if (parseInt(v, 10) === cur.ans) {
           score++;
           stage.querySelector("#gScore").textContent = score;
@@ -9221,9 +9268,20 @@ window.GAMES = (function () {
         money: [["元", "角", 10], ["角", "分", 10], ["元", "分", 100]]
       };
       var cats = selCat === "mix" ? ["length", "mass", "time", "area", "volume", "money"] : [selCat];
-      var QN = 10, qi = 0, score = 0, lvl = selLv, ans = 0, locked = false;
+      var QN = 10, qi = 0, score = 0, lvl = selLv, ans = 0, locked = false, curExp = "";
       function genQ() {
         var c = cats[Math.floor(Math.random() * cats.length)];
+        /* 人民币纸币兑换（5/10/20/50/100 元） */
+        if (c === "money" && Math.random() < 0.5) {
+          var notes = [[100, 50], [100, 20], [100, 10], [50, 10], [20, 10], [10, 5], [50, 5], [100, 5], [20, 5]];
+          var np = notes[Math.floor(Math.random() * notes.length)];
+          var smallN = np[1], bigN = np[0];
+          var cnt = lvl === 1 ? rnd(1, 3) : rnd(2, 5);
+          var totalN = smallN * cnt;
+          ans = cnt;
+          curExp = totalN + " ÷ " + smallN + " = " + cnt + "（张）。1 张 " + bigN + " 元能换 " + (bigN / smallN) + " 张 " + smallN + " 元。";
+          return totalN + " 元可以换成（  ）张 " + smallN + " 元纸币。";
+        }
         var pairs = UNITS[c];
         var pair = pairs[Math.floor(Math.random() * pairs.length)];
         var big = pair[0], small = pair[1], rate = pair[2];
@@ -9233,10 +9291,12 @@ window.GAMES = (function () {
           val = lvl === 1 ? rnd(2, 9) : rnd(2, 30);
           a = val * rate;
           q = val + " " + big + " = （  ）" + small;
+          curExp = "大单位化小单位 ×进率：" + val + "×" + rate + "=" + a + "。1 " + big + " = " + rate + " " + small + "。";
         } else {
           val = (lvl === 1 ? rnd(2, 9) : rnd(2, 30)) * rate;
           a = val / rate;
           q = val + " " + small + " = （  ）" + big;
+          curExp = "小单位化大单位 ÷进率：" + val + "÷" + rate + "=" + a + "。" + rate + " " + small + " = 1 " + big + "。";
         }
         ans = a;
         return q;
@@ -9253,7 +9313,8 @@ window.GAMES = (function () {
           '<div class="game-q" style="font-size:19px">' + q + '</div>' +
           '<div class="game-input-row"><input class="game-input" id="gInput" inputmode="numeric" autocomplete="off">' +
           '<button class="btn" id="gOk">确定</button></div>' +
-          '<div style="margin-top:14px;text-align:center"><button id="gBack" style="color:#a8a9b5;font-size:13px">← 退出游戏</button></div>';
+          '<div id="gufb" style="text-align:center;font-size:13px;margin-top:10px;min-height:18px;line-height:1.5"></div>' +
+          '<div style="margin-top:10px;text-align:center"><button id="gBack" style="color:#a8a9b5;font-size:13px">← 退出游戏</button></div>';
         stage.querySelector("#gBack").onclick = exitGame;
         var inp = stage.querySelector("#gInput");
         function submit() {
@@ -9261,10 +9322,11 @@ window.GAMES = (function () {
           var v = inp.value.trim();
           if (v === "") return;
           locked = true;
-          if (parseFloat(v) === ans) { score++; if (window.SND) SND.correct(); stage.querySelector(".game-q").style.color = "#06c190"; }
-          else { if (window.SND) SND.wrong(); stage.querySelector(".game-q").style.color = "#ef476f"; }
+          var fb = stage.querySelector("#gufb");
+          if (parseFloat(v) === ans) { score++; if (window.SND) SND.correct(); stage.querySelector(".game-q").style.color = "#06c190"; fb.textContent = "🎉 对啦！" + curExp; fb.style.color = "#059e76"; }
+          else { if (window.SND) SND.wrong(); stage.querySelector(".game-q").style.color = "#ef476f"; fb.textContent = "🤔 答案是 " + ans + "。" + curExp; fb.style.color = "#e85d04"; }
           qi++;
-          setTimeout(function () { stage.querySelector(".game-q").style.color = ""; nextQ(); }, 450);
+          setTimeout(function () { stage.querySelector(".game-q").style.color = ""; nextQ(); }, 1500);
         }
         stage.querySelector("#gOk").onclick = submit;
         inp.onkeydown = function (e) { if (e.key === "Enter") submit(); };
@@ -9339,12 +9401,15 @@ window.GAMES = (function () {
         ans = persons[1];
         return { q: persons[0] + "说：“我们俩都在说谎。”已知一人说真话一人说谎。谁说真话？", opts: persons };
       }
-      /* 对应 */
-      var items = shuffle([["小明", "猫"], ["小红", "狗"]]);
-      var hint = Math.random() < 0.5;
-      if (hint) { ans = items[1][1]; return { q: items[0][0] + "和" + items[1][0] + "各养一只宠物（猫和狗）。" + items[0][0] + "不养猫。" + items[1][0] + "养什么？", opts: ["猫", "狗"] }; }
-      ans = items[0][1];
-      return { q: items[0][0] + "和" + items[1][0] + "各养一只宠物（猫和狗）。" + items[1][0] + "养狗。" + items[0][0] + "养什么？", opts: ["猫", "狗"] };
+      /* 对应（修正：前提与答案严格一致） */
+      var pets = shuffle(["猫", "狗"]);
+      var mingPet = pets[0], hongPet = pets[1]; /* 小明养 mingPet，小红养 hongPet */
+      if (Math.random() < 0.5) {
+        ans = hongPet;
+        return { q: "小明和小红各养一只宠物（猫和狗）。小明养" + mingPet + "。小红养什么？", opts: ["猫", "狗"] };
+      }
+      ans = mingPet;
+      return { q: "小明和小红各养一只宠物（猫和狗）。小红养" + hongPet + "。小明养什么？", opts: ["猫", "狗"] };
     }
     function nextQ() {
       if (qi >= QN) { finish(); return; }
@@ -11970,6 +12035,51 @@ window.THINK = (function () {
         var n3 = R(2, 4);
         return { type: "num", q: "用 1、2、3 组成没有重复数字的两位数，最多能组成几个？（数字够用时）", input: "num", ans: "6", explain: "十位 3 种、个位 2 种：3×2=6 个。" };
       } }
+    ,
+    /* ---------------- 和差问题·求两数 ---------------- */
+    { id: "hecha2", name: "和差问题·求两数", icon: "⚖️", color: "#3a86ff", level: "中年级",
+      desc: "已知和与差，求较大数和较小数。",
+      points: [ { t: "和差公式", html: "大数 =（和+差）÷2，小数 =（和−差）÷2。" } ],
+      examples: [ { tag: "例题", q: "两数和 50，差 10。较小数是？", steps: ["(50−10)÷2", "=20"], explain: "小数=(和−差)÷2。" } ],
+      gen: function () {
+        var big = R(20, 60), small = R(6, big - 4);
+        var sum = big + small, diff = big - small;
+        if (Math.random() < 0.5) return { type: "num", q: "两个数的和是 " + sum + "，差是 " + diff + "。较小的数是多少？", input: "num", ans: String(small), explain: "小数=(和−差)÷2=(" + sum + "−" + diff + ")÷2=" + small + "。" };
+        return { type: "num", q: "两个数的和是 " + sum + "，差是 " + diff + "。较大的数是多少？", input: "num", ans: String(big), explain: "大数=(和+差)÷2=(" + sum + "+" + diff + ")÷2=" + big + "。" };
+      } },
+
+    /* ---------------- 和倍问题·求较大数 ---------------- */
+    { id: "hebei2", name: "和倍问题·求较大数", icon: "📈", color: "#3a86ff", level: "高年级",
+      desc: "已知和与倍数关系，求较大数。",
+      points: [ { t: "和倍公式", html: "小数 = 和÷(倍数+1)，大数 = 小数×倍数。" } ],
+      examples: [ { tag: "例题", q: "甲乙和 40，甲是乙的 3 倍。甲是？", steps: ["乙=40÷4=10", "甲=10×3=30"], explain: "先求小数再乘倍数。" } ],
+      gen: function () {
+        var k = R(2, 4), x = R(5, 15), sum = x * (k + 1);
+        return { type: "num", q: "甲乙两数的和是 " + sum + "，甲是乙的 " + k + " 倍。甲是多少？", input: "num", ans: String(x * k), explain: "乙=" + sum + "÷" + (k + 1) + "=" + x + "，甲=" + x + "×" + k + "=" + (x * k) + "。" };
+      } },
+
+    /* ---------------- 差倍问题·求和 ---------------- */
+    { id: "chabei2", name: "差倍问题·求和", icon: "📉", color: "#3a86ff", level: "高年级",
+      desc: "已知差与倍数关系，求两数的和。",
+      points: [ { t: "差倍公式", html: "小数 = 差÷(倍数−1)，大数 = 小数×倍数，和 = 大数+小数。" } ],
+      examples: [ { tag: "例题", q: "甲比乙多 20，甲是乙的 3 倍。两数和是？", steps: ["乙=20÷2=10", "甲=30，和=40"], explain: "先求小数再求和。" } ],
+      gen: function () {
+        var k = R(2, 4), x = R(5, 15), diff = x * (k - 1);
+        var big = x * k, sum = big + x;
+        return { type: "num", q: "甲比乙多 " + diff + "，甲是乙的 " + k + " 倍。甲乙两数的和是多少？", input: "num", ans: String(sum), explain: "乙=" + diff + "÷" + (k - 1) + "=" + x + "，甲=" + x + "×" + k + "=" + big + "，和=" + x + "+" + big + "=" + sum + "。" };
+      } },
+
+    /* ---------------- 年龄和差 ---------------- */
+    { id: "nianlingh", name: "年龄和差问题", icon: "🎂", color: "#06d6a0", level: "中年级",
+      desc: "年龄差不变，用和差思路解年龄题。",
+      points: [ { t: "年龄和差", html: "年龄差永远不变；每过 1 年，两人年龄和增加 2。" } ],
+      examples: [ { tag: "例题", q: "父子年龄和 45，父比子大 27。子几岁？", steps: ["(45−27)÷2", "=14"], explain: "小数=(和−差)÷2。" } ],
+      gen: function () {
+        var s = R(6, 15), diff = R(22, 32), f = s + diff;
+        var sum = f + s;
+        if (Math.random() < 0.5) return { type: "num", q: "爸爸和儿子的年龄和是 " + sum + " 岁，爸爸比儿子大 " + diff + " 岁。儿子多少岁？", input: "num", ans: String(s), explain: "儿子=(和−差)÷2=(" + sum + "−" + diff + ")÷2=" + s + "（岁）。" };
+        return { type: "num", q: "爸爸和儿子的年龄和是 " + sum + " 岁，爸爸比儿子大 " + diff + " 岁。爸爸多少岁？", input: "num", ans: String(f), explain: "爸爸=(和+差)÷2=(" + sum + "+" + diff + ")÷2=" + f + "（岁）。" };
+      } }
   ];
 
   return { topics: topics };
@@ -13240,6 +13350,7 @@ window.THINK = (function () {
     paixu: "jishu", fangzhen: "jishu", shuduan: "jishu", shujiao: "jishu", shusanjiao: "jishu", shujuxing: "jishu",
     yema: "jishu", shuzi: "jishu", pailie: "jishu", huanpai: "jishu", fenzu: "jishu", fenlei: "jishu", shuzhen: "jishu", zuhe: "jishu",
     nianling: "jvqv", jitu: "jvqv", hecha: "jvqv", yingkui: "jvqv", zhishu: "jvqv", hebei: "jvqv", chabei: "jvqv",
+    hecha2: "jvqv", hebei2: "jvqv", chabei2: "jvqv", nianlingh: "jvqv",
     qiege: "jvqv", shuaye: "jvqv", louti: "jvqv", nianling2: "jvqv", yushu: "jvqv", weizhi: "jvqv",
     xingcheng: "yingyong", gongcheng: "yingyong", pingjun: "yingyong", shizhong: "yingyong", nongdu: "yingyong",
     zhekou: "yingyong", lirun: "yingyong", zuche: "yingyong", yunshu: "yingyong", niuchi: "yingyong", zhushui: "yingyong",
