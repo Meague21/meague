@@ -558,6 +558,8 @@ html[data-theme="dark"] .quad.q4{background:#272a31}
             <b id="ecomMonthLabel"></b>
             <button onclick="moveEcomMonth(1)">›</button>
           </div>
+          <div id="ecomRangeBar"></div>
+          <div style="font-size:11.5px;color:var(--sub);margin-bottom:6px" id="ecomRangeLabel"></div>
           <table class="kv-tbl" id="ecomKpi"></table>
           <div class="row" style="margin-top:12px">
             <button class="btn" style="flex:2" onclick="openDayForm()">＋ 记当日销售</button>
@@ -574,6 +576,10 @@ html[data-theme="dark"] .quad.q4{background:#272a31}
         <div class="card">
           <h3>📦 商品成本库 <button class="btn sm gray" style="margin-left:auto" onclick="openProductLib()">管理</button></h3>
           <div id="productLibPreview"></div>
+        </div>
+        <div class="card">
+          <h3>📈 每日毛利走势 <span style="font-size:11px;color:var(--sub);font-weight:400">随上方范围联动</span></h3>
+          <div id="ecomTrend"></div>
         </div>
         <div class="card">
           <h3>🧮 单品销售统计 <span style="font-size:11px;color:var(--sub);font-weight:400">来自商品明细记录</span></h3>
@@ -803,9 +809,17 @@ html[data-theme="dark"] .quad.q4{background:#272a31}
 <div id="toastEl"></div>
 <script>
 /* ============ 小管家 · 数据层 ============ */
-const VERSION = 'v1.4.1';
+const VERSION = 'v1.5.0';
 
 const CHANGELOG = [
+  { ver: 'v1.5.0', date: '2026-08-19', items: [
+    '修复：记当日销售无法保存（同店同日重复记录的确认框在手机上被静默拦截，改为覆盖/追加/取消三选一）',
+    '修复：记账页右上角「记销售」按钮无效',
+    '电商看板支持时间范围：本月 / 近7天 / 今日 / 自定义日期段',
+    '新增环比分析：纯销售、毛利对比上一等长周期涨跌幅',
+    '新增每日毛利走势柱图（亏损日红色），随范围联动',
+    '环境音音量整体提升约 60%；结束提醒音加响加长（旋律重复两遍）+ 强震动',
+  ]},
   { ver: 'v1.4.1', date: '2026-08-18', items: [
     '加载提速：内置背景图精简为雪山、碧海 2 张（体积 1.6MB → 0.2MB），网页打开速度大幅提升',
     '记账页默认打开电商账本',
@@ -1534,8 +1548,7 @@ function switchLedger(which) {
   document.getElementById('segLedgerEcom').classList.toggle('on', which === 'ecom');
   document.getElementById('segLedgerAcct').classList.toggle('on', which === 'acct');
   const btn = document.getElementById('ledgerAddBtn');
-  if (which === 'ecom') { btn.textContent = '＋ 记销售'; btn.onclick = () => openEcomForm(); }
-  else if (which === 'daily') { btn.textContent = '＋ 记一笔'; btn.onclick = () => openLedgerForm(); }
+  if (which === 'ecom') { btn.textContent = '＋ 记销售'; btn.onclick = () => openDayForm(); }
   else { btn.textContent = '＋ 记一笔'; btn.onclick = () => openLedgerForm(); }
   if (which === 'daily') renderLedger();
   if (which === 'ecom') renderEcom();
@@ -1725,6 +1738,29 @@ function delLedger(id) {
 /* ---------- 电商账本 v2：店铺当日汇总 + 商品明细 ---------- */
 const PLATFORMS = ['淘宝', '拼多多', '抖音', '京东', '淘特', '其他'];
 let ecomStoreSel = ''; // '' = 全部店铺
+let ecomRangeMode = 'month'; // month | 7d | today | custom
+let ecomCustomStart = '', ecomCustomEnd = '';
+function getEcomRange() {
+  const today = todayStr();
+  if (ecomRangeMode === 'today') return { start: today, end: today, label: '今日' };
+  if (ecomRangeMode === '7d') {
+    return { start: fmtDate(new Date(Date.now() - 6 * 86400000)), end: today, label: '近 7 天' };
+  }
+  if (ecomRangeMode === 'custom' && ecomCustomStart && ecomCustomEnd) {
+    return { start: ecomCustomStart, end: ecomCustomEnd, label: ecomCustomStart.slice(5) + ' ~ ' + ecomCustomEnd.slice(5) };
+  }
+  const [y, m] = ecomMonth.split('-').map(Number);
+  const last = new Date(y, m, 0).getDate();
+  return { start: ecomMonth + '-01', end: ecomMonth + '-' + String(last).padStart(2, '0'), label: (+m) + '月' };
+}
+function setEcomRange(mode) {
+  ecomRangeMode = mode;
+  if (mode === 'custom') {
+    const r = getEcomRange();
+    if (!ecomCustomStart) { ecomCustomStart = r.start; ecomCustomEnd = r.end; }
+  }
+  renderEcom();
+}
 
 function storeObj(name) { return DB.stores.find(s => s.name === name) || { name, freight: 0, rate: 0 }; }
 function dayItemCost(store, date) {
@@ -1748,7 +1784,21 @@ function renderEcom() {
   if (typeof renderPackBanner === 'function') renderPackBanner();
   const [y, m] = ecomMonth.split('-');
   document.getElementById('ecomMonthLabel').textContent = y + '年' + (+m) + '月';
-  const all = DB.ecomDay.filter(d => d.date.startsWith(ecomMonth));
+  const range = getEcomRange();
+  // 范围选择条
+  const chipDefs = [['month', '📅 本月'], ['7d', '近 7 天'], ['today', '今日'], ['custom', '自定义']];
+  let rangeHtml = '<div class="chips" style="margin-bottom:10px">' + chipDefs.map(([k, v]) =>
+    '<span class="chip' + (ecomRangeMode === k ? ' on' : '') + '" onclick="setEcomRange(\'' + k + '\')">' + v + '</span>').join('') + '</div>';
+  if (ecomRangeMode === 'custom') {
+    rangeHtml += '<div class="row" style="margin-bottom:10px">' +
+      '<input type="date" value="' + ecomCustomStart + '" onchange="ecomCustomStart=this.value;renderEcom()">' +
+      '<span style="align-self:center;color:var(--sub)">至</span>' +
+      '<input type="date" value="' + ecomCustomEnd + '" onchange="ecomCustomEnd=this.value;renderEcom()"></div>';
+  }
+  document.getElementById('ecomRangeBar').innerHTML = rangeHtml;
+  document.getElementById('ecomRangeLabel').textContent = '统计范围：' + range.label;
+  document.querySelector('#ledgerEcom .month-nav').style.display = ecomRangeMode === 'month' ? '' : 'none';
+  const all = DB.ecomDay.filter(d => d.date >= range.start && d.date <= range.end);
   const rows = ecomStoreSel ? all.filter(d => d.store === ecomStoreSel) : all;
   const rev = rows.reduce((s, d) => s + d.revenue, 0);
   const refOnly = rows.reduce((s, d) => s + (d.refundOnly || 0), 0);
@@ -1777,6 +1827,31 @@ function renderEcom() {
     '<tr><td>毛利</td><td class="' + (profit >= 0 ? 'pos' : 'neg') + '">' + fmtY(profit) + SMALL + '（毛利率 ' + margin + '）</small></td></tr>' +
     '<tr><td>订单数</td><td>' + orders + ' 单</td></tr>' +
     '<tr><td>退货退款影响' + SMALL + '（退款+退货运费+退款扣点−返回成本）</small></td><td class="' + (refundImpact > 0 ? 'neg' : 'pos') + '">' + (refundImpact ? '−' + fmtY(refundImpact) : fmtY(0)) + '</td></tr>';
+  // 环比（上一个等长周期）
+  const days = Math.round((new Date(range.end) - new Date(range.start)) / 86400000) + 1;
+  const prevEnd = fmtDate(new Date(new Date(range.start) - 86400000));
+  const prevStart = fmtDate(new Date(new Date(prevEnd) - (days - 1) * 86400000));
+  const prevRows = DB.ecomDay.filter(d => d.date >= prevStart && d.date <= prevEnd && (!ecomStoreSel || d.store === ecomStoreSel));
+  if (prevRows.length) {
+    const prevPure = prevRows.reduce((s, d) => s + dayPure(d), 0);
+    const prevProfit = prevRows.reduce((s, d) => s + dayProfit(d), 0);
+    const d1 = prevPure > 0 ? ((pure - prevPure) / prevPure * 100).toFixed(0) : null;
+    const d2 = Math.abs(prevProfit) > 0.01 ? ((profit - prevProfit) / Math.abs(prevProfit) * 100).toFixed(0) : null;
+    document.getElementById('ecomKpi').innerHTML +=
+      '<tr><td>环比纯销售' + SMALL + '（上一周期 ¥' + money(prevPure) + '）</small></td><td class="' + (pure >= prevPure ? 'pos' : 'neg') + '">' + (d1 === null ? '-' : (pure >= prevPure ? '+' : '') + d1 + '%') + '</td></tr>' +
+      '<tr><td>环比毛利' + SMALL + '（上一周期 ¥' + money(prevProfit) + '）</small></td><td class="' + (profit >= prevProfit ? 'pos' : 'neg') + '">' + (d2 === null ? '-' : (profit >= prevProfit ? '+' : '') + d2 + '%') + '</td></tr>';
+  }
+  // 每日毛利走势
+  const byDate = {};
+  rows.forEach(d => byDate[d.date] = (byDate[d.date] || 0) + dayProfit(d));
+  const dates = Object.keys(byDate).sort();
+  const maxAbs = Math.max(...dates.map(dt => Math.abs(byDate[dt])), 1);
+  document.getElementById('ecomTrend').innerHTML = dates.length === 0
+    ? '<div class="empty" style="padding:12px 0">该范围内无数据</div>'
+    : '<div class="wk-chart" style="height:84px">' + dates.map(dt => {
+        const v = byDate[dt];
+        return '<div class="wk-bar" title="' + dt.slice(5) + ' 毛利' + money(v) + '"><div class="b" style="height:' + Math.max(3, Math.round(Math.abs(v) / maxAbs * 100)) + '%;' + (v < 0 ? 'background:linear-gradient(180deg,#f87171,#ef4444)' : '') + '"></div><div class="d">' + dt.slice(5) + '</div></div>';
+      }).join('') + '</div>';
 
   // 店铺筛选 chips
   const usedStores = [...new Set(all.map(d => d.store).filter(Boolean))];
@@ -1959,7 +2034,29 @@ function saveDay(id) {
   if (!store) { toast('请先选择或新建店铺'); return; }
   const date = document.getElementById('dfDate').value || todayStr();
   const dup = DB.ecomDay.find(d => d.store === store && d.date === date && d.id !== id);
-  if (dup && !confirm(store + ' 在 ' + date + ' 已有记录，继续保存将产生两条记录。确定？')) return;
+  if (dup) {
+    openModal('该店当天已有记录', `
+      <div style="font-size:13.5px;color:var(--sub);margin-bottom:12px">${esc(store)} 在 ${date} 已有一条记录，请选择处理方式：</div>
+      <div style="display:flex;flex-direction:column;gap:9px">
+        <button class="btn" onclick="writeDay(${id ? "'" + id + "'" : 'null'}, 'overwrite')">覆盖已有记录</button>
+        <button class="btn ghost" onclick="writeDay(${id ? "'" + id + "'" : 'null'}, 'append')">保留两条（追加）</button>
+        <button class="btn gray" onclick="closeModal()">返回修改</button>
+      </div>
+    `);
+    return;
+  }
+  writeDay(id, 'new');
+}
+function writeDay(id, mode) {
+  const store = window._dfStore;
+  const date = document.getElementById('dfDate').value || todayStr();
+  if (mode === 'overwrite') {
+    const dup = DB.ecomDay.find(d => d.store === store && d.date === date && d.id !== id);
+    if (dup) {
+      DB.ecomDay = DB.ecomDay.filter(d => d.id !== dup.id);
+      DB.ecomItems = DB.ecomItems.filter(i => !(i.store === dup.store && i.date === dup.date));
+    }
+  }
   const rec = {
     id: id || uid(), store, date,
     revenue: dfNum('dfRevenue'), refundOnly: dfNum('dfRefund'), refundReturn: dfNum('dfRefundRet'),
@@ -1973,7 +2070,7 @@ function saveDay(id) {
   // 明细替换
   DB.ecomItems = DB.ecomItems.filter(i => !(i.store === store && i.date === date));
   dayFormItems.forEach(i => DB.ecomItems.push({ id: uid(), store, date, name: i.name, qty: i.qty, cost: i.cost, createdAt: Date.now() }));
-  saveDB(); closeModal(); renderEcom(); toast(id ? '已更新' : '已记录当日销售');
+  saveDB(); closeModal(); renderEcom(); toast(id ? '已更新' : '已保存当日销售 ✓');
 }
 function delDay(id) {
   if (!confirm('删除这条当日销售记录及其商品明细？')) return;
@@ -2691,22 +2788,22 @@ const Sound = {
     src.buffer = this.noiseBuffer(); src.loop = true;
     const gain = ctx.createGain();
     let extra = [];
-    if (type === 'white') { gain.gain.value = 0.08; src.connect(gain); }
+    if (type === 'white') { gain.gain.value = 0.25; src.connect(gain); }
     else if (type === 'rain') {
       const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
       const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 250;
-      gain.gain.value = 0.28;
+      gain.gain.value = 0.42;
       src.connect(lp); lp.connect(hp); hp.connect(gain);
     } else if (type === 'wave') {
       const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 480;
-      gain.gain.value = 0.18;
+      gain.gain.value = 0.32;
       const lfo = ctx.createOscillator(); lfo.frequency.value = 0.13;
       const lfoG = ctx.createGain(); lfoG.gain.value = 0.13;
       lfo.connect(lfoG); lfoG.connect(gain.gain); lfo.start();
       src.connect(lp); lp.connect(gain); extra.push(lfo);
     } else if (type === 'forest') {
       const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1400;
-      gain.gain.value = 0.10;
+      gain.gain.value = 0.2;
       src.connect(lp); lp.connect(gain);
       // 随机鸟鸣
       const chirpTimer = setInterval(() => {
@@ -2725,14 +2822,14 @@ const Sound = {
       this._chirp = chirpTimer;
     } else if (type === 'wind') {
       const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 350; bp.Q.value = 0.6;
-      gain.gain.value = 0.22;
+      gain.gain.value = 0.38;
       const lfo = ctx.createOscillator(); lfo.frequency.value = 0.18;
       const lfoG = ctx.createGain(); lfoG.gain.value = 180;
       lfo.connect(lfoG); lfoG.connect(bp.frequency); lfo.start();
       src.connect(bp); bp.connect(gain); extra.push(lfo);
     } else if (type === 'fire') {
       const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420;
-      gain.gain.value = 0.3;
+      gain.gain.value = 0.42;
       const lfo = ctx.createOscillator(); lfo.frequency.value = 7;
       const lfoG = ctx.createGain(); lfoG.gain.value = 0.06;
       lfo.connect(lfoG); lfoG.connect(gain.gain); lfo.start();
@@ -2772,11 +2869,13 @@ function toggleSound(type) {
     Sound.stop(); DB.settings.sound = '';
   } else {
     Sound.play(type); DB.settings.sound = type;
-    if (Sound.ctx && Sound.ctx.state === 'suspended') {
-      Sound.ctx.resume().then(() => {
-        if (Sound.ctx.state === 'suspended') toast('声音被系统限制，请再点一次');
-      });
-    }
+    setTimeout(() => {
+      if (Sound.ctx && Sound.ctx.state === 'suspended') {
+        Sound.ctx.resume().then(() => {
+          if (Sound.ctx.state === 'suspended') toast('没有声音？请检查手机是否静音/媒体音量');
+        });
+      }
+    }, 300);
   }
   saveDB(); renderSoundRow();
 }
@@ -2809,15 +2908,19 @@ function playEndSound() {
     if (sel === 'beep') { beep(2); return; }
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
     if (sel === 'chime') {
-      [1046.5, 1318.5, 1568, 2093].forEach((f, i) => synthNote(ctx, f, i * 0.13, 0.6, 'sine', 0.25));
+      const seq = [1046.5, 1318.5, 1568, 2093, 1568, 2093];
+      seq.forEach((f, i) => synthNote(ctx, f, i * 0.15, 0.8, 'sine', 0.5));
     } else {
-      // 悠扬明亮的五声音阶旋律
-      [523.25, 587.33, 659.25, 783.99, 880, 783.99, 880, 1046.5].forEach((f, i) =>
-        synthNote(ctx, f, i * 0.17, 0.42, 'triangle', 0.2));
+      // 悠扬明亮的旋律，重复两遍确保听到
+      const melody = [523.25, 587.33, 659.25, 783.99, 880, 783.99, 880, 1046.5];
+      for (let r = 0; r < 2; r++) {
+        melody.forEach((f, i) => synthNote(ctx, f, r * 1.6 + i * 0.18, 0.5, 'triangle', 0.45));
+      }
+      synthNote(ctx, 1046.5, 3.3, 1.0, 'triangle', 0.5);
     }
   } catch (e) {}
 }
-function vibrate(pattern) { try { if (navigator.vibrate) navigator.vibrate(pattern || [200, 100, 200]); } catch (e) {} }
+function vibrate(pattern) { try { if (navigator.vibrate) navigator.vibrate(pattern || [300, 150, 300, 150, 600]); } catch (e) {} }
 function renderEndSoundRow() {
   const el = document.getElementById('endSoundRow');
   if (!el) return;
