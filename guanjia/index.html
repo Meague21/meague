@@ -2,6 +2,8 @@
 <html lang="zh-CN" data-theme="indigo">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>小管家 · 记账 待办 笔记</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📒</text></svg>">
@@ -487,6 +489,47 @@ html[data-theme="dark"] .quad.q4{background:#272a31}
   width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:400}
 .note-imgs{display:flex;gap:8px;flex-wrap:wrap;margin-top:9px}
 .note-imgs img{width:88px;height:88px;object-fit:cover;border-radius:12px;display:block;background:var(--line)}
+
+/* ---------- v1.6: 紧凑布局 ---------- */
+.card{padding:12px;margin-bottom:10px}
+.card h3{font-size:14px;margin-bottom:7px}
+.page-head{padding:4px 2px 8px}
+.page-head h1{font-size:19px}
+.kv-tbl td{padding:4px 2px}
+.tbl th{padding:4px 6px}.tbl td{padding:5px 6px}
+label.fld{margin:6px 0 2px}
+.row{gap:6px}
+.chips{gap:6px}
+.chip{padding:5px 9px}
+.chips-grid{gap:5px}
+.chips-grid .chip{padding:5px 3px}
+.seg{margin-bottom:10px}
+.seg button{padding:6px 2px;font-size:13px}
+.sess-item{padding:5px 0}
+.todo-item{padding:8px 2px}
+.led-item{padding:7px 2px}
+.lg-group-head{padding:7px 2px 4px}
+.quick{gap:7px;margin:0 0 10px}
+.quick button{padding:9px 2px}
+.bud-grid{gap:6px}
+.hero{padding:16px 15px 14px;margin-bottom:10px;min-height:190px}
+.hero-chips{gap:6px;margin-top:10px}
+.hero-task{margin-top:10px;padding:9px 11px}
+.focus-scene{padding:14px 13px 13px;min-height:320px;margin-bottom:10px}
+.proj-row{margin-top:36px;margin-bottom:7px;gap:6px}
+.focus-durs{gap:6px;margin-top:7px}
+.focus-ctrl{gap:8px;margin-top:9px}
+.sound-row{gap:6px;margin-top:10px}
+.note-card{padding:11px 12px;margin-bottom:9px}
+.dex-grid{gap:8px}
+.dex-card{padding:11px 8px}
+/* 保存按钮吸底（弹窗内永远可见） */
+#modalBox .sticky-save{position:sticky;bottom:0;background:linear-gradient(180deg,transparent,var(--card) 35%);
+  padding:10px 0 2px;margin-top:10px}
+.form-err{background:var(--red-soft);color:var(--red);font-size:12.5px;border-radius:10px;padding:8px 11px;margin-bottom:9px;font-weight:600}
+.dup-bar{background:var(--amber-soft);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+.dup-bar .t{font-size:13px;font-weight:700;color:var(--amber);margin-bottom:7px}
+.dup-bar .row .btn{font-size:12.5px;padding:7px 4px}
 </style>
 </head>
 <body>
@@ -522,7 +565,7 @@ html[data-theme="dark"] .quad.q4{background:#272a31}
     <!-- ============ 记账 ============ -->
     <section id="tab-ledger" class="tab">
       <div class="page-head">
-        <div><h1>💰 记账</h1><div class="sub">日常收支 · 电商经营 · 账户分析</div></div>
+        <div><h1>💰 记账</h1><div class="sub">日常收支 · 电商经营 · 账户分析 <span class="ver-badge" id="ledgerVer"></span></div></div>
         <button class="btn sm" id="ledgerAddBtn" onclick="openLedgerForm()">＋ 记一笔</button>
       </div>
       <div class="seg">
@@ -561,11 +604,19 @@ html[data-theme="dark"] .quad.q4{background:#272a31}
           <div id="ecomRangeBar"></div>
           <div style="font-size:11.5px;color:var(--sub);margin-bottom:6px" id="ecomRangeLabel"></div>
           <table class="kv-tbl" id="ecomKpi"></table>
-          <div class="row" style="margin-top:12px">
+          <div class="row" style="margin-top:10px">
             <button class="btn" style="flex:2" onclick="openDayForm()">＋ 记当日销售</button>
             <button class="btn sm gray" onclick="openEcomImport()">📁 导入</button>
             <button class="btn sm ghost" onclick="openEcomAi()">✨ AI</button>
           </div>
+          <div class="row" style="margin-top:7px">
+            <button class="btn sm gray" onclick="openEcomReport('week')">📋 周经营报告</button>
+            <button class="btn sm gray" onclick="openEcomReport('month')">📋 月经营报告</button>
+          </div>
+        </div>
+        <div class="card">
+          <h3>🏆 店铺盈亏排行榜 <span style="font-size:11px;color:var(--sub);font-weight:400">近30天销售≤¥10 自动休眠</span></h3>
+          <div id="ecomRank"></div>
         </div>
         <div class="card">
           <h3>🏪 店铺查看 <button class="btn sm gray" style="margin-left:auto" onclick="openStoreManage()">⚙ 店铺管理</button></h3>
@@ -809,9 +860,18 @@ html[data-theme="dark"] .quad.q4{background:#272a31}
 <div id="toastEl"></div>
 <script>
 /* ============ 小管家 · 数据层 ============ */
-const VERSION = 'v1.5.0';
+const VERSION = 'v1.6.0';
 
 const CHANGELOG = [
+  { ver: 'v1.6.0', date: '2026-08-19', items: [
+    '保存可靠性大修：错误直接显示在表单内（不再一闪而过），空店铺/空销售额有明确提示，保存按钮吸底永远可见，异常自动捕获并提示原因',
+    '重复记录处理内嵌在表单里：覆盖/保留两条/取消，不再丢失已填数据',
+    '店铺盈亏排行榜：🥇🥈🥉 按毛利排名，点店铺直达明细',
+    '周/月经营报告一键生成：总览+店铺排行+风险建议，支持一键复制',
+    '休眠店铺：近30天销售≤¥10 自动标 🌙，店铺管理可手动休眠/唤醒，对比数据默认不含休眠店',
+    '布局紧凑化：卡片间距、行距、选项卡整体缩小',
+    '防缓存：页面头部加版本号标记 + 缓存控制',
+  ]},
   { ver: 'v1.5.0', date: '2026-08-19', items: [
     '修复：记当日销售无法保存（同店同日重复记录的确认框在手机上被静默拦截，改为覆盖/追加/取消三选一）',
     '修复：记账页右上角「记销售」按钮无效',
@@ -1858,7 +1918,8 @@ function renderEcom() {
   const chipList = [...new Set([...DB.stores.map(s => s.name), ...usedStores])];
   document.getElementById('ecomStoreChips').innerHTML =
     '<span class="chip' + (!ecomStoreSel ? ' on' : '') + '" onclick="pickEcomStore(\'\')">全部店铺</span>' +
-    chipList.map(n => '<span class="chip' + (ecomStoreSel === n ? ' on' : '') + '" onclick="pickEcomStore(\'' + esc(n) + '\')">' + esc(n) + '</span>').join('');
+    chipList.map(n => '<span class="chip' + (ecomStoreSel === n ? ' on' : '') + '" onclick="pickEcomStore(\'' + esc(n) + '\')">' +
+      (storeDormant(n) ? '🌙 ' : '') + esc(n) + '</span>').join('');
 
   if (ecomStoreSel) {
     // 单店：月度小结 + 逐日明细表
@@ -1867,6 +1928,7 @@ function renderEcom() {
       '<table class="kv-tbl" style="margin-bottom:8px">' +
       '<tr><td>店铺设置</td><td>运费≈订单×' + (st.freight || 0) + ' · 扣点=' + ((st.rate || 0) * 100).toFixed(1) + '%</td></tr>' +
       '</table>';
+    document.getElementById('ecomRank').innerHTML = '<div class="empty" style="padding:10px 0">切回「全部店铺」查看排行榜</div>';
     const sorted = rows.slice().sort((a, b) => b.date.localeCompare(a.date));
     document.getElementById('ecomDayTable').innerHTML = sorted.length === 0
       ? '<tr><td style="text-align:center;color:var(--sub);padding:18px">本月该店无记录</td></tr>'
@@ -1886,10 +1948,23 @@ function renderEcom() {
     rows.forEach(d => {
       const s = byStore[d.store || '未分店铺'] = byStore[d.store || '未分店铺'] || { rev: 0, pure: 0, promo: 0, cost: 0, profit: 0 };
       s.rev += d.revenue; s.pure += dayPure(d); s.promo += (d.promo || 0);
-      s.cost += dayCost(d) + (d.shipping || 0) + (d.fee || 0);
+      s.cost += dayCost(d) + (d.shipping || 0) + (d.fee || 0) + (d.other || 0);
       s.profit += dayProfit(d);
     });
-    const list = Object.entries(byStore).sort((a, b) => b[1].profit - a[1].profit);
+    let list = Object.entries(byStore).sort((a, b) => b[1].profit - a[1].profit);
+    if (!ecomShowDormant) list = list.filter(([name]) => !storeDormant(name));
+    // 排行榜
+    const medals = ['🥇', '🥈', '🥉'];
+    document.getElementById('ecomRank').innerHTML = list.length === 0
+      ? '<div class="empty" style="padding:10px 0">该范围内无数据</div>'
+      : list.map(([name, s], i) =>
+          '<div class="sess-item" style="cursor:pointer" onclick="pickEcomStore(\'' + esc(name) + '\')">' +
+          '<span style="flex:1;font-size:13px">' + (medals[i] || (i + 1) + '.') + ' ' + esc(name) +
+          (storeDormant(name) ? ' <span class="tag-mini">🌙 休眠</span>' : '') + '</span>' +
+          '<span style="text-align:right"><b class="' + (s.profit >= 0 ? 'amt profit-pos' : 'amt profit-neg') + '" style="font-size:13px">' + money(s.profit) + '</b>' +
+          '<div style="font-size:10.5px;color:var(--sub)">售¥' + money(s.rev) + '</div></span></div>').join('') +
+      '<div style="margin-top:8px"><span class="chip' + (ecomShowDormant ? ' on' : '') + '" style="font-size:11px" onclick="ecomShowDormant=!ecomShowDormant;renderEcom()">' +
+      (ecomShowDormant ? '✅ 显示休眠店铺' : '🌙 显示休眠店铺') + '</span></div>';
     document.getElementById('ecomDayTable').innerHTML = list.length === 0
       ? '<tr><td style="text-align:center;color:var(--sub);padding:18px">本月暂无记录，点「＋记当日销售」开始</td></tr>'
       : '<tr><th>店铺</th><th>销售额</th><th>纯销售</th><th>推广</th><th>总消耗</th><th>毛利</th></tr>' +
@@ -1925,6 +2000,7 @@ function moveEcomMonth(d) { ecomMonth = shiftMonth(ecomMonth, d); renderEcom(); 
 
 /* ---------- 记当日销售（店铺日汇总） ---------- */
 let dayFormItems = [];
+let dfDupShown = false;
 function openDayForm(id) {
   const rec = id ? DB.ecomDay.find(d => d.id === id) : null;
   dayFormItems = rec ? DB.ecomItems.filter(i => i.store === rec.store && i.date === rec.date).map(i => Object.assign({}, i)) : [];
@@ -1968,13 +2044,26 @@ function openDayForm(id) {
     </div>
     <label class="fld">备注</label>
     <input id="dfNote" value="${rec ? esc(rec.note || '') : ''}">
-    <div class="row" style="margin-top:16px">
+    <div class="sticky-save"><div class="row">
       ${rec ? '<button class="btn danger" onclick="delDay(\'' + rec.id + '\')">删除</button>' : ''}
-      <button class="btn" style="flex:2" onclick="saveDay(' + (rec ? "'" + rec.id + "'" : 'null') + ')">保存</button>
-    </div>
+      <button class="btn" style="flex:2" onclick="saveDay(' + (rec ? "'" + rec.id + "'" : 'null') + ')">💾 保存</button>
+    </div></div>
   `);
   window._dfStore = rec ? rec.store : (stores[0] || '');
+  dfDupShown = false;
   dfRenderItems(); dfCalc();
+}
+function dfShowErr(msg) {
+  const box = document.getElementById('modalBody');
+  if (!box) { toast(msg); return; }
+  let el = document.getElementById('dfErr');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'dfErr'; el.className = 'form-err';
+    box.insertBefore(el, box.firstChild);
+  }
+  el.textContent = '⚠️ ' + msg;
+  el.scrollIntoView({ block: 'center' });
 }
 function dfPickStore(n) {
   window._dfStore = n;
@@ -2030,47 +2119,61 @@ function dfAddItem() {
   dfRenderItems(); dfCalc();
 }
 function saveDay(id) {
+  const errEl = document.getElementById('dfErr');
+  if (errEl) errEl.remove();
   const store = window._dfStore;
-  if (!store) { toast('请先选择或新建店铺'); return; }
-  const date = document.getElementById('dfDate').value || todayStr();
+  if (!store) { dfShowErr('请先选择店铺（或点「＋店铺」新建）'); return; }
+  const dateEl = document.getElementById('dfDate');
+  if (!dateEl.value) { dateEl.value = todayStr(); }
+  const rev = dfNum('dfRevenue');
+  if (!(rev > 0) && dayFormItems.length === 0) { dfShowErr('请填写总销售额（或添加商品明细）'); return; }
+  const date = dateEl.value;
   const dup = DB.ecomDay.find(d => d.store === store && d.date === date && d.id !== id);
-  if (dup) {
-    openModal('该店当天已有记录', `
-      <div style="font-size:13.5px;color:var(--sub);margin-bottom:12px">${esc(store)} 在 ${date} 已有一条记录，请选择处理方式：</div>
-      <div style="display:flex;flex-direction:column;gap:9px">
-        <button class="btn" onclick="writeDay(${id ? "'" + id + "'" : 'null'}, 'overwrite')">覆盖已有记录</button>
-        <button class="btn ghost" onclick="writeDay(${id ? "'" + id + "'" : 'null'}, 'append')">保留两条（追加）</button>
-        <button class="btn gray" onclick="closeModal()">返回修改</button>
-      </div>
-    `);
+  if (dup && !dfDupShown) {
+    dfDupShown = true;
+    const bar = document.createElement('div');
+    bar.id = 'dfDupBar'; bar.className = 'dup-bar';
+    bar.innerHTML = '<div class="t">⚠️ ' + esc(store) + ' 在 ' + date + ' 已有记录（销售¥' + money(dup.revenue) + '）</div>' +
+      '<div class="row"><button class="btn" onclick="writeDay(' + (id ? "'" + id + "'" : 'null') + ',\'overwrite\')">覆盖它</button>' +
+      '<button class="btn ghost" onclick="writeDay(' + (id ? "'" + id + "'" : 'null') + ',\'append\')">保留两条</button>' +
+      '<button class="btn gray" onclick="dfDupShown=false;this.closest(\'.dup-bar\').remove()">取消</button></div>';
+    const box = document.getElementById('modalBody');
+    box.insertBefore(bar, box.firstChild);
+    bar.scrollIntoView({ block: 'center' });
     return;
   }
   writeDay(id, 'new');
 }
 function writeDay(id, mode) {
-  const store = window._dfStore;
-  const date = document.getElementById('dfDate').value || todayStr();
-  if (mode === 'overwrite') {
-    const dup = DB.ecomDay.find(d => d.store === store && d.date === date && d.id !== id);
-    if (dup) {
-      DB.ecomDay = DB.ecomDay.filter(d => d.id !== dup.id);
-      DB.ecomItems = DB.ecomItems.filter(i => !(i.store === dup.store && i.date === dup.date));
+  try {
+    const store = window._dfStore;
+    if (!store) { dfShowErr('请先选择店铺'); return; }
+    const date = document.getElementById('dfDate').value || todayStr();
+    if (mode === 'overwrite') {
+      const dup = DB.ecomDay.find(d => d.store === store && d.date === date && d.id !== id);
+      if (dup) {
+        DB.ecomDay = DB.ecomDay.filter(d => d.id !== dup.id);
+        DB.ecomItems = DB.ecomItems.filter(i => !(i.store === dup.store && i.date === dup.date));
+      }
     }
+    const rec = {
+      id: id || uid(), store, date,
+      revenue: dfNum('dfRevenue'), refundOnly: dfNum('dfRefund'), refundReturn: dfNum('dfRefundRet'),
+      returnOrders: dfNum('dfRetOrders'), returnCost: dfNum('dfRetCost'),
+      orders: dfNum('dfOrders'), promo: dfNum('dfPromo'), shipping: dfNum('dfShip'), fee: dfNum('dfFee'),
+      other: dfNum('dfOther'), productCost: 0, note: document.getElementById('dfNote').value.trim(),
+      createdAt: id ? (DB.ecomDay.find(d => d.id === id) || {}).createdAt || Date.now() : Date.now(),
+    };
+    if (id) DB.ecomDay = DB.ecomDay.map(d => d.id === id ? rec : d);
+    else DB.ecomDay.push(rec);
+    DB.ecomItems = DB.ecomItems.filter(i => !(i.store === store && i.date === date));
+    dayFormItems.forEach(i => DB.ecomItems.push({ id: uid(), store, date, name: i.name, qty: i.qty, cost: i.cost, createdAt: Date.now() }));
+    dfDupShown = false;
+    saveDB(); closeModal(); renderEcom();
+    toast('✓ 已保存 ' + store + ' ' + date.slice(5) + ' 的销售');
+  } catch (e) {
+    dfShowErr('保存失败：' + e.message);
   }
-  const rec = {
-    id: id || uid(), store, date,
-    revenue: dfNum('dfRevenue'), refundOnly: dfNum('dfRefund'), refundReturn: dfNum('dfRefundRet'),
-    returnOrders: dfNum('dfRetOrders'), returnCost: dfNum('dfRetCost'),
-    orders: dfNum('dfOrders'), promo: dfNum('dfPromo'), shipping: dfNum('dfShip'), fee: dfNum('dfFee'),
-    other: dfNum('dfOther'), productCost: 0, note: document.getElementById('dfNote').value.trim(),
-    createdAt: id ? (DB.ecomDay.find(d => d.id === id) || {}).createdAt || Date.now() : Date.now(),
-  };
-  if (id) DB.ecomDay = DB.ecomDay.map(d => d.id === id ? rec : d);
-  else DB.ecomDay.push(rec);
-  // 明细替换
-  DB.ecomItems = DB.ecomItems.filter(i => !(i.store === store && i.date === date));
-  dayFormItems.forEach(i => DB.ecomItems.push({ id: uid(), store, date, name: i.name, qty: i.qty, cost: i.cost, createdAt: Date.now() }));
-  saveDB(); closeModal(); renderEcom(); toast(id ? '已更新' : '已保存当日销售 ✓');
 }
 function delDay(id) {
   if (!confirm('删除这条当日销售记录及其商品明细？')) return;
@@ -2443,6 +2546,94 @@ function openEcomAi() {
   openModal('✨ AI 电商报告 · ' + (+m) + '月',
     '<div class="ai-text">' + esc(buildEcomAi(ecomMonth)).replace(/【(.+?)】/g, '<b>【$1】</b>') + '</div>' +
     '<div style="font-size:11px;color:var(--sub);margin-top:12px">毛利=销售额−仅退款−推广−运费−商品成本−扣点；退货退款单独统计</div>');
+}
+
+/* ---------- 休眠店铺（近30天销售额≤10 自动休眠） ---------- */
+let ecomShowDormant = false;
+function storeSales30(name) {
+  const start = fmtDate(new Date(Date.now() - 29 * 86400000));
+  return DB.ecomDay.filter(d => d.store === name && d.date >= start).reduce((s, d) => s + d.revenue, 0);
+}
+function storeDormant(name) {
+  const s = DB.stores.find(x => x.name === name);
+  if (s && s.dormant === true) return true;
+  if (s && s.dormant === false) return false;
+  return storeSales30(name) <= 10;
+}
+function toggleStoreDormant(name) {
+  const s = DB.stores.find(x => x.name === name);
+  if (!s) return;
+  s.dormant = !storeDormant(name);
+  saveDB(); openStoreManage(); renderEcom();
+}
+
+/* ---------- 排行榜 + 周/月经营报告 ---------- */
+function buildEcomReport(mode) {
+  const today = new Date();
+  let start, end, title;
+  if (mode === 'week') {
+    const dow = (today.getDay() + 6) % 7; // 周一为起点
+    start = fmtDate(new Date(today - dow * 86400000));
+    end = todayStr();
+    title = '本周经营报告（' + start.slice(5) + ' ~ ' + end.slice(5) + '）';
+  } else {
+    start = ecomMonth + '-01';
+    const [y, m] = ecomMonth.split('-').map(Number);
+    end = fmtDate(new Date(y, m, 0));
+    if (end > todayStr()) end = todayStr();
+    title = (+m) + '月经营报告（' + start.slice(5) + ' ~ ' + end.slice(5) + '）';
+  }
+  const rows = DB.ecomDay.filter(d => d.date >= start && d.date <= end);
+  const L = ['📊 ' + title, ''];
+  if (!rows.length) { L.push('该周期暂无销售记录。'); return L.join('\n'); }
+  const rev = rows.reduce((s, d) => s + d.revenue, 0);
+  const pure = rows.reduce((s, d) => s + dayPure(d), 0);
+  const profit = rows.reduce((s, d) => s + dayProfit(d), 0);
+  const promo = rows.reduce((s, d) => s + (d.promo || 0), 0);
+  const orders = rows.reduce((s, d) => s + (d.orders || 0), 0);
+  L.push('【总览】');
+  L.push('销售额 ¥' + money(rev) + '｜纯销售 ¥' + money(pure) + '｜毛利 ¥' + money(profit) + '（' + (pure > 0 ? (profit / pure * 100).toFixed(1) : 0) + '%）');
+  L.push('订单 ' + orders + ' 单｜推广 ¥' + money(promo) + (promo > 0 && pure > 0 ? '｜投产比 1:' + (pure / promo).toFixed(1) : ''));
+  const byStore = {};
+  rows.forEach(d => {
+    const s = byStore[d.store || '未分店铺'] = byStore[d.store || '未分店铺'] || { pure: 0, profit: 0, promo: 0 };
+    s.pure += dayPure(d); s.profit += dayProfit(d); s.promo += (d.promo || 0);
+  });
+  const stores = Object.entries(byStore).sort((a, b) => b[1].profit - a[1].profit);
+  L.push('', '【店铺排行】');
+  stores.forEach(([name, s], i) => {
+    L.push((i + 1) + '. ' + name + '：纯销售 ¥' + money(s.pure) + '，毛利 ' + (s.profit >= 0 ? '+' : '') + '¥' + money(s.profit) +
+      (s.profit < 0 ? ' ⚠️亏损' : ''));
+  });
+  const losers = stores.filter(([, s]) => s.profit < 0);
+  const dormant = DB.stores.filter(s => storeDormant(s.name) && !byStore[s.name]);
+  L.push('', '【风险与建议】');
+  if (losers.length) L.push('· 亏损店铺：' + losers.map(([n]) => n).join('、') + '，建议核查推广与定价');
+  if (dormant.length) L.push('· 休眠店铺（近30天销售≤¥10）：' + dormant.map(s => s.name).join('、'));
+  if (promo > 0 && pure > 0 && pure / promo < 2) L.push('· 整体投产比低于 1:2，建议收缩低效投放');
+  if (profit >= 0 && pure > 0 && profit / pure < 0.15) L.push('· 毛利率低于 15%，关注成本与客单价');
+  if (!losers.length && !dormant.length) L.push('· 各店经营正常，保持节奏');
+  L.push('', '—— 小管家自动生成 ' + todayStr());
+  return L.join('\n');
+}
+function openEcomReport(mode) {
+  const text = buildEcomReport(mode);
+  openModal(mode === 'week' ? '📋 周经营报告' : '📋 月经营报告',
+    '<pre style="font-size:12.5px;line-height:1.7;white-space:pre-wrap;font-family:inherit;background:var(--bg);border-radius:12px;padding:12px">' + esc(text) + '</pre>' +
+    '<button class="btn block" style="margin-top:12px" onclick="copyReport()">📄 复制报告</button>');
+  window._reportText = text;
+}
+function copyReport() {
+  const t = window._reportText || '';
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(t).then(() => toast('报告已复制，可粘贴到微信/文档')).catch(() => fallbackCopy(t));
+  } else fallbackCopy(t);
+}
+function fallbackCopy(t) {
+  const ta = document.createElement('textarea');
+  ta.value = t; document.body.appendChild(ta); ta.select();
+  try { document.execCommand('copy'); toast('报告已复制'); } catch (e) { toast('复制失败，请手动长按选择'); }
+  document.body.removeChild(ta);
 }
 /* ============ 账户体系 / 预算 / AI 账目汇总 ============ */
 function acctBalance(a) {
@@ -3860,6 +4051,8 @@ function openChangelog() {
 /* ---------- 初始化 ---------- */
 (function init() {
   document.getElementById('homeVer').textContent = '小管家 ' + VERSION + ' · 数据保存在本机，离线可用';
+  const lv = document.getElementById('ledgerVer');
+  if (lv) lv.textContent = VERSION;
   document.getElementById('meVer').textContent = VERSION;
   applyTheme();
   renderHome();
