@@ -555,6 +555,14 @@ label.fld{margin:6px 0 2px}
         <button onclick="quickAction('voice')"><span class="ic">🎤</span>语音笔记</button>
         <button onclick="openAiSummary()"><span class="ic">✨</span>AI汇总</button>
       </div>
+      <div class="card" id="ecomSnapshotCard" style="display:none">
+        <h3>🏪 今日经营快照</h3>
+        <div id="ecomSnapshot"></div>
+      </div>
+      <div class="card" id="backupRemindCard" style="display:none;border:1.5px dashed var(--amber)">
+        <div style="font-size:13px">💾 你已经超过 7 天没有备份数据了，数据只存在本机，建议导出备份。</div>
+        <button class="btn sm" style="margin-top:8px" onclick="exportData()">立即导出备份</button>
+      </div>
       <div class="card">
         <h3>🕘 最近动态</h3>
         <div id="homeRecent"></div>
@@ -613,6 +621,13 @@ label.fld{margin:6px 0 2px}
             <button class="btn sm gray" onclick="openEcomReport('week')">📋 周经营报告</button>
             <button class="btn sm gray" onclick="openEcomReport('month')">📋 月经营报告</button>
           </div>
+          <div class="divider"></div>
+          <h3 style="margin-bottom:6px">🚨 经营异常预警</h3>
+          <div id="ecomAlerts"></div>
+        </div>
+        <div class="card">
+          <h3>📈 毛利率走势 <span style="font-size:11px;color:var(--sub);font-weight:400">本月逐日</span></h3>
+          <div id="ecomMarginTrend"></div>
         </div>
         <div class="card">
           <h3>🏆 店铺盈亏排行榜 <span style="font-size:11px;color:var(--sub);font-weight:400">近30天销售≤¥10 自动休眠</span></h3>
@@ -860,9 +875,18 @@ label.fld{margin:6px 0 2px}
 <div id="toastEl"></div>
 <script>
 /* ============ 小管家 · 数据层 ============ */
-const VERSION = 'v1.6.0';
+const VERSION = 'v1.7.0';
 
 const CHANGELOG = [
+  { ver: 'v1.7.0', date: '2026-08-19', items: [
+    '【关键修复】记当日销售「保存」按钮点击无反应的根因：按钮事件代码生成错误（字符串拼接语法错误），已修复并加回归测试',
+    '新增全局脚本错误提示：万一再出问题会直接弹出错误内容，方便定位',
+    '经营异常预警：自动识别毛利率骤降日、亏损日、推广费突增日，红黄标警示',
+    '首页今日经营快照卡：今日销售额/毛利/最佳店铺/异常数',
+    '数据备份提醒：超过 7 天未备份自动提示一键导出',
+    '毛利率走势图：本月逐日毛利率（绿≥15%、黄<15%、红=亏损）',
+    '周/月经营报告加入异常清单',
+  ]},
   { ver: 'v1.6.0', date: '2026-08-19', items: [
     '保存可靠性大修：错误直接显示在表单内（不再一闪而过），空店铺/空销售额有明确提示，保存按钮吸底永远可见，异常自动捕获并提示原因',
     '重复记录处理内嵌在表单里：覆盖/保留两条/取消，不再丢失已填数据',
@@ -1842,6 +1866,8 @@ function fmtY(n) { return '¥' + money(n); }
 
 function renderEcom() {
   if (typeof renderPackBanner === 'function') renderPackBanner();
+  if (typeof renderAnomalies === 'function') renderAnomalies();
+  if (typeof renderMarginTrend === 'function') renderMarginTrend();
   const [y, m] = ecomMonth.split('-');
   document.getElementById('ecomMonthLabel').textContent = y + '年' + (+m) + '月';
   const range = getEcomRange();
@@ -2046,7 +2072,7 @@ function openDayForm(id) {
     <input id="dfNote" value="${rec ? esc(rec.note || '') : ''}">
     <div class="sticky-save"><div class="row">
       ${rec ? '<button class="btn danger" onclick="delDay(\'' + rec.id + '\')">删除</button>' : ''}
-      <button class="btn" style="flex:2" onclick="saveDay(' + (rec ? "'" + rec.id + "'" : 'null') + ')">💾 保存</button>
+      <button class="btn" style="flex:2" onclick="saveDay(${rec ? "'" + rec.id + "'" : 'null'})">💾 保存</button>
     </div></div>
   `);
   window._dfStore = rec ? rec.store : (stores[0] || '');
@@ -2264,7 +2290,7 @@ function openStoreEdit(ix) {
     <label class="fld">归属平台</label>
     <div class="chips chips-grid" id="sePlats">${PLATFORMS.map(p =>
       '<span class="chip' + ((s.platform || '') === p ? ' on' : '') + '" onclick="document.querySelectorAll(\'#sePlats .chip\').forEach(c=>c.classList.remove(\'on\'));this.classList.add(\'on\');window._sePlat=\'' + p + '\'">' + p + '</span>').join('')}
-      <span class="chip' + (!s.platform ? ' on' : '') + '" onclick="document.querySelectorAll(\'#sePlats .chip\').forEach(c=>c.classList.remove(\'on\'));this.classList.add(\'on\');window._sePlat=\'\'">不选</span></div>
+      ${'<span class="chip' + (!s.platform ? ' on' : '') + '" onclick="document.querySelectorAll(\'#sePlats .chip\').forEach(c=>c.classList.remove(\'on\'));this.classList.add(\'on\');window._sePlat=\'\'">不选</span>'}</div>
     <div class="row">
       <div><label class="fld">单均运费（元/单）</label><input type="number" id="seFreight" step="0.01" value="${s.freight || ''}"></div>
       <div><label class="fld">扣点费率（%）</label><input type="number" id="seRate" step="0.01" value="${s.rate ? (s.rate * 100) : ''}"></div>
@@ -2608,6 +2634,7 @@ function buildEcomReport(mode) {
   const losers = stores.filter(([, s]) => s.profit < 0);
   const dormant = DB.stores.filter(s => storeDormant(s.name) && !byStore[s.name]);
   L.push('', '【风险与建议】');
+  detectAnomalies(mode === 'week' ? null : ecomMonth).filter(a => a.date >= start && a.date <= end).forEach(a => L.push('· ⚠️ ' + a.text));
   if (losers.length) L.push('· 亏损店铺：' + losers.map(([n]) => n).join('、') + '，建议核查推广与定价');
   if (dormant.length) L.push('· 休眠店铺（近30天销售≤¥10）：' + dormant.map(s => s.name).join('、'));
   if (promo > 0 && pure > 0 && pure / promo < 2) L.push('· 整体投产比低于 1:2，建议收缩低效投放');
@@ -2634,6 +2661,59 @@ function fallbackCopy(t) {
   ta.value = t; document.body.appendChild(ta); ta.select();
   try { document.execCommand('copy'); toast('报告已复制'); } catch (e) { toast('复制失败，请手动长按选择'); }
   document.body.removeChild(ta);
+}
+
+/* ---------- 经营异常预警 + 利润率趋势 ---------- */
+function detectAnomalies(month) {
+  const rows = DB.ecomDay.filter(d => d.date.startsWith(month || ecomMonth));
+  const byDate = {};
+  rows.forEach(d => {
+    const k = byDate[d.date] = byDate[d.date] || { pure: 0, profit: 0, promo: 0 };
+    k.pure += dayPure(d); k.profit += dayProfit(d); k.promo += (d.promo || 0);
+  });
+  const dates = Object.keys(byDate);
+  if (dates.length < 2) return [];
+  const avgMargin = dates.reduce((s, dt) => s + (byDate[dt].pure > 0 ? byDate[dt].profit / byDate[dt].pure : 0), 0) / dates.length;
+  const avgPromo = dates.reduce((s, dt) => s + byDate[dt].promo, 0) / dates.length;
+  const out = [];
+  dates.forEach(dt => {
+    const k = byDate[dt];
+    const mg = k.pure > 0 ? k.profit / k.pure : 0;
+    if (k.pure > 0 && mg < avgMargin - 0.2) out.push({ date: dt, type: 'margin', text: dt.slice(5) + ' 毛利率 ' + (mg * 100).toFixed(0) + '%，显著低于均值 ' + (avgMargin * 100).toFixed(0) + '%' });
+    if (k.profit < 0) out.push({ date: dt, type: 'loss', text: dt.slice(5) + ' 当日亏损 ¥' + money(-k.profit) });
+    if (avgPromo > 0 && k.promo > avgPromo * 2.5) out.push({ date: dt, type: 'promo', text: dt.slice(5) + ' 推广费 ¥' + money(k.promo) + '，超过日常均值 2.5 倍' });
+  });
+  return out.slice(-6);
+}
+function renderAnomalies() {
+  const el = document.getElementById('ecomAlerts');
+  if (!el) return;
+  const list = detectAnomalies();
+  el.innerHTML = list.length === 0
+    ? '<div style="font-size:12px;color:var(--sub)">本月暂无经营异常 ✓</div>'
+    : list.map(a => '<div style="font-size:12.5px;padding:5px 9px;border-radius:9px;margin-bottom:5px;background:' +
+      (a.type === 'loss' ? 'var(--red-soft);color:var(--red)' : 'var(--amber-soft);color:var(--amber)') + '">' +
+      (a.type === 'loss' ? '🔴 ' : a.type === 'promo' ? '📢 ' : '📉 ') + esc(a.text) + '</div>').join('');
+}
+function renderMarginTrend() {
+  const el = document.getElementById('ecomMarginTrend');
+  if (!el) return;
+  const byDate = {};
+  DB.ecomDay.filter(d => d.date.startsWith(ecomMonth)).forEach(d => {
+    const k = byDate[d.date] = byDate[d.date] || { pure: 0, profit: 0 };
+    k.pure += dayPure(d); k.profit += dayProfit(d);
+  });
+  const dates = Object.keys(byDate).sort();
+  if (!dates.length) { el.innerHTML = '<div class="empty" style="padding:10px 0">本月暂无数据</div>'; return; }
+  el.innerHTML = '<div class="wk-chart" style="height:74px">' + dates.map(dt => {
+    const k = byDate[dt];
+    const mg = k.pure > 0 ? k.profit / k.pure : 0;
+    const h = Math.max(3, Math.round(Math.min(1, Math.abs(mg)) * 100));
+    return '<div class="wk-bar" title="' + dt.slice(5) + ' 毛利率 ' + (mg * 100).toFixed(0) + '%"><div class="b" style="height:' + h + '%;' +
+      (mg < 0 ? 'background:linear-gradient(180deg,#f87171,#ef4444)' : mg < 0.15 ? 'background:linear-gradient(180deg,#fbbf24,#f59e0b)' : '') + '"></div>' +
+      '<div class="d">' + dt.slice(5) + '</div></div>';
+  }).join('') + '</div>' +
+  '<div style="font-size:10.5px;color:var(--sub);margin-top:3px">柱高=毛利率（绿≥15%，黄<15%，红=亏损）</div>';
 }
 /* ============ 账户体系 / 预算 / AI 账目汇总 ============ */
 function acctBalance(a) {
@@ -3989,6 +4069,33 @@ function renderHome() {
     '<div><div class="t">📋 今日任务</div><div class="d">' + subText + '</div></div>' +
     '<span class="pill">' + doneToday + ' 项已完成</span>';
 
+  // 今日经营快照
+  const snapCard = document.getElementById('ecomSnapshotCard');
+  const todayEcom = DB.ecomDay.filter(d => d.date === today);
+  if (snapCard) {
+    if (todayEcom.length === 0) { snapCard.style.display = 'none'; }
+    else {
+      snapCard.style.display = '';
+      const sRev = todayEcom.reduce((s, d) => s + d.revenue, 0);
+      const sProfit = todayEcom.reduce((s, d) => s + dayProfit(d), 0);
+      const best = todayEcom.slice().sort((a, b) => dayProfit(b) - dayProfit(a))[0];
+      const anomalies = detectAnomalies(month);
+      document.getElementById('ecomSnapshot').innerHTML =
+        '<table class="kv-tbl">' +
+        '<tr><td>今日销售额</td><td>' + fmtY(sRev) + '</td></tr>' +
+        '<tr><td>今日毛利</td><td class="' + (sProfit >= 0 ? 'pos' : 'neg') + '">' + fmtY(sProfit) + '</td></tr>' +
+        '<tr><td>表现最佳店铺</td><td>' + esc(best.store) + '（' + fmtY(dayProfit(best)) + '）</td></tr>' +
+        (anomalies.length ? '<tr><td>本月异常</td><td class="neg">' + anomalies.length + ' 项 ⚠️</td></tr>' : '') +
+        '</table>';
+    }
+  }
+  // 备份提醒
+  const bkCard = document.getElementById('backupRemindCard');
+  if (bkCard) {
+    const last = DB.meta.lastExport || 0;
+    const hasData = DB.ledger.length + DB.ecomDay.length + DB.notes.length + DB.todos.length > 0;
+    bkCard.style.display = (hasData && Date.now() - last > 7 * 86400000) ? '' : 'none';
+  }
   // 最近动态
   const feed = [
     ...DB.ledger.map(r => ({ ts: r.createdAt, icon: r.type === 'income' ? '💵' : catIcon(r.cat, 'expense'), title: r.cat + (r.sub ? '·' + r.sub : '') + (r.note ? ' ' + r.note : ''), sub: (r.type === 'income' ? '+' : '-') + '¥' + money(r.amount), date: r.date })),
@@ -4010,6 +4117,10 @@ function exportData() {
   a.download = '小管家备份_' + todayStr().replace(/-/g, '') + '.json';
   a.click();
   URL.revokeObjectURL(a.href);
+  DB.meta.lastExport = Date.now();
+  saveDB();
+  const bk = document.getElementById('backupRemindCard');
+  if (bk) bk.style.display = 'none';
   toast('已导出备份文件');
 }
 function importData(input) {
@@ -4058,6 +4169,9 @@ function openChangelog() {
   renderHome();
   checkTodoReminders();
   setInterval(checkTodoReminders, 30000);
+  window.addEventListener('error', e => {
+    try { toast('⚠️ 脚本错误：' + (e.message || '').slice(0, 60) + '（' + VERSION + '）'); } catch (err) {}
+  });
 })();
 </script>
 </body></html>
