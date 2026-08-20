@@ -85,6 +85,7 @@ main{padding:14px 14px 92px}
 .btn.green{background:linear-gradient(135deg,#2fe3b2,#06c190);box-shadow:0 4px 12px rgba(6,214,160,.3)}
 .btn.block{display:flex;width:100%}
 .btn:disabled{opacity:.5}
+.btn-sticky-row{margin-top:14px;display:flex;gap:10px;position:sticky;bottom:0;padding:10px 0 calc(10px + env(safe-area-inset-bottom));z-index:10;background:var(--card-bg,#fff)}
 .chip{display:inline-flex;align-items:center;background:var(--primary-light);color:var(--primary-dark);font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;margin:2px 4px 2px 0}
 .chip.blue{background:var(--blue-light);color:#1d5fd6}
 .chip.green{background:var(--green-light);color:#059e76}
@@ -503,9 +504,10 @@ main{padding:14px 14px 92px}
 .md-got{color:#e8930a;font-size:11px;font-weight:800;margin-top:6px}
 .md-lock{color:#c3c7cf;font-size:11px;margin-top:6px}
 /* 草稿本 */
-.scratch-bean{position:fixed;right:12px;bottom:96px;z-index:96;width:46px;height:46px;border-radius:50%;background:linear-gradient(135deg,#ffd93f,#ffb703);box-shadow:0 5px 14px rgba(255,183,3,.45);font-size:22px;display:flex;align-items:center;justify-content:center;border:2px solid #fff}
+.scratch-bean{position:fixed;left:12px;top:50%;transform:translateY(-50%);z-index:96;width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#ffd93f,#ffb703);box-shadow:0 4px 12px rgba(255,183,3,.4);font-size:20px;display:flex;align-items:center;justify-content:center;border:2px solid #fff;cursor:grab;touch-action:none;user-select:none}
+.scratch-bean.dragging{cursor:grabbing;opacity:.7}
 .scratch-bean.hidden{display:none}
-.scratch-bean:active{transform:scale(.92)}
+.scratch-bean:active{transform:translateY(-50%) scale(.92)}
 .scratch-panel{position:fixed;left:50%;transform:translateX(-50%);bottom:0;z-index:150;width:100%;max-width:600px;background:#fffdf6;border-radius:18px 18px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.22);padding:10px 12px calc(12px + env(safe-area-inset-bottom))}
 .scratch-panel.hidden{display:none}
 .scratch-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
@@ -740,6 +742,15 @@ window.MD = {
 
   /* ---------------- 版本日志（应用内展示） ---------------- */
   changelog: [
+    { ver: "v3.7.0", date: "2026-08-20", items: [
+      "搜索框输入优化：防抖+保留光标位置，不再乱跳字符",
+      "草稿本黄豆移到左侧，支持拖动调整位置，不再被键盘遮挡",
+      "提交按钮粘性定位，回车自动收起键盘，不再被手机键盘遮挡",
+      "母题精讲布局压缩，新增还原/年龄/等量代换/方阵/盈亏 5 道经典母题",
+      "思维题解析大幅扩充：找规律/代换/推理/年龄/枚举/鸡兔/等差/方阵/和差/盈亏/行程/工程/倒推 全部改为详细步骤解析",
+      "单元测试新增难度选择（标准/挑战），挑战模式数字范围自动扩大",
+      "单元测试出题去重优化：题型打乱+已用题型跟踪，避免重复"
+    ]},
     { ver: "v3.6.0", date: "2026-08-20", items: [
       "新增「学会讲题」模式：不直接做题，而是讲清第一步做什么/核心考点/易错点，输出式学习练审题",
       "错题本新增「错因分析」：每道错题选错因（计算错误/概念不懂/审题错误/思路不会），附改进建议+举一反三再练",
@@ -6844,7 +6855,11 @@ window.BLOCKS = (function () {
 window.QE = (function () {
 
   /* ---------- 工具 ---------- */
-  function rnd(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+  var _hardMode = false;
+  function rnd(a, b) {
+    if (_hardMode) { a = Math.ceil(a * 1.5); b = Math.ceil(b * 1.8); }
+    return Math.floor(Math.random() * (b - a + 1)) + a;
+  }
   function pick(arr) { return arr[rnd(0, arr.length - 1)]; }
   function shuffle(arr) {
     var a = arr.slice();
@@ -6977,15 +6992,34 @@ window.QE = (function () {
     return VGEN[unit] ? Object.keys(VGEN[unit]) : [];
   }
 
-  function makePaper(unitId, n, types) {
+  function makePaper(unitId, n, types, difficulty) {
+    _hardMode = difficulty === "hard";
     var pool = types && types.length ? types : unitTypes(unitId);
+    if (!pool.length) return [];
     var list = [];
+    var usedTypes = {};
+    var shuffledPool = shuffle(pool.slice());
     for (var i = 0; i < n; i++) {
-      var t = pool[i % pool.length];
-      if (i >= pool.length) t = pick(pool);
+      var t = shuffledPool[i % shuffledPool.length];
+      if (i >= shuffledPool.length) {
+        reshuffle: while (true) {
+          shuffledPool = shuffle(pool.slice());
+          for (var j = 0; j < shuffledPool.length; j++) {
+            if (!usedTypes[shuffledPool[j]]) { t = shuffledPool[j]; break reshuffle; }
+          }
+          usedTypes = {};
+          t = shuffledPool[0];
+          break;
+        }
+      }
+      usedTypes[t] = true;
       var q = make(unitId, t) || make(unitId, pick(pool));
-      if (q) list.push(q);
+      if (q) {
+        if (_hardMode) q._hard = true;
+        list.push(q);
+      }
     }
+    _hardMode = false;
     return shuffle(list);
   }
 
@@ -11094,7 +11128,43 @@ window.SCRATCH = (function () {
     panel = document.getElementById("scratchPanel");
     canvas = document.getElementById("scratchCanvas");
     if (!bean || !panel || !canvas) return;
-    bean.onclick = openPanel;
+
+    /* 拖动黄豆：短按=打开，长按拖动=移动位置 */
+    var dragStart = null, moved = false;
+    bean.addEventListener("pointerdown", function (e) {
+      dragStart = { x: e.clientX, y: e.clientY, t: Date.now() };
+      moved = false;
+      bean.setPointerCapture(e.pointerId);
+    });
+    bean.addEventListener("pointermove", function (e) {
+      if (!dragStart) return;
+      var dx = e.clientX - dragStart.x, dy = e.clientY - dragStart.y;
+      if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+        moved = true;
+        bean.classList.add("dragging");
+        var rect = bean.getBoundingClientRect();
+        var newLeft = rect.left + dx;
+        var newTop = rect.top + dy;
+        /* 限制在屏幕内 */
+        newLeft = Math.max(4, Math.min(window.innerWidth - 48, newLeft));
+        newTop = Math.max(4, Math.min(window.innerHeight - 48, newTop));
+        bean.style.left = newLeft + "px";
+        bean.style.top = newTop + "px";
+        bean.style.transform = "none";
+        dragStart.x = e.clientX;
+        dragStart.y = e.clientY;
+      }
+    });
+    bean.addEventListener("pointerup", function (e) {
+      bean.classList.remove("dragging");
+      if (!moved) openPanel();
+      dragStart = null;
+    });
+    bean.addEventListener("pointercancel", function () {
+      bean.classList.remove("dragging");
+      dragStart = null;
+    });
+
     document.getElementById("scratchClose").onclick = closePanel;
     document.getElementById("scratchClear").onclick = clearAll;
     document.getElementById("scratchUndo").onclick = undo;
@@ -11588,8 +11658,8 @@ window.GARDEN = (function () {
   };
 })();
 /* =====================================================================
- * 烧脑数学 · 有思维（思维学习 + 测试练习）
- * 每个主题：知识点讲解 + 例题精讲 + 测试题生成器
+ * 烧脑数学 · 有思维(思维学习 + 测试练习)
+ * 每个主题:知识点讲解 + 例题精讲 + 测试题生成器
  * ===================================================================== */
 window.THINK = (function () {
   function R(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
@@ -11599,130 +11669,130 @@ window.THINK = (function () {
     /* ---------------- 找规律 ---------------- */
     {
       id: "guilv", name: "找规律", icon: "🔢", color: "#ff7a2f", level: "低年级",
-      desc: "观察数列的变化，找出藏着的小规律。",
+      desc: "观察数列的变化,找出藏着的小规律。",
       points: [
-        { t: "什么是规律", html: "一列数按照一定的规则排列，找出这个规则就能填出后面的数。常见的有<b>等差</b>（每次加同一个数）、<b>等比</b>（每次乘同一个数）、<b>斐波那契</b>（前两个数相加等于下一个）。" },
-        { t: "找规律三步法", html: "① 看相邻两个数的<b>差</b>或<b>倍数</b>；② 验证这个规则在整列数上都成立；③ 用规律推出下一个数。" }
+        { t: "什么是规律", html: "一列数按照一定的规则排列,找出这个规则就能填出后面的数。常见的有<b>等差</b>(每次加同一个数)、<b>等比</b>(每次乘同一个数)、<b>斐波那契</b>(前两个数相加等于下一个)。" },
+        { t: "找规律三步法", html: "1 看相邻两个数的<b>差</b>或<b>倍数</b>;2 验证这个规则在整列数上都成立;3 用规律推出下一个数。" }
       ],
       examples: [
-        { tag: "例题 · 等差", q: "2、5、8、11、（ ）", steps: ["相邻两数都差 3", "11 + 3 = 14"], explain: "每次都加 3，是等差数列。" },
-        { tag: "例题 · 等比", q: "3、6、12、24、（ ）", steps: ["每次乘 2", "24 × 2 = 48"], explain: "每次都乘 2，是等比数列。" }
+        { tag: "例题 · 等差", q: "2、5、8、11、( )", steps: ["相邻两数都差 3", "11 + 3 = 14"], explain: "每次都加 3,是等差数列。" },
+        { tag: "例题 · 等比", q: "3、6、12、24、( )", steps: ["每次乘 2", "24 × 2 = 48"], explain: "每次都乘 2,是等比数列。" }
       ],
       gen: function () {
         var kind = R(1, 3);
         if (kind === 1) { var a = R(1, 9), d = R(2, 5), seq = [a, a + d, a + 2 * d, a + 3 * d];
-          return { type: "tiankong", q: "找规律填数：" + seq.join("、") + "、（____）", input: "num", ans: String(a + 4 * d),
-            explain: "每次加 " + d + "，下一个是 " + (a + 3 * d) + "+" + d + "=" + (a + 4 * d) + "。" }; }
+          return { type: "tiankong", q: "找规律填数:" + seq.join("、") + "、(____)", input: "num", ans: String(a + 4 * d),
+            explain: "第一步:算相邻两数的差--" + (a + d) + "-" + a + "=" + d + "," + (a + 2 * d) + "-" + (a + d) + "=" + d + ",差都是 " + d + "。第二步:验证规律--每个数都比前一个多 " + d + "(等差数列)。第三步:求下一个数--" + (a + 3 * d) + "+" + d + "=" + (a + 4 * d) + "。" }; }
         if (kind === 2) { var a2 = R(1, 4), r2v = R(2, 3), seq2 = [a2, a2 * r2v, a2 * r2v * r2v, a2 * r2v * r2v * r2v];
-          return { type: "tiankong", q: "找规律填数：" + seq2.join("、") + "、（____）", input: "num", ans: String(a2 * Math.pow(r2v, 4)),
-            explain: "每次乘 " + r2v + "，下一个是 " + seq2[3] + "×" + r2v + "=" + (a2 * Math.pow(r2v, 4)) + "。" }; }
+          return { type: "tiankong", q: "找规律填数:" + seq2.join("、") + "、(____)", input: "num", ans: String(a2 * Math.pow(r2v, 4)),
+            explain: "第一步:看相邻两数的倍数关系--" + seq2[1] + "÷" + seq2[0] + "=" + r2v + "," + seq2[2] + "÷" + seq2[1] + "=" + r2v + ",每次都乘 " + r2v + "。第二步:验证--" + seq2[3] + "÷" + seq2[2] + "=" + r2v + ",规律成立(等比数列)。第三步:下一个=" + seq2[3] + "×" + r2v + "=" + (a2 * Math.pow(r2v, 4)) + "。" }; }
         var seq3 = [1, 1, 2, 3, 5];
-        return { type: "tiankong", q: "找规律填数（前两个数相加等于下一个）：" + seq3.join("、") + "、（____）", input: "num", ans: "8",
-          explain: "3+5=8，这是斐波那契数列。" };
+        return { type: "tiankong", q: "找规律填数(前两个数相加等于下一个):" + seq3.join("、") + "、(____)", input: "num", ans: "8",
+          explain: "第一步:观察--1+1=2,1+2=3,2+3=5,每个数等于前两个数之和(斐波那契数列)。第二步:验证--3+5=?第三步:下一个=3+5=8。" };
       }
     },
 
     /* ---------------- 等量代换 ---------------- */
     {
       id: "daihuan", name: "等量代换", icon: "⚖️", color: "#3a86ff", level: "中年级",
-      desc: "相等的量可以互相替换，一步步推出答案。",
+      desc: "相等的量可以互相替换,一步步推出答案。",
       points: [
-        { t: "什么是等量代换", html: "如果两个量相等，就可以互相替换。比如 1 个苹果 = 2 个梨，那么算式里的苹果都能换成 2 个梨。" },
-        { t: "代换三步法", html: "① 找出谁和谁相等；② 把相等的量互相替换，把未知量统一；③ 算出一个，再代回去求另一个。" }
+        { t: "什么是等量代换", html: "如果两个量相等,就可以互相替换。比如 1 个苹果 = 2 个梨,那么算式里的苹果都能换成 2 个梨。" },
+        { t: "代换三步法", html: "1 找出谁和谁相等;2 把相等的量互相替换,把未知量统一;3 算出一个,再代回去求另一个。" }
       ],
       examples: [
-        { tag: "例题", q: "1 个● = 2 个▲，1 个● + 1 个▲ = 12，那么 1 个▲等于几？", steps: ["把●换成 2 个▲", "2 个▲ + 1 个▲ = 3 个▲ = 12", "1 个▲ = 4"], explain: "把●换成 2 个▲，就变成 3 个▲=12。" }
+        { tag: "例题", q: "1 个● = 2 个▲,1 个● + 1 个▲ = 12,那么 1 个▲等于几?", steps: ["把●换成 2 个▲", "2 个▲ + 1 个▲ = 3 个▲ = 12", "1 个▲ = 4"], explain: "把●换成 2 个▲,就变成 3 个▲=12。" }
       ],
       gen: function () {
         var kind = R(1, 2);
         if (kind === 1) { var v = R(2, 6), k = R(2, 3), total = (k + 1) * v;
-          return { type: "tiankong", q: "1 个● = " + k + " 个▲，1 个● + 1 个▲ = " + total + "。1 个▲ = （____）", input: "num", ans: String(v),
-            explain: "●换成 " + k + " 个▲，共 " + (k + 1) + " 个▲ = " + total + "，所以 1 个▲ = " + v + "。" }; }
+          return { type: "tiankong", q: "1 个● = " + k + " 个▲,1 个● + 1 个▲ = " + total + "。1 个▲ = (____)", input: "num", ans: String(v),
+            explain: "第一步:找等量关系--1 个● = " + k + " 个▲。第二步:把●替换成 " + k + " 个▲--原式变成 " + k + " 个▲ + 1 个▲ = " + total + ",即 " + (k + 1) + " 个▲ = " + total + "。第三步:求 1 个▲ = " + total + " ÷ " + (k + 1) + " = " + v + "。核心思路:用等量代换把两种图形统一成一种,再除法求解。" }; }
         var a = R(2, 5), b = R(2, 5);
-        return { type: "tiankong", q: "1 个梨 = " + a + " 个橘子，1 个苹果 = " + b + " 个梨。1 个苹果 = （____）个橘子", input: "num", ans: String(a * b),
-          explain: "苹果 = " + b + " 个梨，每个梨 = " + a + " 个橘子，所以苹果 = " + a + "×" + b + "=" + (a * b) + " 个橘子。" };
+        return { type: "tiankong", q: "1 个梨 = " + a + " 个橘子,1 个苹果 = " + b + " 个梨。1 个苹果 = (____)个橘子", input: "num", ans: String(a * b),
+          explain: "第一步:找等量链--1 个梨 = " + a + " 个橘子,1 个苹果 = " + b + " 个梨。第二步:把苹果换成梨--1 个苹果 = " + b + " 个梨。第三步:把梨换成橘子--" + b + " 个梨 = " + b + " × " + a + " = " + (a * b) + " 个橘子。核心思路:链式代换,一层层换到底。" };
       }
     },
 
     /* ---------------- 逻辑推理 ---------------- */
     {
       id: "tuili", name: "逻辑推理", icon: "🕵️", color: "#8338ec", level: "中年级",
-      desc: "根据线索一步步推理，找出正确答案。",
+      desc: "根据线索一步步推理,找出正确答案。",
       points: [
-        { t: "推理的方法", html: "① 把线索一条条列出来；② 用<b>排除法</b>：确定一个，就排除其他；③ 一步步缩小范围，直到得出答案。" },
-        { t: "排除法", html: "从最确定的线索入手，确定一个事实后，把不可能的选项划掉，剩下的就是答案。" }
+        { t: "推理的方法", html: "1 把线索一条条列出来;2 用<b>排除法</b>:确定一个,就排除其他;3 一步步缩小范围,直到得出答案。" },
+        { t: "排除法", html: "从最确定的线索入手,确定一个事实后,把不可能的选项划掉,剩下的就是答案。" }
       ],
       examples: [
-        { tag: "例题", q: "小明比小红高，小红比小刚高。谁最矮？", steps: ["小明 > 小红 > 小刚", "小刚最矮"], explain: "把三个人的高矮排出来，最矮的就是小刚。" }
+        { tag: "例题", q: "小明比小红高,小红比小刚高。谁最矮?", steps: ["小明 > 小红 > 小刚", "小刚最矮"], explain: "把三个人的高矮排出来,最矮的就是小刚。" }
       ],
       gen: function () {
         var kind = R(1, 3);
         if (kind === 1) {
           var names = P([["小明", "小红", "小刚"], ["小丽", "小华", "小强"], ["小猫", "小狗", "小兔"]]);
           var arr = [1, 2, 3]; // 高矮排名 1最高
-          return { type: "choice", input: "choice", q: names[0] + "比" + names[1] + "高，" + names[1] + "比" + names[2] + "高。谁最矮？",
+          return { type: "choice", input: "choice", q: names[0] + "比" + names[1] + "高," + names[1] + "比" + names[2] + "高。谁最矮?",
             options: names.slice(), ans: names[2],
-            explain: names[0] + " > " + names[1] + " > " + names[2] + "，所以 " + names[2] + " 最矮。" };
+            explain: "第一步:把条件列出来--" + names[0] + " > " + names[1] + "," + names[1] + " > " + names[2] + "。第二步:连成一条链--" + names[0] + " > " + names[1] + " > " + names[2] + "。第三步:最矮的就是排在最后的 " + names[2] + "。核心方法:把零散的条件串成完整的排序链。" };
         }
         if (kind === 2) {
           var colors = ["红色", "蓝色", "黄色"];
           var persons = P([["小明", "小红", "小刚"], ["小丽", "小华", "小强"]]);
-          return { type: "choice", input: "choice", q: persons[0] + "拿的不是红色，" + persons[1] + "拿的不是红色也不是蓝色。" + persons[1] + "拿的是什么颜色？",
+          return { type: "choice", input: "choice", q: persons[0] + "拿的不是红色," + persons[1] + "拿的不是红色也不是蓝色。" + persons[1] + "拿的是什么颜色?",
             options: colors, ans: "黄色",
-            explain: persons[1] + " 不是红也不是蓝，只能是黄色。" };
+            explain: persons[1] + " 不是红也不是蓝,只能是黄色。" };
         }
         var animals = ["小猫", "小狗", "小兔"];
-        return { type: "choice", input: "choice", q: "小猫不在第一个，小狗不在第一个也不在第二个。小狗在第几个？",
+        return { type: "choice", input: "choice", q: "小猫不在第一个,小狗不在第一个也不在第二个。小狗在第几个?",
           options: ["第一个", "第二个", "第三个"], ans: "第三个",
-          explain: "小狗不在第一也不在第二，只能在第三个。" };
+          explain: "小狗不在第一也不在第二,只能在第三个。" };
       }
     },
 
     /* ---------------- 年龄问题 ---------------- */
     {
       id: "nianling", name: "年龄问题", icon: "🎂", color: "#06d6a0", level: "中年级",
-      desc: "年龄差不变，是解年龄问题的钥匙。",
+      desc: "年龄差不变,是解年龄问题的钥匙。",
       points: [
-        { t: "年龄差不变", html: "不管过多少年，两个人的<b>年龄差永远不变</b>。这是解年龄问题最重要的规律。" },
-        { t: "和的变化", html: "每过 1 年，每个人都长 1 岁，所以两个人的年龄<b>和</b>每过 1 年增加 2。" }
+        { t: "年龄差不变", html: "不管过多少年,两个人的<b>年龄差永远不变</b>。这是解年龄问题最重要的规律。" },
+        { t: "和的变化", html: "每过 1 年,每个人都长 1 岁,所以两个人的年龄<b>和</b>每过 1 年增加 2。" }
       ],
       examples: [
-        { tag: "例题", q: "今年爸爸 35 岁，儿子 7 岁。5 年后两人一共多少岁？", steps: ["每过 1 年两人共长 2 岁", "5 年共长 5×2=10 岁", "35+7+10=52"], explain: "年龄和每年加 2。" }
+        { tag: "例题", q: "今年爸爸 35 岁,儿子 7 岁。5 年后两人一共多少岁?", steps: ["每过 1 年两人共长 2 岁", "5 年共长 5×2=10 岁", "35+7+10=52"], explain: "年龄和每年加 2。" }
       ],
       gen: function () {
         var kind = R(1, 2);
         if (kind === 1) { var f = R(30, 45), s = R(5, 12), n = R(3, 8);
-          return { type: "tiankong", q: "今年爸爸 " + f + " 岁，儿子 " + s + " 岁。" + n + " 年后两人一共多少岁？", input: "num", ans: String(f + s + 2 * n),
-            explain: "每过 1 年两人共长 2 岁，" + n + " 年长 " + (2 * n) + " 岁：" + f + "+" + s + "+" + (2 * n) + "=" + (f + s + 2 * n) + "。" }; }
+          return { type: "tiankong", q: "今年爸爸 " + f + " 岁,儿子 " + s + " 岁。" + n + " 年后两人一共多少岁?", input: "num", ans: String(f + s + 2 * n),
+            explain: "第一步:理解关键--每过 1 年,爸爸长 1 岁,儿子也长 1 岁,两人年龄和一共增加 2 岁。第二步:算 " + n + " 年两人共长了多少--" + n + "×2=" + (2 * n) + " 岁。第三步:今年年龄和=" + f + "+" + s + "=" + (f + s) + "," + n + " 年后=" + (f + s) + "+" + (2 * n) + "=" + (f + s + 2 * n) + "(岁)。易错点:不是只给一个人加 " + n + " 岁,两个人都要加!" }; }
         var diff = R(20, 30), s2 = R(5, 10);
-        return { type: "tiankong", q: "爸爸比儿子大 " + diff + " 岁，今年儿子 " + s2 + " 岁。今年爸爸多少岁？", input: "num", ans: String(s2 + diff),
-          explain: "爸爸 = 儿子 + 年龄差 = " + s2 + "+" + diff + "=" + (s2 + diff) + "（岁）。" };
+        return { type: "tiankong", q: "爸爸比儿子大 " + diff + " 岁,今年儿子 " + s2 + " 岁。今年爸爸多少岁?", input: "num", ans: String(s2 + diff),
+          explain: "第一步:年龄差永远不变--爸爸比儿子大 " + diff + " 岁,不管过多少年都差 " + diff + " 岁。第二步:爸爸今年=儿子今年+年龄差=" + s2 + "+" + diff + "=" + (s2 + diff) + "(岁)。核心规律:两人的年龄差是固定不变的。" };
       }
     },
 
     /* ---------------- 枚举与计数 ---------------- */
     {
       id: "paixu", name: "枚举与计数", icon: "🔀", color: "#e63999", level: "中年级",
-      desc: "有序地数一数，不重复也不遗漏。",
+      desc: "有序地数一数,不重复也不遗漏。",
       points: [
-        { t: "有序枚举", html: "数数时要<b>按顺序</b>，一类一类地数，才能不重复、不遗漏。" },
-        { t: "乘法原理", html: "做一件事分几步，第一步有 a 种方法，第二步有 b 种方法，那么一共有 <b>a×b</b> 种方法。" }
+        { t: "有序枚举", html: "数数时要<b>按顺序</b>,一类一类地数,才能不重复、不遗漏。" },
+        { t: "乘法原理", html: "做一件事分几步,第一步有 a 种方法,第二步有 b 种方法,那么一共有 <b>a×b</b> 种方法。" }
       ],
       examples: [
-        { tag: "例题 · 搭配", q: "2 件上衣、3 条裤子，一共有几种不同的穿法？", steps: ["每件上衣可以配 3 条裤子", "2 × 3 = 6（种）"], explain: "乘法原理：2×3=6。" }
+        { tag: "例题 · 搭配", q: "2 件上衣、3 条裤子,一共有几种不同的穿法?", steps: ["每件上衣可以配 3 条裤子", "2 × 3 = 6(种)"], explain: "乘法原理:2×3=6。" }
       ],
       gen: function () {
         var kind = R(1, 3);
         if (kind === 1) { var a = R(2, 4), b = R(2, 4);
-          return { type: "tiankong", q: a + " 件上衣、" + b + " 条裤子，一共有几种不同的穿法？", input: "num", ans: String(a * b),
-            explain: "乘法原理：" + a + "×" + b + "=" + (a * b) + "（种）。" }; }
+          return { type: "tiankong", q: a + " 件上衣、" + b + " 条裤子,一共有几种不同的穿法?", input: "num", ans: String(a * b),
+            explain: "第一步:选上衣有 " + a + " 种选择。第二步:每件上衣都能配 " + b + " 条裤子。第三步:用乘法原理--" + a + "×" + b + "=" + (a * b) + "(种)。核心:分几步完成的事,每步的选择数相乘就是总方案数。" }; }
         if (kind === 2) { var n = R(3, 5);
           var hs = n * (n - 1) / 2;
-          return { type: "tiankong", q: n + " 个小朋友，每两人握一次手，一共要握多少次手？", input: "num", ans: String(hs),
-            explain: n + " 个人每两人握一次：1+2+…+" + (n - 1) + "=" + hs + "（次）。" }; }
+          return { type: "tiankong", q: n + " 个小朋友,每两人握一次手,一共要握多少次手?", input: "num", ans: String(hs),
+            explain: "第一步:第 1 个人和其他 " + (n - 1) + " 人各握一次→" + (n - 1) + " 次。第二步:第 2 个人已经和第 1 人握过了,只需和剩下 " + (n - 2) + " 人握→" + (n - 2) + " 次。第三步:依次类推--" + (n - 1) + "+" + (n - 2) + "+...+1=" + hs + "(次)。核心:有序枚举,从多到少逐个加,不重复不遗漏。" }; }
         var n2 = R(3, 5), ls = n2 * (n2 - 1) / 2;
-        return { type: "tiankong", q: "一条线段上有 " + n2 + " 个点，一共有多少条线段？", input: "num", ans: String(ls),
-          explain: n2 + " 个点两两连线：1+2+…+" + (n2 - 1) + "=" + ls + "（条）。" };
+        return { type: "tiankong", q: "一条线段上有 " + n2 + " 个点,一共有多少条线段?", input: "num", ans: String(ls),
+          explain: "第一步:任选 2 个点就能连成一条线段。第二步:第 1 个点可以和其余 " + (n2 - 1) + " 个点连线→" + (n2 - 1) + " 条。第三步:第 2 个点已经和第 1 个连过了,还能和 " + (n2 - 2) + " 个点连→" + (n2 - 2) + " 条。依次加:" + (n2 - 1) + "+" + (n2 - 2) + "+...+1=" + ls + "(条)。" };
       }
     },
 
@@ -11731,35 +11801,35 @@ window.THINK = (function () {
       id: "jitu", name: "鸡兔同笼", icon: "🐰", color: "#ff7a2f", level: "高年级",
       desc: "假设法是解鸡兔同笼的金钥匙。",
       points: [
-        { t: "假设法", html: "假设笼子里<b>全是鸡</b>，算出腿数，和实际比较。差几条腿，就说明有几只兔（每把一只鸡换成兔多 2 条腿）。" },
-        { t: "公式", html: "兔 =（实际腿数 − 2×总头数）÷ 2；鸡 = 总头数 − 兔数。" }
+        { t: "假设法", html: "假设笼子里<b>全是鸡</b>,算出腿数,和实际比较。差几条腿,就说明有几只兔(每把一只鸡换成兔多 2 条腿)。" },
+        { t: "公式", html: "兔 =(实际腿数 - 2×总头数)÷ 2;鸡 = 总头数 - 兔数。" }
       ],
       examples: [
-        { tag: "例题", q: "鸡兔同笼，共 10 个头，32 条腿。兔有几只？", steps: ["假设全是鸡：10×2=20 条腿", "比实际少：32−20=12 条", "每换一只兔多 2 条腿：12÷2=6 只兔"], explain: "假设法。" }
+        { tag: "例题", q: "鸡兔同笼,共 10 个头,32 条腿。兔有几只?", steps: ["假设全是鸡:10×2=20 条腿", "比实际少:32-20=12 条", "每换一只兔多 2 条腿:12÷2=6 只兔"], explain: "假设法四步走:1假设全是鸡→10×2=20条腿。2比实际少→32-20=12条。3每把1只鸡换成兔→多2条腿。4兔=少的腿数÷2=12÷2=6只。" }
       ],
       gen: function () {
         var chick = R(2, 6), rab = R(2, 6);
         var heads = chick + rab, legs = chick * 2 + rab * 4;
-        return { type: "tiankong", q: "鸡和兔关在笼子里，共 " + heads + " 个头，" + legs + " 条腿。兔有几只？", input: "num", ans: String(rab),
-          explain: "假设全是鸡：" + heads + "×2=" + (heads * 2) + " 条腿，比实际少 " + (legs - heads * 2) + " 条，每换一只兔多 2 条腿：" + (legs - heads * 2) + "÷2=" + rab + " 只兔。" };
+        return { type: "tiankong", q: "鸡和兔关在笼子里,共 " + heads + " 个头," + legs + " 条腿。兔有几只?", input: "num", ans: String(rab),
+          explain: "假设法四步走:1假设全是鸡→" + heads + "×2=" + (heads * 2) + "条腿。2比实际少→" + legs + "-" + (heads * 2) + "=" + (legs - heads * 2) + "条。3每把1只鸡换成兔→多4-2=2条腿。4兔=" + (legs - heads * 2) + "÷2=" + rab + "只。验证:鸡=" + (heads - rab) + "只,腿=" + (heads - rab) + "×2+" + rab + "×4=" + legs + "✓" };
       }
     },
 
     /* ---------------- 等差数列求和 ---------------- */
     {
       id: "dengcha", name: "等差数列求和", icon: "➕", color: "#3a86ff", level: "高年级",
-      desc: "高斯求和：首项加末项乘项数除以 2。",
+      desc: "高斯求和:首项加末项乘项数除以 2。",
       points: [
-        { t: "高斯求和公式", html: "等差数列的和 =（首项 + 末项）× 项数 ÷ 2。1+2+3+…+n = n×(n+1)÷2。" },
-        { t: "项数怎么求", html: "项数 =（末项 − 首项）÷ 公差 + 1。" }
+        { t: "高斯求和公式", html: "等差数列的和 =(首项 + 末项)× 项数 ÷ 2。1+2+3+...+n = n×(n+1)÷2。" },
+        { t: "项数怎么求", html: "项数 =(末项 - 首项)÷ 公差 + 1。" }
       ],
       examples: [
-        { tag: "例题", q: "1+2+3+…+10 = ？", steps: ["首项 1，末项 10，共 10 项", "（1+10）×10÷2 = 55"], explain: "高斯求和。" }
+        { tag: "例题", q: "1+2+3+...+10 = ?", steps: ["首项 1,末项 10,共 10 项", "(1+10)×10÷2 = 55"], explain: "高斯求和:首项+末项=1+10=11,乘以项数10得110,除以2得55。原理:1+10=11,2+9=11,3+8=11...每对和都相等,共5对=5×11=55。" }
       ],
       gen: function () {
         var n = R(8, 15);
-        return { type: "tiankong", q: "1 + 2 + 3 + … + " + n + " = （____）", input: "num", ans: String(n * (n + 1) / 2),
-          explain: "高斯求和：（1+" + n + "）×" + n + "÷2 = " + (n * (n + 1) / 2) + "。" };
+        return { type: "tiankong", q: "1 + 2 + 3 + ... + " + n + " = (____)", input: "num", ans: String(n * (n + 1) / 2),
+          explain: "第一步:这是等差数列,首项=1,末项=" + n + ",项数=" + n + "。第二步:用高斯求和公式--(首项+末项)×项数÷2=(1+" + n + ")×" + n + "÷2=" + (1 + n) + "×" + n + "÷2=" + (n * (n + 1)) + "÷2=" + (n * (n + 1) / 2) + "。原理:首尾配对,每对和相等。" };
       }
     },
 
@@ -11768,783 +11838,803 @@ window.THINK = (function () {
       id: "fangzhen", name: "方阵问题", icon: "🔲", color: "#8338ec", level: "高年级",
       desc: "方阵的人数和边上人数有关系。",
       points: [
-        { t: "方阵总人数", html: "方阵每边 n 人，总人数 = <b>n×n</b>。" },
-        { t: "最外层人数", html: "方阵每边 n 人，最外层一圈的人数 = <b>4×n − 4</b>（四个角的人只算一次）。" }
+        { t: "方阵总人数", html: "方阵每边 n 人,总人数 = <b>n×n</b>。" },
+        { t: "最外层人数", html: "方阵每边 n 人,最外层一圈的人数 = <b>4×n - 4</b>(四个角的人只算一次)。" }
       ],
       examples: [
-        { tag: "例题", q: "方阵每边站 5 人，最外层一圈站了多少人？", steps: ["4×5−4", "= 16（人）"], explain: "四个角的人只算一次。" }
+        { tag: "例题", q: "方阵每边站 5 人,最外层一圈站了多少人?", steps: ["4×5-4", "= 16(人)"], explain: "第一步：方阵有4条边，每条边5人→4×5=20人。第二步：但四个角的人被算了2次（每条边的端点），要减去4。第三步：最外层=4×5−4=16人。核心：4条边×每边人数−4个重复的角。" }
       ],
       gen: function () {
         var kind = R(1, 2);
         if (kind === 1) { var n = R(4, 8);
-          return { type: "tiankong", q: "方阵每边站 " + n + " 人，一共有多少人？", input: "num", ans: String(n * n),
-            explain: "方阵总人数 = n×n = " + n + "×" + n + "=" + (n * n) + "。" }; }
+          return { type: "tiankong", q: "方阵每边站 " + n + " 人,一共有多少人?", input: "num", ans: String(n * n),
+            explain: "第一步：方阵是正方形排列，每行 " + n + " 人，共 " + n + " 行。第二步：总人数=每行人数×行数=" + n + "×" + n + "=" + (n * n) + "人。核心：方阵总人数=每边人数²。" }; }
         var n2 = R(4, 9);
-        return { type: "tiankong", q: "方阵每边站 " + n2 + " 人，最外层一圈站了多少人？", input: "num", ans: String(4 * n2 - 4),
-          explain: "最外层 = 4×n−4 = 4×" + n2 + "−4 = " + (4 * n2 - 4) + "（四个角只算一次）。" };
+        return { type: "tiankong", q: "方阵每边站 " + n2 + " 人,最外层一圈站了多少人?", input: "num", ans: String(4 * n2 - 4),
+          explain: "第一步：方阵有4条边，每条边 " + n2 + " 人→4×" + n2 + "=" + (4 * n2) + "人。第二步：但四个角的人同时属于两条边，被多算了1次→减去4。第三步：最外层=4×" + n2 + "−4=" + (4 * n2 - 4) + "人。核心公式：最外层=4×每边人数−4。" };
       }
     },
 
     /* ---------------- 和差问题 ---------------- */
     {
       id: "hecha", name: "和差问题", icon: "🎯", color: "#8338ec", level: "高年级",
-      desc: "知道两数的和与差，就能算出这两个数。",
+      desc: "知道两数的和与差,就能算出这两个数。",
       points: [
-        { t: "和差公式", html: "大数 =（和 + 差）÷ 2；小数 =（和 − 差）÷ 2。" },
-        { t: "为什么这样算", html: "把差补上或去掉，两个数就一样大了，再除以 2 就能求出其中一个。" }
+        { t: "和差公式", html: "大数 =(和 + 差)÷ 2;小数 =(和 - 差)÷ 2。" },
+        { t: "为什么这样算", html: "把差补上或去掉,两个数就一样大了,再除以 2 就能求出其中一个。" }
       ],
       examples: [
-        { tag: "例题", q: "两数和是 30，差是 6。大数是多少？", steps: ["（30 + 6）÷ 2", "= 18"], explain: "大数 =（和+差）÷2。" }
+        { tag: "例题", q: "两数和是 30,差是 6。大数是多少?", steps: ["(30 + 6)÷ 2", "= 18"], explain: "第一步:画线段图理解--大数比小数多6,如果给小数补上6,两个数就一样大。第二步:补上差后总和变成30+6=36,这时两个数相等。第三步:每个数=36÷2=18。所以大数=18。" }
       ],
       gen: function () {
         var kind = R(1, 2);
         var big = R(15, 50), small = R(5, big - 3);
         var sum = big + small, diff = big - small;
         if (kind === 1) {
-          return { type: "tiankong", q: "两个数的和是 " + sum + "，差是 " + diff + "。较大的数是多少？", input: "num", ans: String(big),
-            explain: "大数 =（和+差）÷2 =（" + sum + "+" + diff + "）÷2 = " + big + "。" };
+          return { type: "tiankong", q: "两个数的和是 " + sum + ",差是 " + diff + "。较大的数是多少?", input: "num", ans: String(big),
+            explain: "第一步:理解--大数比小数多 " + diff + ",如果给小数补上 " + diff + ",两数相等,总和变成 " + sum + "+" + diff + "=" + (sum + diff) + "。第二步:这时每个数=" + (sum + diff) + "÷2=" + big + "。第三步:所以大数=" + big + "。公式:大数=(和+差)÷2=(" + sum + "+" + diff + ")÷2=" + big + "。" };
         }
-        return { type: "tiankong", q: "两个数的和是 " + sum + "，差是 " + diff + "。较小的数是多少？", input: "num", ans: String(small),
-          explain: "小数 =（和−差）÷2 =（" + sum + "−" + diff + "）÷2 = " + small + "。" };
+        return { type: "tiankong", q: "两个数的和是 " + sum + ",差是 " + diff + "。较小的数是多少?", input: "num", ans: String(small),
+          explain: "第一步:理解--大数比小数多 " + diff + ",如果从大数中去掉 " + diff + ",两数相等,总和变成 " + sum + "-" + diff + "=" + (sum - diff) + "。第二步:这时每个数=" + (sum - diff) + "÷2=" + small + "。第三步:所以小数=" + small + "。公式:小数=(和-差)÷2=(" + sum + "-" + diff + ")÷2=" + small + "。" };
       }
     },
 
     /* ---------------- 盈亏问题 ---------------- */
     {
       id: "yingkui", name: "盈亏问题", icon: "⚖️", color: "#e63999", level: "高年级",
-      desc: "分的标准变一变，多了还是少了，用差来算人数。",
+      desc: "分的标准变一变,多了还是少了,用差来算人数。",
       points: [
-        { t: "盈亏公式", html: "人数 =（盈 + 亏）÷ 两次每人分的差。" },
-        { t: "怎么理解", html: "两种分法的总数一样，把多出来（或不够）的部分，平均分给每人多分（或少分）的差，就得到人数。" }
+        { t: "盈亏公式", html: "人数 =(盈 + 亏)÷ 两次每人分的差。" },
+        { t: "怎么理解", html: "两种分法的总数一样,把多出来(或不够)的部分,平均分给每人多分(或少分)的差,就得到人数。" }
       ],
       examples: [
-        { tag: "例题", q: "每人分 3 颗多 8 颗，每人分 5 颗正好。有几个小朋友？", steps: ["每人差：5−3=2", "人数 = 8÷2 = 4"], explain: "多出的 8 颗 ÷ 每人多分的 2 颗 = 4 人。" }
+        { tag: "例题", q: "每人分 3 颗多 8 颗,每人分 5 颗正好。有几个小朋友?", steps: ["每人差:5-3=2", "人数 = 8÷2 = 4"], explain: "第一步:两种分法对比--每人分5颗比分3颗每人多分2颗(5-3=2)。第二步:第一次多出8颗没分完,第二次正好分完→说明这8颗被每人多分的2颗消化掉了。第三步:人数=8÷2=4人。核心:多出的糖果÷每人多分的颗数=人数。" }
       ],
       gen: function () {
         var n = R(4, 8), per1 = R(3, 6), per2 = per1 + R(1, 3);
         var extra = n * (per2 - per1);
-        return { type: "tiankong", q: "把一些糖分给小朋友，每人分 " + per1 + " 颗多 " + extra + " 颗；每人分 " + per2 + " 颗正好分完。有多少个小朋友？", input: "num", ans: String(n),
-          explain: "每人差：" + per2 + "−" + per1 + "=" + (per2 - per1) + "（颗），人数 = " + extra + "÷" + (per2 - per1) + "=" + n + "（人）。" };
+        return { type: "tiankong", q: "把一些糖分给小朋友,每人分 " + per1 + " 颗多 " + extra + " 颗;每人分 " + per2 + " 颗正好分完。有多少个小朋友?", input: "num", ans: String(n),
+          explain: "第一步:每人多分了几颗?" + per2 + "-" + per1 + "=" + (per2 - per1) + "颗。第二步:第一次多出 " + extra + " 颗没分完,第二次每人多分 " + (per2 - per1) + " 颗正好消化完。第三步:人数=" + extra + "÷" + (per2 - per1) + "=" + n + "人。核心思路:多出的总量÷每人多分的量=人数。" };
       }
     },
 
     /* ---------------- 行程问题 ---------------- */
     {
       id: "xingcheng", name: "行程问题", icon: "🚗", color: "#3a86ff", level: "高年级",
-      desc: "路程 = 速度 × 时间，相遇追及有窍门。",
+      desc: "路程 = 速度 × 时间,相遇追及有窍门。",
       points: [
-        { t: "基本关系", html: "路程 = 速度 × 时间；速度 = 路程 ÷ 时间；时间 = 路程 ÷ 速度。" },
-        { t: "相遇问题", html: "两人相向而行，相遇时间 = 总路程 ÷（甲速 + 乙速）。速度要<b>相加</b>。" },
-        { t: "追及问题", html: "两人同向而行，追上时间 = 路程差 ÷（快 − 慢）。速度要<b>相减</b>。" }
+        { t: "基本关系", html: "路程 = 速度 × 时间;速度 = 路程 ÷ 时间;时间 = 路程 ÷ 速度。" },
+        { t: "相遇问题", html: "两人相向而行,相遇时间 = 总路程 ÷(甲速 + 乙速)。速度要<b>相加</b>。" },
+        { t: "追及问题", html: "两人同向而行,追上时间 = 路程差 ÷(快 - 慢)。速度要<b>相减</b>。" }
       ],
       examples: [
-        { tag: "例题 · 相遇", q: "甲乙相距 100 米，相向而行，甲每分走 12 米，乙每分走 8 米。几分后相遇？", steps: ["速度和：12+8=20", "相遇时间：100÷20=5"], explain: "相向而行速度相加。" }
+        { tag: "例题 · 相遇", q: "甲乙相距 100 米,相向而行,甲每分走 12 米,乙每分走 8 米。几分后相遇?", steps: ["速度和:12+8=20", "相遇时间:100÷20=5"], explain: "第一步:相向而行→两人越走越近,每分钟两人合走12+8=20米(速度和)。第二步:总共要走100米,每分钟走20米→100÷20=5分钟相遇。核心:相向=速度相加。" }
       ],
       gen: function () {
         var kind = R(1, 3);
         if (kind === 1) {
           var v = R(40, 80), t = R(2, 6);
-          return { type: "tiankong", q: "一辆汽车每小时行 " + v + " 千米，" + t + " 小时行多少千米？", input: "num", ans: String(v * t),
-            explain: "路程 = 速度×时间 = " + v + "×" + t + "=" + (v * t) + "（千米）。" };
+          return { type: "tiankong", q: "一辆汽车每小时行 " + v + " 千米," + t + " 小时行多少千米?", input: "num", ans: String(v * t),
+            explain: "第一步:路程=速度×时间(基本公式)。第二步:速度=" + v + "千米/时,时间=" + t + "小时。第三步:路程=" + v + "×" + t + "=" + (v * t) + "(千米)。记住:速度×时间=路程,这是行程问题最基本的关系。" };
         }
         if (kind === 2) {
           var v1 = R(40, 70), v2 = R(50, 80), tt = R(3, 8);
           var total = (v1 + v2) * tt;
-          return { type: "tiankong", q: "甲乙从相距 " + total + " 米的两地同时相向出发，甲每分走 " + v1 + " 米，乙每分走 " + v2 + " 米。几分钟后相遇？", input: "num", ans: String(tt),
-            explain: "速度和 = " + (v1 + v2) + " 米/分，相遇时间 = " + total + "÷" + (v1 + v2) + "=" + tt + "（分钟）。" };
+          return { type: "tiankong", q: "甲乙从相距 " + total + " 米的两地同时相向出发,甲每分走 " + v1 + " 米,乙每分走 " + v2 + " 米。几分钟后相遇?", input: "num", ans: String(tt),
+            explain: "第一步:相向而行→两人面对面走,每分钟两人合走 " + v1 + "+" + v2 + "=" + (v1 + v2) + " 米(速度和)。第二步:总距离 " + total + " 米,每分钟两人合走 " + (v1 + v2) + " 米。第三步:相遇时间=" + total + "÷" + (v1 + v2) + "=" + tt + "(分钟)。核心:相向而行用速度和。" };
         }
         var tc = R(2, 6), vf = R(60, 90), vs = vf - R(10, 30);
         var gap = tc * (vf - vs);
-        return { type: "tiankong", q: "弟弟先走，领先哥哥 " + gap + " 米。哥哥每分走 " + vf + " 米，弟弟每分走 " + vs + " 米。哥哥几分钟追上弟弟？", input: "num", ans: String(tc),
-          explain: "追及时间 = 路程差÷速度差 = " + gap + "÷" + (vf - vs) + "=" + tc + "（分钟）。" };
+        return { type: "tiankong", q: "弟弟先走,领先哥哥 " + gap + " 米。哥哥每分走 " + vf + " 米,弟弟每分走 " + vs + " 米。哥哥几分钟追上弟弟?", input: "num", ans: String(tc),
+          explain: "第一步:同向追及→两人同方向走,哥哥快,每分钟多走 " + vf + "-" + vs + "=" + (vf - vs) + " 米(速度差)。第二步:哥哥落后 " + gap + " 米,每分钟追回 " + (vf - vs) + " 米。第三步:追及时间=" + gap + "÷" + (vf - vs) + "=" + tc + "(分钟)。核心:追及=速度相减。" };
       }
     },
 
     /* ---------------- 工程问题 ---------------- */
     {
       id: "gongcheng", name: "工程问题", icon: "🏗️", color: "#06d6a0", level: "高年级",
-      desc: "把工作总量看作单位“1”，用分数表示效率。",
+      desc: "把工作总量看作单位\"1\",用分数表示效率。",
       points: [
-        { t: "基本关系", html: "工作总量 = 工作效率 × 工作时间。通常把工作总量看作单位“1”。" },
-        { t: "合作效率", html: "两人合作，效率相加。甲每天做 1/a，乙每天做 1/b，合作每天做 1/a + 1/b。" }
+        { t: "基本关系", html: "工作总量 = 工作效率 × 工作时间。通常把工作总量看作单位\"1\"。" },
+        { t: "合作效率", html: "两人合作,效率相加。甲每天做 1/a,乙每天做 1/b,合作每天做 1/a + 1/b。" }
       ],
       examples: [
-        { tag: "例题", q: "工人每天加工 30 个零件，5 天加工多少个？", steps: ["30×5", "= 150"], explain: "工作总量 = 效率×时间。" }
+        { tag: "例题", q: "工人每天加工 30 个零件，5 天加工多少个？", steps: ["30×5", "= 150"], explain: "第一步：效率=每天30个，时间=5天。第二步：工作总量=效率×时间=30×5=150个。基本公式：总量=效率×时间，和行程问题的「路程=速度×时间」完全一样。" }
       ],
       gen: function () {
         var kind = R(1, 2);
         if (kind === 1) {
           var rate = R(10, 30), t = R(3, 8);
           return { type: "tiankong", q: "工人每天加工 " + rate + " 个零件，" + t + " 天一共加工多少个？", input: "num", ans: String(rate * t),
-            explain: "工作总量 = 效率×时间 = " + rate + "×" + t + "=" + (rate * t) + "（个）。" };
+            explain: "第一步：效率=" + rate + "个/天，时间=" + t + "天。第二步：工作总量=效率×时间=" + rate + "×" + t + "=" + (rate * t) + "个。核心公式：总量=效率×时间，记住这个关系就能解所有工程问题。" };
         }
         var days = R(6, 12);
         return { type: "tiankong", q: "一项工程，甲队单独做 " + days + " 天完成。甲队每天完成这项工程的几分之几？（填分数，如 1/5）", input: "text", ans: "1/" + days,
-          explain: "把工程看作单位“1”，甲每天完成 1÷" + days + " = 1/" + days + "。" };
+          explain: "第一步：把整个工程看作单位\"1\"。第二步：甲队 " + days + " 天做完\"1\"，说明每天做 1÷" + days + "=1/" + days + "。第三步：甲队每天完成工程的 1/" + days + "。核心：把总量看作\"1\"，用除法求每天的效率。" };
       }
     },
 
     /* ---------------- 倒推问题 ---------------- */
     {
       id: "daotui", name: "倒推问题", icon: "🔄", color: "#ff7a2f", level: "中年级",
-      desc: "从结果往回推，加变减、减变加。",
+      desc: "从结果往回推,加变减、减变加。",
       points: [
-        { t: "倒着想", html: "有些题从结果出发，<b>反过来一步一步推</b>，就能求出原来的数。" },
-        { t: "运算要反过来", html: "原来加了的，倒推时减去；原来减了的，倒推时加上；乘了的除以，除了的乘回来。" }
+        { t: "倒着想", html: "有些题从结果出发,<b>反过来一步一步推</b>,就能求出原来的数。" },
+        { t: "运算要反过来", html: "原来加了的,倒推时减去;原来减了的,倒推时加上;乘了的除以,除了的乘回来。" }
       ],
       examples: [
-        { tag: "例题", q: "一些糖，吃了 6 颗还剩 10 颗。原来有几颗？", steps: ["倒推：剩的 + 吃的", "10 + 6 = 16"], explain: "从结果倒着想。" }
+        { tag: "例题", q: "一些糖,吃了 6 颗还剩 10 颗。原来有几颗?", steps: ["倒推:剩的 + 吃的", "10 + 6 = 16"], explain: "第一步：正向是「原来−吃了=剩的」。第二步：倒推要反过来——原来=剩的+吃的。第三步：原来=10+6=16颗。核心规则：加变减、减变加、乘变除、除变乘——运算全部反过来。" }
       ],
       gen: function () {
         var kind = R(1, 3);
         if (kind === 1) {
           var end = R(20, 60), sub = R(5, 20);
-          return { type: "tiankong", q: "一些苹果，吃了 " + sub + " 个后还剩 " + end + " 个。原来有多少个苹果？", input: "num", ans: String(end + sub),
-            explain: "倒推：原来的 = 剩的 + 吃了的 = " + end + "+" + sub + "=" + (end + sub) + "（个）。" };
+          return { type: "tiankong", q: "一些苹果,吃了 " + sub + " 个后还剩 " + end + " 个。原来有多少个苹果?", input: "num", ans: String(end + sub),
+            explain: "第一步：正向是「原来−" + sub + "=" + end + "」。第二步：倒推——原来=" + end + "+" + sub + "。第三步：原来=" + end + "+" + sub + "=" + (end + sub) + "个。核心：原来减了的，倒推时加回来。" };
         }
         if (kind === 2) {
           var mid = R(10, 40), got = R(5, 15);
-          return { type: "tiankong", q: "小明有一些零花钱，妈妈又给了他 " + got + " 元，现在他有 " + (mid + got) + " 元。他原来有多少元？", input: "num", ans: String(mid),
-            explain: "倒推：原来的 = 现在的 − 妈妈给的 = " + (mid + got) + "−" + got + "=" + mid + "（元）。" };
+          return { type: "tiankong", q: "小明有一些零花钱,妈妈又给了他 " + got + " 元,现在他有 " + (mid + got) + " 元。他原来有多少元?", input: "num", ans: String(mid),
+            explain: "第一步：正向是「原来+" + got + "=" + (mid + got) + "」。第二步：倒推——原来=" + (mid + got) + "−" + got + "。第三步：原来=" + (mid + got) + "−" + got + "=" + mid + "元。核心：原来加了的，倒推时减回去。" };
         }
         var half = R(10, 30);
-        return { type: "tiankong", q: "一筐橘子，卖掉一半后还剩 " + half + " 个。这筐橘子原来有多少个？", input: "num", ans: String(half * 2),
-          explain: "卖掉一半剩一半，倒推：原来 = " + half + "×2 = " + (half * 2) + "（个）。" };
+        return { type: "tiankong", q: "一筐橘子,卖掉一半后还剩 " + half + " 个。这筐橘子原来有多少个?", input: "num", ans: String(half * 2),
+          explain: "第一步：正向是「原来÷2=" + half + "」（卖掉一半=除以2）。第二步：倒推——原来=" + half + "×2。第三步：原来=" + half + "×2=" + (half * 2) + "个。核心：原来除了的，倒推时乘回来。" };
       }
     },
 
     /* ---------------- 植树问题 ---------------- */
     {
       id: "zhishu", name: "植树问题", icon: "🌳", color: "#06d6a0", level: "高年级",
-      desc: "棵数和段数的关系，要看两端种不种。",
+      desc: "棵数和段数的关系,要看两端种不种。",
       points: [
         { t: "段数", html: "段数 = 总长 ÷ 间隔。" },
-        { t: "棵数与段数", html: "两端都种：棵数 = 段数 + 1；只种一端：棵数 = 段数；两端都不种：棵数 = 段数 − 1；环形（封闭）：棵数 = 段数。" }
+        { t: "棵数与段数", html: "两端都种:棵数 = 段数 + 1;只种一端:棵数 = 段数;两端都不种:棵数 = 段数 - 1;环形(封闭):棵数 = 段数。" }
       ],
       examples: [
-        { tag: "例题", q: "小路 20 米，每隔 5 米种一棵，两端都种。共几棵？", steps: ["段数：20÷5=4", "两端都种：4+1=5"], explain: "两端都种棵数比段数多 1。" }
+        { tag: "例题", q: "小路 20 米,每隔 5 米种一棵,两端都种。共几棵?", steps: ["段数:20÷5=4", "两端都种:4+1=5"], explain: "两端都种棵数比段数多 1。" }
       ],
       gen: function () {
         var kind = R(1, 3);
         var spacing = P([4, 5, 6]), n = R(3, 8);
         var total = spacing * n;
         if (kind === 1) {
-          return { type: "tiankong", q: "在 " + total + " 米小路一边种树，每隔 " + spacing + " 米一棵，两端都种。共多少棵？", input: "num", ans: String(n + 1),
-            explain: "段数 = " + total + "÷" + spacing + "=" + n + "，两端都种棵数 = " + n + "+1 = " + (n + 1) + "（棵）。" };
+          return { type: "tiankong", q: "在 " + total + " 米小路一边种树,每隔 " + spacing + " 米一棵,两端都种。共多少棵?", input: "num", ans: String(n + 1),
+            explain: "段数 = " + total + "÷" + spacing + "=" + n + ",两端都种棵数 = " + n + "+1 = " + (n + 1) + "(棵)。" };
         }
         if (kind === 2) {
-          return { type: "tiankong", q: "圆形花坛一周 " + total + " 米，每隔 " + spacing + " 米摆一盆花。共摆多少盆？", input: "num", ans: String(n),
-            explain: "环形封闭，棵数 = 段数 = " + total + "÷" + spacing + "=" + n + "（盆）。" };
+          return { type: "tiankong", q: "圆形花坛一周 " + total + " 米,每隔 " + spacing + " 米摆一盆花。共摆多少盆?", input: "num", ans: String(n),
+            explain: "环形封闭,棵数 = 段数 = " + total + "÷" + spacing + "=" + n + "(盆)。" };
         }
-        return { type: "tiankong", q: "一根 " + total + " 米木头，每 " + spacing + " 米锯一段。要锯成多少段？", input: "num", ans: String(n),
-          explain: "段数 = " + total + "÷" + spacing + "=" + n + "（段）。" };
+        return { type: "tiankong", q: "一根 " + total + " 米木头,每 " + spacing + " 米锯一段。要锯成多少段?", input: "num", ans: String(n),
+          explain: "段数 = " + total + "÷" + spacing + "=" + n + "(段)。" };
       }
     },
 
     /* ---------------- 和倍问题 ---------------- */
     { id: "hebei", name: "和倍问题", icon: "🤝", color: "#3a86ff", level: "中年级",
-      desc: "知道两数的和与倍数关系，求这两个数。",
-      points: [ { t: "和倍公式", html: "把小数看作 1 份，大数是几份，和就是（倍数+1）份。<b>小数 = 和 ÷（倍数+1）</b>。" } ],
-      examples: [ { tag: "例题", q: "甲乙两数和是 40，甲是乙的 3 倍。乙是多少？", steps: ["40 ÷ (3+1)", "= 10"], explain: "和÷(倍数+1)。" } ],
+      desc: "知道两数的和与倍数关系,求这两个数。",
+      points: [ { t: "和倍公式", html: "把小数看作 1 份,大数是几份,和就是(倍数+1)份。<b>小数 = 和 ÷(倍数+1)</b>。" } ],
+      examples: [ { tag: "例题", q: "甲乙两数和是 40,甲是乙的 3 倍。乙是多少?", steps: ["40 ÷ (3+1)", "= 10"], explain: "和÷(倍数+1)。" } ],
       gen: function () { var k = R(2, 4), x = R(3, 12), sum = x * (k + 1);
-        return { type: "tiankong", q: "甲乙两个数的和是 " + sum + "，甲是乙的 " + k + " 倍。乙是多少？", input: "num", ans: String(x),
+        return { type: "tiankong", q: "甲乙两个数的和是 " + sum + ",甲是乙的 " + k + " 倍。乙是多少?", input: "num", ans: String(x),
           explain: "乙 = 和÷(倍数+1) = " + sum + "÷" + (k + 1) + " = " + x + "。" }; } },
 
     /* ---------------- 差倍问题 ---------------- */
     { id: "chabei", name: "差倍问题", icon: "📉", color: "#3a86ff", level: "中年级",
-      desc: "知道两数的差与倍数关系，求这两个数。",
-      points: [ { t: "差倍公式", html: "大数比小数多的部分 =（倍数−1）份。<b>小数 = 差 ÷（倍数−1）</b>。" } ],
-      examples: [ { tag: "例题", q: "甲比乙多 20，甲是乙的 3 倍。乙是多少？", steps: ["20 ÷ (3−1)", "= 10"], explain: "差÷(倍数−1)。" } ],
+      desc: "知道两数的差与倍数关系,求这两个数。",
+      points: [ { t: "差倍公式", html: "大数比小数多的部分 =(倍数-1)份。<b>小数 = 差 ÷(倍数-1)</b>。" } ],
+      examples: [ { tag: "例题", q: "甲比乙多 20,甲是乙的 3 倍。乙是多少?", steps: ["20 ÷ (3-1)", "= 10"], explain: "差÷(倍数-1)。" } ],
       gen: function () { var k = R(2, 4), x = R(3, 12), diff = x * (k - 1);
-        return { type: "tiankong", q: "甲比乙多 " + diff + "，甲是乙的 " + k + " 倍。乙是多少？", input: "num", ans: String(x),
-          explain: "乙 = 差÷(倍数−1) = " + diff + "÷" + (k - 1) + " = " + x + "。" }; } },
+        return { type: "tiankong", q: "甲比乙多 " + diff + ",甲是乙的 " + k + " 倍。乙是多少?", input: "num", ans: String(x),
+          explain: "乙 = 差÷(倍数-1) = " + diff + "÷" + (k - 1) + " = " + x + "。" }; } },
 
     /* ---------------- 平均数问题 ---------------- */
     { id: "pingjun", name: "平均数问题", icon: "📊", color: "#06d6a0", level: "中年级",
       desc: "平均数 = 总数 ÷ 总份数。",
-      points: [ { t: "平均数公式", html: "平均数 = 总数 ÷ 总份数；总数 = 平均数 × 总份数。" } ],
-      examples: [ { tag: "例题", q: "3 个数平均数是 12，总和是多少？", steps: ["12×3", "= 36"], explain: "总数=平均数×份数。" } ],
+      points: [ { t: "平均数公式", html: "平均数 = 总数 ÷ 总份数;总数 = 平均数 × 总份数。" } ],
+      examples: [ { tag: "例题", q: "3 个数平均数是 12,总和是多少?", steps: ["12×3", "= 36"], explain: "总数=平均数×份数。" } ],
       gen: function () { var kind = R(1, 2);
         if (kind === 1) { var n = R(3, 5), avg = R(10, 30);
-          return { type: "tiankong", q: n + " 个数的平均数是 " + avg + "，它们的总和是多少？", input: "num", ans: String(avg * n),
+          return { type: "tiankong", q: n + " 个数的平均数是 " + avg + ",它们的总和是多少?", input: "num", ans: String(avg * n),
             explain: "总和 = 平均数×个数 = " + avg + "×" + n + " = " + (avg * n) + "。" }; }
         var a = R(10, 30), b = R(10, 30), c = R(10, 30);
         while ((a + b + c) % 3 !== 0) c = R(10, 30);
-        return { type: "tiankong", q: a + "、" + b + "、" + c + " 三个数的平均数是多少？", input: "num", ans: String((a + b + c) / 3),
+        return { type: "tiankong", q: a + "、" + b + "、" + c + " 三个数的平均数是多少?", input: "num", ans: String((a + b + c) / 3),
           explain: "(" + a + "+" + b + "+" + c + ")÷3 = " + ((a + b + c) / 3) + "。" }; } },
 
     /* ---------------- 时钟问题 ---------------- */
     { id: "shizhong", name: "时钟问题", icon: "🕐", color: "#8338ec", level: "中年级",
       desc: "时针分针转动的规律。",
-      points: [ { t: "指针速度", html: "分针每分钟转 <b>6°</b>，时针每分钟转 <b>0.5°</b>。分针每分钟比时针多转 5.5°。" } ],
-      examples: [ { tag: "例题", q: "分针 10 分钟转多少度？", steps: ["10×6", "= 60°"], explain: "分针每分钟 6°。" } ],
+      points: [ { t: "指针速度", html: "分针每分钟转 <b>6°</b>,时针每分钟转 <b>0.5°</b>。分针每分钟比时针多转 5.5°。" } ],
+      examples: [ { tag: "例题", q: "分针 10 分钟转多少度?", steps: ["10×6", "= 60°"], explain: "分针每分钟 6°。" } ],
       gen: function () { var kind = R(1, 2);
         if (kind === 1) { var m = R(5, 30);
-          return { type: "tiankong", q: "分针走 " + m + " 分钟，转了多少度？", input: "num", ans: String(m * 6),
-            explain: "分针每分钟转 6°，" + m + "×6 = " + (m * 6) + "°。" }; }
+          return { type: "tiankong", q: "分针走 " + m + " 分钟,转了多少度?", input: "num", ans: String(m * 6),
+            explain: "分针每分钟转 6°," + m + "×6 = " + (m * 6) + "°。" }; }
         var h = R(1, 6);
-        return { type: "tiankong", q: "时针走 " + h + " 小时，转了多少度？", input: "num", ans: String(h * 30),
-          explain: "时针每小时转 30°，" + h + "×30 = " + (h * 30) + "°。" }; } },
+        return { type: "tiankong", q: "时针走 " + h + " 小时,转了多少度?", input: "num", ans: String(h * 30),
+          explain: "时针每小时转 30°," + h + "×30 = " + (h * 30) + "°。" }; } },
 
     /* ---------------- 浓度问题 ---------------- */
     { id: "nongdu", name: "浓度问题", icon: "🧪", color: "#0a7fa0", level: "高年级",
       desc: "浓度 = 溶质 ÷ 溶液。",
-      points: [ { t: "浓度公式", html: "浓度 = 溶质（如盐）÷ 溶液（盐水）×100%。" } ],
-      examples: [ { tag: "例题", q: "20 克盐溶在 80 克水里，浓度是多少？", steps: ["20÷(20+80)", "= 20%"], explain: "盐÷盐水。" } ],
+      points: [ { t: "浓度公式", html: "浓度 = 溶质(如盐)÷ 溶液(盐水)×100%。" } ],
+      examples: [ { tag: "例题", q: "20 克盐溶在 80 克水里,浓度是多少?", steps: ["20÷(20+80)", "= 20%"], explain: "盐÷盐水。" } ],
       gen: function () { var salt = P([10, 20, 25, 30]), water = P([70, 80, 120, 170]);
         var pct = Math.round(salt / (salt + water) * 100);
-        return { type: "text", q: salt + " 克盐溶在 " + water + " 克水里，盐水的浓度是多少？（填百分数）", input: "text", ans: pct + "%", accept: [pct + "%", String(pct)],
+        return { type: "text", q: salt + " 克盐溶在 " + water + " 克水里,盐水的浓度是多少?(填百分数)", input: "text", ans: pct + "%", accept: [pct + "%", String(pct)],
           explain: salt + "÷(" + salt + "+" + water + ")×100% = " + pct + "%。" }; } },
 
     /* ---------------- 折扣问题 ---------------- */
     { id: "zhekou", name: "折扣问题", icon: "🏷️", color: "#e63999", level: "高年级",
       desc: "打几折就是按原价的百分之几十出售。",
       points: [ { t: "折扣公式", html: "现价 = 原价 × 折扣。打 8 折 = 按原价的 80%。" } ],
-      examples: [ { tag: "例题", q: "原价 100 元打 8 折，现价多少？", steps: ["100×80%", "= 80"], explain: "原价×折扣。" } ],
+      examples: [ { tag: "例题", q: "原价 100 元打 8 折,现价多少?", steps: ["100×80%", "= 80"], explain: "原价×折扣。" } ],
       gen: function () { var price = P([50, 80, 100, 200]), z = P([7, 8, 9]);
         var now = price * z / 10;
-        return { type: "num", q: "一件衣服原价 " + price + " 元，打 " + z + " 折出售。现价多少元？", input: "num", ans: String(now),
-          explain: price + "×" + (z * 10) + "% = " + now + "（元）。" }; } },
+        return { type: "num", q: "一件衣服原价 " + price + " 元,打 " + z + " 折出售。现价多少元?", input: "num", ans: String(now),
+          explain: price + "×" + (z * 10) + "% = " + now + "(元)。" }; } },
 
     /* ---------------- 利润问题 ---------------- */
     { id: "lirun", name: "利润问题", icon: "💹", color: "#06d6a0", level: "高年级",
-      desc: "利润 = 售价 − 成本。",
-      points: [ { t: "利润公式", html: "利润 = 售价 − 成本；利润率 = 利润 ÷ 成本 ×100%。" } ],
-      examples: [ { tag: "例题", q: "成本 50 元，卖 70 元，利润多少？", steps: ["70−50", "= 20"], explain: "售价−成本。" } ],
+      desc: "利润 = 售价 - 成本。",
+      points: [ { t: "利润公式", html: "利润 = 售价 - 成本;利润率 = 利润 ÷ 成本 ×100%。" } ],
+      examples: [ { tag: "例题", q: "成本 50 元,卖 70 元,利润多少?", steps: ["70-50", "= 20"], explain: "售价-成本。" } ],
       gen: function () { var cost = P([40, 50, 60, 80]), sell = cost + P([10, 20, 30]);
-        return { type: "num", q: "一件商品成本 " + cost + " 元，卖出 " + sell + " 元。利润是多少元？", input: "num", ans: String(sell - cost),
-          explain: sell + "−" + cost + " = " + (sell - cost) + "（元）。" }; } },
+        return { type: "num", q: "一件商品成本 " + cost + " 元,卖出 " + sell + " 元。利润是多少元?", input: "num", ans: String(sell - cost),
+          explain: sell + "-" + cost + " = " + (sell - cost) + "(元)。" }; } },
 
     /* ---------------- 租车优化 ---------------- */
     { id: "zuche", name: "租车优化", icon: "🚌", color: "#ff7a2f", level: "中年级",
-      desc: "怎样租车最省钱，尽量坐满不留空位。",
-      points: [ { t: "优化思路", html: "先算大车人均更便宜还是小车，尽量多坐大车、不留空位最省钱。" } ],
-      examples: [ { tag: "例题", q: "大车坐 10 人，小车坐 5 人，25 人怎样坐满？", steps: ["2 大 + 1 小", "20+5=25"], explain: "尽量坐满。" } ],
+      desc: "怎样租车最省钱,尽量坐满不留空位。",
+      points: [ { t: "优化思路", html: "先算大车人均更便宜还是小车,尽量多坐大车、不留空位最省钱。" } ],
+      examples: [ { tag: "例题", q: "大车坐 10 人,小车坐 5 人,25 人怎样坐满?", steps: ["2 大 + 1 小", "20+5=25"], explain: "尽量坐满。" } ],
       gen: function () { var big = 10, small = 5, bn = R(1, 3), sn = R(1, 3);
         var total = big * bn + small * sn;
-        return { type: "num", q: "大车坐 " + big + " 人，小车坐 " + small + " 人。" + total + " 人出行，租了 " + bn + " 辆大车，还需要几辆小车刚好坐满？", input: "num", ans: String(sn),
-          explain: "剩下 " + (total - big * bn) + " 人，" + (total - big * bn) + "÷" + small + " = " + sn + "（辆）。" }; } },
+        return { type: "num", q: "大车坐 " + big + " 人,小车坐 " + small + " 人。" + total + " 人出行,租了 " + bn + " 辆大车,还需要几辆小车刚好坐满?", input: "num", ans: String(sn),
+          explain: "剩下 " + (total - big * bn) + " 人," + (total - big * bn) + "÷" + small + " = " + sn + "(辆)。" }; } },
 
     /* ---------------- 运输优化 ---------------- */
     { id: "yunshu", name: "运输优化", icon: "🚚", color: "#ff7a2f", level: "中年级",
       desc: "运货时怎样安排最省车。",
-      points: [ { t: "思路", html: "总货物 ÷ 每车运量，有余数就要再加一车。" } ],
-      examples: [ { tag: "例题", q: "26 吨货，每车运 5 吨，要几车？", steps: ["26÷5=5…1", "需 6 车"], explain: "有余数加 1 车。" } ],
+      points: [ { t: "思路", html: "总货物 ÷ 每车运量,有余数就要再加一车。" } ],
+      examples: [ { tag: "例题", q: "26 吨货,每车运 5 吨,要几车?", steps: ["26÷5=5...1", "需 6 车"], explain: "有余数加 1 车。" } ],
       gen: function () { var per = R(4, 8), n = R(4, 9), rem = R(1, per - 1);
         var total = per * n + rem;
-        return { type: "num", q: "一堆货物共 " + total + " 吨，每辆车运 " + per + " 吨。至少需要几辆车？", input: "num", ans: String(n + 1),
-          explain: total + "÷" + per + " = " + n + "……" + rem + "，有余数，需要 " + (n + 1) + " 辆。" }; } },
+        return { type: "num", q: "一堆货物共 " + total + " 吨,每辆车运 " + per + " 吨。至少需要几辆车?", input: "num", ans: String(n + 1),
+          explain: total + "÷" + per + " = " + n + "......" + rem + ",有余数,需要 " + (n + 1) + " 辆。" }; } },
 
     /* ---------------- 数线段 ---------------- */
     { id: "shuduan", name: "数线段", icon: "📏", color: "#3a86ff", level: "中年级",
-      desc: "一条线上有 n 个点，能数出多少条线段。",
-      points: [ { t: "公式", html: "n 个点两两连线，线段数 = 1+2+…+(n−1) = <b>n(n−1)÷2</b>。" } ],
-      examples: [ { tag: "例题", q: "4 个点能数出几条线段？", steps: ["1+2+3", "= 6"], explain: "n(n−1)÷2。" } ],
+      desc: "一条线上有 n 个点,能数出多少条线段。",
+      points: [ { t: "公式", html: "n 个点两两连线,线段数 = 1+2+...+(n-1) = <b>n(n-1)÷2</b>。" } ],
+      examples: [ { tag: "例题", q: "4 个点能数出几条线段?", steps: ["1+2+3", "= 6"], explain: "n(n-1)÷2。" } ],
       gen: function () { var n = R(3, 7);
-        return { type: "tiankong", q: "一条直线上有 " + n + " 个点，一共有多少条线段？", input: "num", ans: String(n * (n - 1) / 2),
-          explain: n + "×" + (n - 1) + "÷2 = " + (n * (n - 1) / 2) + "（条）。" }; } },
+        return { type: "tiankong", q: "一条直线上有 " + n + " 个点,一共有多少条线段?", input: "num", ans: String(n * (n - 1) / 2),
+          explain: n + "×" + (n - 1) + "÷2 = " + (n * (n - 1) / 2) + "(条)。" }; } },
 
     /* ---------------- 数角 ---------------- */
     { id: "shujiao", name: "数角", icon: "📐", color: "#3a86ff", level: "中年级",
-      desc: "从一个顶点引出若干条射线，数角。",
-      points: [ { t: "公式", html: "从一个顶点引出 n 条射线，角的个数 = <b>n(n−1)÷2</b>。" } ],
-      examples: [ { tag: "例题", q: "从一个顶点引出 4 条射线，有几个角？", steps: ["4×3÷2", "= 6"], explain: "任两条射线组成一个角。" } ],
+      desc: "从一个顶点引出若干条射线,数角。",
+      points: [ { t: "公式", html: "从一个顶点引出 n 条射线,角的个数 = <b>n(n-1)÷2</b>。" } ],
+      examples: [ { tag: "例题", q: "从一个顶点引出 4 条射线,有几个角?", steps: ["4×3÷2", "= 6"], explain: "任两条射线组成一个角。" } ],
       gen: function () { var n = R(3, 6);
-        return { type: "tiankong", q: "从一个顶点引出 " + n + " 条射线，一共能数出多少个角？", input: "num", ans: String(n * (n - 1) / 2),
-          explain: n + "×" + (n - 1) + "÷2 = " + (n * (n - 1) / 2) + "（个）。" }; } },
+        return { type: "tiankong", q: "从一个顶点引出 " + n + " 条射线,一共能数出多少个角?", input: "num", ans: String(n * (n - 1) / 2),
+          explain: n + "×" + (n - 1) + "÷2 = " + (n * (n - 1) / 2) + "(个)。" }; } },
 
     /* ---------------- 数三角形 ---------------- */
     { id: "shusanjiao", name: "数三角形", icon: "🔺", color: "#8338ec", level: "高年级",
       desc: "有公共顶点、底边被分成若干段的三角形计数。",
-      points: [ { t: "方法", html: "底边被分成 n 段，三角形个数 = 1+2+…+n = <b>n(n+1)÷2</b>。" } ],
-      examples: [ { tag: "例题", q: "底边被分成 3 段，有几个三角形？", steps: ["1+2+3", "= 6"], explain: "n(n+1)÷2。" } ],
+      points: [ { t: "方法", html: "底边被分成 n 段,三角形个数 = 1+2+...+n = <b>n(n+1)÷2</b>。" } ],
+      examples: [ { tag: "例题", q: "底边被分成 3 段,有几个三角形?", steps: ["1+2+3", "= 6"], explain: "n(n+1)÷2。" } ],
       gen: function () { var n = R(2, 6);
-        return { type: "tiankong", q: "一个三角形的底边被分成 " + n + " 段（连到对面顶点），图中共有几个三角形？", input: "num", ans: String(n * (n + 1) / 2),
-          explain: n + "×" + (n + 1) + "÷2 = " + (n * (n + 1) / 2) + "（个）。" }; } },
+        return { type: "tiankong", q: "一个三角形的底边被分成 " + n + " 段(连到对面顶点),图中共有几个三角形?", input: "num", ans: String(n * (n + 1) / 2),
+          explain: n + "×" + (n + 1) + "÷2 = " + (n * (n + 1) / 2) + "(个)。" }; } },
 
     /* ---------------- 数长方形 ---------------- */
     { id: "shujuxing", name: "数长方形", icon: "▦", color: "#8338ec", level: "高年级",
       desc: "网格里的长方形计数。",
-      points: [ { t: "公式", html: "m 行 n 列的网格，长方形数 = [m(m+1)÷2] × [n(n+1)÷2]。" } ],
-      examples: [ { tag: "例题", q: "2 行 2 列网格有几个长方形？", steps: ["3×3", "= 9"], explain: "行方向3种×列方向3种。" } ],
+      points: [ { t: "公式", html: "m 行 n 列的网格,长方形数 = [m(m+1)÷2] × [n(n+1)÷2]。" } ],
+      examples: [ { tag: "例题", q: "2 行 2 列网格有几个长方形?", steps: ["3×3", "= 9"], explain: "行方向3种×列方向3种。" } ],
       gen: function () { var m = R(1, 3), n = R(2, 3);
-        return { type: "tiankong", q: "一个 " + m + " 行 " + n + " 列的方格网，共有多少个长方形（含正方形）？", input: "num", ans: String((m * (m + 1) / 2) * (n * (n + 1) / 2)),
+        return { type: "tiankong", q: "一个 " + m + " 行 " + n + " 列的方格网,共有多少个长方形(含正方形)?", input: "num", ans: String((m * (m + 1) / 2) * (n * (n + 1) / 2)),
           explain: "行方向 " + (m * (m + 1) / 2) + " 种 × 列方向 " + (n * (n + 1) / 2) + " 种 = " + ((m * (m + 1) / 2) * (n * (n + 1) / 2)) + "。" }; } },
 
     /* ---------------- 切割问题 ---------------- */
     { id: "qiege", name: "切割问题", icon: "🔪", color: "#ef476f", level: "中年级",
-      desc: "切几次变几段，段数和次数的关系。",
-      points: [ { t: "关系", html: "把一根绳子（木头）剪成段：<b>段数 = 次数 + 1</b>。" } ],
-      examples: [ { tag: "例题", q: "剪 4 次变几段？", steps: ["4+1", "= 5"], explain: "段数=次数+1。" } ],
+      desc: "切几次变几段,段数和次数的关系。",
+      points: [ { t: "关系", html: "把一根绳子(木头)剪成段:<b>段数 = 次数 + 1</b>。" } ],
+      examples: [ { tag: "例题", q: "剪 4 次变几段?", steps: ["4+1", "= 5"], explain: "段数=次数+1。" } ],
       gen: function () { var kind = R(1, 2);
         if (kind === 1) { var t = R(3, 8);
-          return { type: "tiankong", q: "一根木头锯了 " + t + " 次，锯成了几段？", input: "num", ans: String(t + 1),
+          return { type: "tiankong", q: "一根木头锯了 " + t + " 次,锯成了几段?", input: "num", ans: String(t + 1),
             explain: "段数 = 次数+1 = " + t + "+1 = " + (t + 1) + "。" }; }
         var seg = R(4, 9);
-        return { type: "tiankong", q: "把一根绳子剪成 " + seg + " 段，需要剪几次？", input: "num", ans: String(seg - 1),
-          explain: "次数 = 段数−1 = " + seg + "−1 = " + (seg - 1) + "。" }; } },
+        return { type: "tiankong", q: "把一根绳子剪成 " + seg + " 段,需要剪几次?", input: "num", ans: String(seg - 1),
+          explain: "次数 = 段数-1 = " + seg + "-1 = " + (seg - 1) + "。" }; } },
 
     /* ---------------- 涂色问题 ---------------- */
     { id: "shuaye", name: "涂色问题", icon: "🎨", color: "#8338ec", level: "高年级",
-      desc: "大正方体涂色后切成小正方体，数涂色面。",
-      points: [ { t: "规律", html: "棱长 n 的大正方体切成小正方体：三面涂色的是 8 个顶点；两面涂色的在棱上。" } ],
-      examples: [ { tag: "例题", q: "三面涂色的小正方体有几个？", steps: ["都是顶点", "= 8"], explain: "顶点有 8 个。" } ],
+      desc: "大正方体涂色后切成小正方体,数涂色面。",
+      points: [ { t: "规律", html: "棱长 n 的大正方体切成小正方体:三面涂色的是 8 个顶点;两面涂色的在棱上。" } ],
+      examples: [ { tag: "例题", q: "三面涂色的小正方体有几个?", steps: ["都是顶点", "= 8"], explain: "顶点有 8 个。" } ],
       gen: function () { var n = R(3, 5);
-        return { type: "tiankong", q: "一个大正方体表面涂色后，切成棱长 1 的小正方体（大正方体棱长 " + n + "）。三面涂色的小正方体有几个？", input: "num", ans: "8",
-          explain: "三面涂色的都在顶点处，永远是 8 个。" }; } },
+        return { type: "tiankong", q: "一个大正方体表面涂色后,切成棱长 1 的小正方体(大正方体棱长 " + n + ")。三面涂色的小正方体有几个?", input: "num", ans: "8",
+          explain: "三面涂色的都在顶点处,永远是 8 个。" }; } },
 
     /* ---------------- 页码问题 ---------------- */
     { id: "yema", name: "页码问题", icon: "📖", color: "#8338ec", level: "高年级",
       desc: "编页码一共用了多少个数字。",
-      points: [ { t: "分段数", html: "1~9 页每页 1 个数字；10~99 页每页 2 个数字；100~999 页每页 3 个数字。" } ],
-      examples: [ { tag: "例题", q: "编到第 20 页用几个数字？", steps: ["9×1+11×2", "= 31"], explain: "分段统计。" } ],
+      points: [ { t: "分段数", html: "1~9 页每页 1 个数字;10~99 页每页 2 个数字;100~999 页每页 3 个数字。" } ],
+      examples: [ { tag: "例题", q: "编到第 20 页用几个数字?", steps: ["9×1+11×2", "= 31"], explain: "分段统计。" } ],
       gen: function () { var pages = R(100, 300);
         var cnt = 9 + 90 * 2 + (pages - 99) * 3;
-        return { type: "tiankong", q: "一本书有 " + pages + " 页，编页码一共要用多少个数字？", input: "num", ans: String(cnt),
-          explain: "1~9 用 9 个，10~99 用 180 个，100~" + pages + " 用 " + ((pages - 99) * 3) + " 个，共 " + cnt + "。" }; } },
+        return { type: "tiankong", q: "一本书有 " + pages + " 页,编页码一共要用多少个数字?", input: "num", ans: String(cnt),
+          explain: "1~9 用 9 个,10~99 用 180 个,100~" + pages + " 用 " + ((pages - 99) * 3) + " 个,共 " + cnt + "。" }; } },
 
     /* ---------------- 数字计数 ---------------- */
     { id: "shuzi", name: "数字计数", icon: "🔢", color: "#8338ec", level: "高年级",
       desc: "1 到 n 中某个数字出现多少次。",
-      points: [ { t: "方法", html: "按数位分类统计，先数小的范围找规律。" } ],
-      examples: [ { tag: "例题", q: "1~20 中数字 1 出现几次？", steps: ["1,10,11,12…19", "= 12"], explain: "逐个数。" } ],
+      points: [ { t: "方法", html: "按数位分类统计,先数小的范围找规律。" } ],
+      examples: [ { tag: "例题", q: "1~20 中数字 1 出现几次?", steps: ["1,10,11,12...19", "= 12"], explain: "逐个数。" } ],
       gen: function () {
         var n = R(20, 50), d = R(1, 9), cnt = 0;
         for (var i = 1; i <= n; i++) { var s = String(i); for (var j = 0; j < s.length; j++) if (parseInt(s[j], 10) === d) cnt++; }
-        return { type: "tiankong", q: "从 1 写到 " + n + "，数字 " + d + " 一共出现了几次？", input: "num", ans: String(cnt),
-          explain: "逐个统计，数字 " + d + " 出现了 " + cnt + " 次。" }; } },
+        return { type: "tiankong", q: "从 1 写到 " + n + ",数字 " + d + " 一共出现了几次?", input: "num", ans: String(cnt),
+          explain: "逐个统计,数字 " + d + " 出现了 " + cnt + " 次。" }; } },
 
     /* ---------------- 余数问题 ---------------- */
     { id: "yushu", name: "余数问题", icon: "➗", color: "#ef476f", level: "中年级",
       desc: "被除数 = 除数 × 商 + 余数。",
-      points: [ { t: "关系式", html: "被除数 = 除数 × 商 + 余数，且余数 < 除数。" } ],
-      examples: [ { tag: "例题", q: "一个数除以 5 商 3 余 2，这个数是？", steps: ["5×3+2", "= 17"], explain: "除数×商+余数。" } ],
+      points: [ { t: "关系式", html: "被除数 = 除数 × 商 + 余数,且余数 < 除数。" } ],
+      examples: [ { tag: "例题", q: "一个数除以 5 商 3 余 2,这个数是?", steps: ["5×3+2", "= 17"], explain: "除数×商+余数。" } ],
       gen: function () { var div = R(3, 9), qv = R(3, 9), rem = R(1, div - 1);
-        return { type: "tiankong", q: "一个数除以 " + div + "，商是 " + qv + "，余数是 " + rem + "。这个数是多少？", input: "num", ans: String(div * qv + rem),
+        return { type: "tiankong", q: "一个数除以 " + div + ",商是 " + qv + ",余数是 " + rem + "。这个数是多少?", input: "num", ans: String(div * qv + rem),
           explain: div + "×" + qv + "+" + rem + " = " + (div * qv + rem) + "。" }; } },
 
-    /* ---------------- 同余问题（奥数） ---------------- */
+    /* ---------------- 同余问题(奥数) ---------------- */
     { id: "tongyu", name: "同余问题", icon: "🔁", color: "#8338ec", level: "高年级",
       desc: "一个数除以几个数都余同一个数。",
       points: [ { t: "方法", html: "这个数 = 这几个除数的<b>最小公倍数的倍数 + 余数</b>。" } ],
-      examples: [ { tag: "例题", q: "一个数除以 4 余 2，除以 6 也余 2，最小是几？", steps: ["[4,6]=12", "12+2=14"], explain: "最小公倍数+余数。" } ],
+      examples: [ { tag: "例题", q: "一个数除以 4 余 2,除以 6 也余 2,最小是几?", steps: ["[4,6]=12", "12+2=14"], explain: "最小公倍数+余数。" } ],
       gen: function () { var pairs = [[4, 6, 12], [6, 8, 24], [4, 5, 20], [3, 5, 15], [6, 9, 18]];
         var p = P(pairs), a = p[0], b = p[1], lcm = p[2];
         var rem = R(1, Math.min(a, b) - 1);
-        return { type: "tiankong", q: "一个数除以 " + a + " 余 " + rem + "，除以 " + b + " 也余 " + rem + "。这样的数最小是多少？", input: "num", ans: String(lcm + rem),
-          explain: a + " 和 " + b + " 的最小公倍数是 " + lcm + "，最小数 = " + lcm + "+" + rem + " = " + (lcm + rem) + "。" }; } },
+        return { type: "tiankong", q: "一个数除以 " + a + " 余 " + rem + ",除以 " + b + " 也余 " + rem + "。这样的数最小是多少?", input: "num", ans: String(lcm + rem),
+          explain: a + " 和 " + b + " 的最小公倍数是 " + lcm + ",最小数 = " + lcm + "+" + rem + " = " + (lcm + rem) + "。" }; } },
 
     /* ---------------- 真假问题 ---------------- */
     { id: "zhenjia", name: "真假问题", icon: "🎭", color: "#8338ec", level: "中年级",
-      desc: "一人说真话一人说假话，用假设法推理。",
-      points: [ { t: "假设法", html: "假设某人说真话，推出矛盾则他在说假话。" } ],
-      examples: [ { tag: "例题", q: "甲说“我们俩都在说谎”。谁在说真话？", steps: ["若甲真→两人说谎，矛盾", "甲说谎，乙说真"], explain: "假设法。" } ],
+      desc: "一人说真话一人说假话,用假设法推理。",
+      points: [ { t: "假设法", html: "假设某人说真话,推出矛盾则他在说假话。" } ],
+      examples: [ { tag: "例题", q: "甲说「我们俩都在说谎」。谁在说真话?", steps: ["若甲真→两人说谎,矛盾", "甲说谎,乙说真"], explain: "假设法。" } ],
       gen: function () { var kind = R(1, 2);
-        if (kind === 1) return { type: "choice", input: "choice", q: "甲说：“我们俩都在说谎。”乙什么也没说。已知一人总说真话一人总说谎。谁在说真话？", options: ["甲", "乙"], ans: "乙", explain: "若甲说真，则两人说谎，与甲说真矛盾；所以甲说谎、乙说真。" };
-        return { type: "choice", input: "choice", q: "桌上有红蓝两球。甲说：“红球在左边。”乙说：“红球不在左边。”已知一人说真一人说谎。红球在哪边？", options: ["左边", "右边", "无法确定"], ans: "无法确定", explain: "甲乙说法矛盾必一真一假，但无法判断谁说真，故无法确定。" }; } },
+        if (kind === 1) return { type: "choice", input: "choice", q: "甲说:「我们俩都在说谎。」乙什么也没说。已知一人总说真话一人总说谎。谁在说真话?", options: ["甲", "乙"], ans: "乙", explain: "若甲说真,则两人说谎,与甲说真矛盾;所以甲说谎、乙说真。" };
+        return { type: "choice", input: "choice", q: "桌上有红蓝两球。甲说:「红球在左边。」乙说:「红球不在左边。」已知一人说真一人说谎。红球在哪边?", options: ["左边", "右边", "无法确定"], ans: "无法确定", explain: "甲乙说法矛盾必一真一假,但无法判断谁说真,故无法确定。" }; } },
 
     /* ---------------- 排队问题 ---------------- */
     { id: "pailie", name: "排队问题", icon: "🧍", color: "#e63999", level: "高年级",
       desc: "n 个人排成一列的方案数 = n!。",
-      points: [ { t: "阶乘", html: "n 人排队 = n×(n−1)×…×1，记作 n!。" } ],
-      examples: [ { tag: "例题", q: "3 人排成一列有几种排法？", steps: ["3×2×1", "= 6"], explain: "3! = 6。" } ],
+      points: [ { t: "阶乘", html: "n 人排队 = n×(n-1)×...×1,记作 n!。" } ],
+      examples: [ { tag: "例题", q: "3 人排成一列有几种排法?", steps: ["3×2×1", "= 6"], explain: "3! = 6。" } ],
       gen: function () { var n = R(2, 4), f = 1; for (var i = 2; i <= n; i++) f *= i;
-        return { type: "tiankong", q: n + " 个同学排成一排照相，一共有多少种不同的排法？", input: "num", ans: String(f),
-          explain: n + "! = " + f + "（种）。" }; } },
+        return { type: "tiankong", q: n + " 个同学排成一排照相,一共有多少种不同的排法?", input: "num", ans: String(f),
+          explain: n + "! = " + f + "(种)。" }; } },
 
     /* ---------------- 圆桌问题 ---------------- */
     { id: "huanpai", name: "圆桌问题", icon: "⭕", color: "#e63999", level: "高年级",
-      desc: "n 人围坐圆桌的方案数 =（n−1）!。",
-      points: [ { t: "环形排列", html: "围成圈时，固定一人消除旋转重复，剩 (n−1)!。" } ],
-      examples: [ { tag: "例题", q: "4 人围坐圆桌有几种坐法？", steps: ["(4−1)!", "= 6"], explain: "(n−1)!。" } ],
+      desc: "n 人围坐圆桌的方案数 =(n-1)!。",
+      points: [ { t: "环形排列", html: "围成圈时,固定一人消除旋转重复,剩 (n-1)!。" } ],
+      examples: [ { tag: "例题", q: "4 人围坐圆桌有几种坐法?", steps: ["(4-1)!", "= 6"], explain: "(n-1)!。" } ],
       gen: function () { var n = R(3, 4), f = 1; for (var i = 2; i <= n - 1; i++) f *= i;
-        return { type: "tiankong", q: n + " 个人围坐在圆桌旁，一共有多少种不同的坐法？", input: "num", ans: String(f),
-          explain: "(" + n + "−1)! = " + f + "（种）。" }; } },
+        return { type: "tiankong", q: n + " 个人围坐在圆桌旁,一共有多少种不同的坐法?", input: "num", ans: String(f),
+          explain: "(" + n + "-1)! = " + f + "(种)。" }; } },
 
     /* ---------------- 分组问题 ---------------- */
     { id: "fenzu", name: "分组问题", icon: "👥", color: "#06d6a0", level: "中年级",
       desc: "把总数平均分成若干组。",
       points: [ { t: "思路", html: "组数 = 总数 ÷ 每组人数。" } ],
-      examples: [ { tag: "例题", q: "12 人每 3 人一组，分几组？", steps: ["12÷3", "= 4"], explain: "总数÷每组。" } ],
+      examples: [ { tag: "例题", q: "12 人每 3 人一组,分几组?", steps: ["12÷3", "= 4"], explain: "总数÷每组。" } ],
       gen: function () { var per = R(3, 6), groups = R(3, 8), total = per * groups;
-        return { type: "tiankong", q: total + " 名同学做游戏，每 " + per + " 人一组，可以分成几组？", input: "num", ans: String(groups),
-          explain: total + "÷" + per + " = " + groups + "（组）。" }; } },
+        return { type: "tiankong", q: total + " 名同学做游戏,每 " + per + " 人一组,可以分成几组?", input: "num", ans: String(groups),
+          explain: total + "÷" + per + " = " + groups + "(组)。" }; } },
 
     /* ---------------- 爬楼梯 ---------------- */
     { id: "louti", name: "爬楼梯", icon: "🪜", color: "#ff7a2f", level: "中年级",
-      desc: "从 1 楼到 n 楼，爬的是（n−1）层楼梯。",
-      points: [ { t: "关键", html: "到 n 楼要爬 <b>n−1</b> 层楼梯（1 楼不用爬）。" } ],
-      examples: [ { tag: "例题", q: "到 5 楼要爬几层楼梯？", steps: ["5−1", "= 4"], explain: "n−1。" } ],
+      desc: "从 1 楼到 n 楼,爬的是(n-1)层楼梯。",
+      points: [ { t: "关键", html: "到 n 楼要爬 <b>n-1</b> 层楼梯(1 楼不用爬)。" } ],
+      examples: [ { tag: "例题", q: "到 5 楼要爬几层楼梯?", steps: ["5-1", "= 4"], explain: "n-1。" } ],
       gen: function () { var floor = R(3, 8), steps = R(10, 20);
-        return { type: "tiankong", q: "每层楼之间有 " + steps + " 级台阶。从 1 楼走到 " + floor + " 楼，一共要走多少级台阶？", input: "num", ans: String((floor - 1) * steps),
-          explain: "要爬 " + (floor - 1) + " 层，" + (floor - 1) + "×" + steps + " = " + ((floor - 1) * steps) + "（级）。" }; } },
+        return { type: "tiankong", q: "每层楼之间有 " + steps + " 级台阶。从 1 楼走到 " + floor + " 楼,一共要走多少级台阶?", input: "num", ans: String((floor - 1) * steps),
+          explain: "要爬 " + (floor - 1) + " 层," + (floor - 1) + "×" + steps + " = " + ((floor - 1) * steps) + "(级)。" }; } },
 
-    /* ---------------- 牛吃草（奥数） ---------------- */
+    /* ---------------- 牛吃草(奥数) ---------------- */
     { id: "niuchi", name: "牛吃草问题", icon: "🐮", color: "#8338ec", level: "高年级",
-      desc: "草在匀速生长，经典的牛吃草问题。",
-      points: [ { t: "思路", html: "设每头牛每天吃 1 份，草每天长 x 份，原有 y 份。列式求 x、y，再算新情况。" } ],
-      examples: [ { tag: "例题", q: "10 头牛吃 20 天，15 头牛吃 10 天。25 头牛吃几天？", steps: ["求生长量 x=5，原有 y=100", "100÷(25−5)=5"], explain: "5 天。" } ],
+      desc: "草在匀速生长,经典的牛吃草问题。",
+      points: [ { t: "思路", html: "设每头牛每天吃 1 份,草每天长 x 份,原有 y 份。列式求 x、y,再算新情况。" } ],
+      examples: [ { tag: "例题", q: "10 头牛吃 20 天,15 头牛吃 10 天。25 头牛吃几天?", steps: ["求生长量 x=5,原有 y=100", "100÷(25-5)=5"], explain: "5 天。" } ],
       gen: function () { var ask = P([[25, 5], [30, 4]]);
-        return { type: "tiankong", q: "牧场草匀速生长。这片草可供 10 头牛吃 20 天，或供 15 头牛吃 10 天。那么可供 " + ask[0] + " 头牛吃几天？", input: "num", ans: String(ask[1]),
-          explain: "草每天长 5 份，原有 100 份；" + ask[0] + " 头牛吃：" + "100÷(" + ask[0] + "−5) = " + ask[1] + "（天）。" }; } },
+        return { type: "tiankong", q: "牧场草匀速生长。这片草可供 10 头牛吃 20 天,或供 15 头牛吃 10 天。那么可供 " + ask[0] + " 头牛吃几天?", input: "num", ans: String(ask[1]),
+          explain: "草每天长 5 份,原有 100 份;" + ask[0] + " 头牛吃:" + "100÷(" + ask[0] + "-5) = " + ask[1] + "(天)。" }; } },
 
-    /* ---------------- 注水问题（奥数） ---------------- */
+    /* ---------------- 注水问题(奥数) ---------------- */
     { id: "zhushui", name: "注水问题", icon: "🚰", color: "#0a7fa0", level: "高年级",
-      desc: "多管齐开，合作注水。",
-      points: [ { t: "公式", html: "合注时间 = 1 ÷（各管效率之和）。" } ],
-      examples: [ { tag: "例题", q: "甲管 3 小时注满，乙管 6 小时注满，齐开几小时？", steps: ["1/(1/3+1/6)", "= 2"], explain: "2 小时。" } ],
+      desc: "多管齐开,合作注水。",
+      points: [ { t: "公式", html: "合注时间 = 1 ÷(各管效率之和)。" } ],
+      examples: [ { tag: "例题", q: "甲管 3 小时注满,乙管 6 小时注满,齐开几小时?", steps: ["1/(1/3+1/6)", "= 2"], explain: "2 小时。" } ],
       gen: function () { var pairs = [[3, 6, 2], [2, 2, 1], [4, 4, 2], [6, 6, 3]];
         var p = P(pairs);
-        return { type: "tiankong", q: "甲管单独 " + p[0] + " 小时注满水池，乙管单独 " + p[1] + " 小时注满。两管齐开，几小时注满？", input: "num", ans: String(p[2]),
-          explain: "1÷(1/" + p[0] + "+1/" + p[1] + ") = " + p[2] + "（小时）。" }; } },
+        return { type: "tiankong", q: "甲管单独 " + p[0] + " 小时注满水池,乙管单独 " + p[1] + " 小时注满。两管齐开,几小时注满?", input: "num", ans: String(p[2]),
+          explain: "1÷(1/" + p[0] + "+1/" + p[1] + ") = " + p[2] + "(小时)。" }; } },
 
     /* ---------------- 等差数列通项 ---------------- */
     { id: "dengchaxiang", name: "等差数列通项", icon: "🔗", color: "#3a86ff", level: "高年级",
-      desc: "第 n 项 = 首项 +（n−1）×公差。",
-      points: [ { t: "通项公式", html: "an = a1 + (n−1)d。" } ],
-      examples: [ { tag: "例题", q: "2、5、8…第 10 项是几？", steps: ["2+(10−1)×3", "= 29"], explain: "通项公式。" } ],
+      desc: "第 n 项 = 首项 +(n-1)×公差。",
+      points: [ { t: "通项公式", html: "an = a1 + (n-1)d。" } ],
+      examples: [ { tag: "例题", q: "2、5、8...第 10 项是几?", steps: ["2+(10-1)×3", "= 29"], explain: "通项公式。" } ],
       gen: function () { var a1 = R(1, 5), d = R(2, 5), n = R(5, 12);
-        return { type: "tiankong", q: "等差数列首项是 " + a1 + "，公差是 " + d + "。第 " + n + " 项是多少？", input: "num", ans: String(a1 + (n - 1) * d),
-          explain: a1 + "+(" + n + "−1)×" + d + " = " + (a1 + (n - 1) * d) + "。" }; } },
+        return { type: "tiankong", q: "等差数列首项是 " + a1 + ",公差是 " + d + "。第 " + n + " 项是多少?", input: "num", ans: String(a1 + (n - 1) * d),
+          explain: a1 + "+(" + n + "-1)×" + d + " = " + (a1 + (n - 1) * d) + "。" }; } },
 
     /* ---------------- 奇数求和 ---------------- */
     { id: "qishuhe", name: "奇数求和", icon: "➕", color: "#3a86ff", level: "高年级",
-      desc: "1+3+5+…+（2n−1）= n²。",
-      points: [ { t: "规律", html: "前 n 个连续奇数的和 = <b>n²</b>。" } ],
-      examples: [ { tag: "例题", q: "1+3+5+7+9 = ？", steps: ["5 个奇数", "= 5² = 25"], explain: "n²。" } ],
+      desc: "1+3+5+...+(2n-1)= n2。",
+      points: [ { t: "规律", html: "前 n 个连续奇数的和 = <b>n2</b>。" } ],
+      examples: [ { tag: "例题", q: "1+3+5+7+9 = ?", steps: ["5 个奇数", "= 52 = 25"], explain: "n2。" } ],
       gen: function () { var n = R(3, 10);
-        return { type: "tiankong", q: "1 + 3 + 5 + … + " + (2 * n - 1) + " = （____）", input: "num", ans: String(n * n),
-          explain: "共 " + n + " 个连续奇数，和 = " + n + "² = " + (n * n) + "。" }; } },
+        return { type: "tiankong", q: "1 + 3 + 5 + ... + " + (2 * n - 1) + " = (____)", input: "num", ans: String(n * n),
+          explain: "共 " + n + " 个连续奇数,和 = " + n + "2 = " + (n * n) + "。" }; } },
 
     /* ---------------- 分数计算 ---------------- */
     { id: "fenshujisuan", name: "分数计算", icon: "➗", color: "#e63999", level: "高年级",
       desc: "分数乘整数、同分母加减。",
-      points: [ { t: "法则", html: "分数乘整数：分子乘整数；同分母加减：分母不变，分子相加减。" } ],
-      examples: [ { tag: "例题", q: "3/4 × 4 = ？", steps: ["3×4÷4", "= 3"], explain: "分子相乘再约分。" } ],
+      points: [ { t: "法则", html: "分数乘整数:分子乘整数;同分母加减:分母不变,分子相加减。" } ],
+      examples: [ { tag: "例题", q: "3/4 × 4 = ?", steps: ["3×4÷4", "= 3"], explain: "分子相乘再约分。" } ],
       gen: function () { var kind = R(1, 2);
         if (kind === 1) { var b = P([2, 3, 4, 5]), a = R(1, b - 1);
-          return { type: "tiankong", q: a + "/" + b + " × " + b + " = （____）", input: "num", ans: String(a),
+          return { type: "tiankong", q: a + "/" + b + " × " + b + " = (____)", input: "num", ans: String(a),
             explain: a + "/" + b + "×" + b + " = " + a + "。" }; }
         var c = P([5, 6, 7, 8]), x = R(1, c - 2), y = R(1, c - x);
-        return { type: "text", q: x + "/" + c + " + " + y + "/" + c + " = （____）", input: "text", ans: (x + y) + "/" + c, accept: [(x + y) + "/" + c],
-          explain: "分母不变，分子相加：" + x + "+" + y + " = " + (x + y) + "，得 " + (x + y) + "/" + c + "。" }; } },
+        return { type: "text", q: x + "/" + c + " + " + y + "/" + c + " = (____)", input: "text", ans: (x + y) + "/" + c, accept: [(x + y) + "/" + c],
+          explain: "分母不变,分子相加:" + x + "+" + y + " = " + (x + y) + ",得 " + (x + y) + "/" + c + "。" }; } },
 
-    /* ---------------- 简算（分配律） ---------------- */
+    /* ---------------- 简算(分配律) ---------------- */
     { id: "jianbian", name: "简算技巧", icon: "⚡", color: "#ff7a2f", level: "中年级",
       desc: "用运算律巧妙计算。",
       points: [ { t: "凑整", html: "a×99+a = a×(99+1) = a×100。" } ],
-      examples: [ { tag: "例题", q: "78×99+78 = ？", steps: ["78×(99+1)", "= 7800"], explain: "提取公因数。" } ],
+      examples: [ { tag: "例题", q: "78×99+78 = ?", steps: ["78×(99+1)", "= 7800"], explain: "提取公因数。" } ],
       gen: function () { var a = R(23, 89);
-        return { type: "tiankong", q: a + " × 99 + " + a + " = （____）", input: "num", ans: String(a * 100),
+        return { type: "tiankong", q: a + " × 99 + " + a + " = (____)", input: "num", ans: String(a * 100),
           explain: a + "×(99+1) = " + a + "×100 = " + (a * 100) + "。" }; } },
 
     /* ---------------- 简易方程 ---------------- */
     { id: "fangcheng", name: "简易方程", icon: "⚖️", color: "#0a7fa0", level: "高年级",
       desc: "解 x+a=b 或 ax=b。",
-      points: [ { t: "等式性质", html: "两边同时加/减/乘/除同一个数（除数≠0），等式仍成立。" } ],
-      examples: [ { tag: "例题", q: "x + 5 = 12，x = ？", steps: ["x = 12−5", "= 7"], explain: "移项。" } ],
+      points: [ { t: "等式性质", html: "两边同时加/减/乘/除同一个数(除数≠0),等式仍成立。" } ],
+      examples: [ { tag: "例题", q: "x + 5 = 12,x = ?", steps: ["x = 12-5", "= 7"], explain: "移项。" } ],
       gen: function () { var kind = R(1, 2);
         if (kind === 1) { var x = R(3, 20), a = R(2, 15);
-          return { type: "tiankong", q: "x + " + a + " = " + (x + a) + "，x = （____）", input: "num", ans: String(x),
-            explain: "x = " + (x + a) + "−" + a + " = " + x + "。" }; }
+          return { type: "tiankong", q: "x + " + a + " = " + (x + a) + ",x = (____)", input: "num", ans: String(x),
+            explain: "x = " + (x + a) + "-" + a + " = " + x + "。" }; }
         var xx = R(2, 9), k = R(2, 9);
-        return { type: "tiankong", q: k + "x = " + (k * xx) + "，x = （____）", input: "num", ans: String(xx),
+        return { type: "tiankong", q: k + "x = " + (k * xx) + ",x = (____)", input: "num", ans: String(xx),
           explain: "x = " + (k * xx) + "÷" + k + " = " + xx + "。" }; } },
 
     /* ---------------- 年龄倍数 ---------------- */
     { id: "nianling2", name: "年龄倍数", icon: "🎂", color: "#06d6a0", level: "中年级",
       desc: "几年后年龄成倍数关系。",
-      points: [ { t: "思路", html: "设 x 年后满足倍数，列方程：大+ x = 倍×(小+ x)。" } ],
-      examples: [ { tag: "例题", q: "爸 40 岁儿 10 岁，几年后爸是儿的 2 倍？", steps: ["40+x=2(10+x)", "x=20"], explain: "20 年后。" } ],
+      points: [ { t: "思路", html: "设 x 年后满足倍数,列方程:大+ x = 倍×(小+ x)。" } ],
+      examples: [ { tag: "例题", q: "爸 40 岁儿 10 岁,几年后爸是儿的 2 倍?", steps: ["40+x=2(10+x)", "x=20"], explain: "20 年后。" } ],
       gen: function () { var s = R(5, 12), extra = R(5, 20), f = 2 * s + extra;
-        return { type: "tiankong", q: "今年爸爸 " + f + " 岁，儿子 " + s + " 岁。几年后爸爸的年龄是儿子的 2 倍？", input: "num", ans: String(extra),
-          explain: f + "+x = 2(" + s + "+x)，解得 x = " + extra + "（年）。" }; } },
+        return { type: "tiankong", q: "今年爸爸 " + f + " 岁,儿子 " + s + " 岁。几年后爸爸的年龄是儿子的 2 倍?", input: "num", ans: String(extra),
+          explain: f + "+x = 2(" + s + "+x),解得 x = " + extra + "(年)。" }; } },
 
     /* ---------------- 流水行船 ---------------- */
     { id: "shuiliu", name: "流水行船", icon: "🚤", color: "#3a86ff", level: "高年级",
-      desc: "顺水速 = 船速+水速；逆水速 = 船速−水速。",
-      points: [ { t: "公式", html: "顺水速度 = 船速 + 水速；逆水速度 = 船速 − 水速。" } ],
-      examples: [ { tag: "例题", q: "船速 25，水速 3，顺水速度？", steps: ["25+3", "= 28"], explain: "船速+水速。" } ],
+      desc: "顺水速 = 船速+水速;逆水速 = 船速-水速。",
+      points: [ { t: "公式", html: "顺水速度 = 船速 + 水速;逆水速度 = 船速 - 水速。" } ],
+      examples: [ { tag: "例题", q: "船速 25,水速 3,顺水速度?", steps: ["25+3", "= 28"], explain: "船速+水速。" } ],
       gen: function () { var boat = R(20, 30), cur = R(2, 5);
-        if (R(1, 2) === 1) return { type: "tiankong", q: "船在静水中每小时行 " + boat + " 千米，水流每小时 " + cur + " 千米。顺水每小时行多少千米？", input: "num", ans: String(boat + cur),
-          explain: boat + "+" + cur + " = " + (boat + cur) + "（千米）。" };
-        return { type: "tiankong", q: "船在静水中每小时行 " + boat + " 千米，水流每小时 " + cur + " 千米。逆水每小时行多少千米？", input: "num", ans: String(boat - cur),
-          explain: boat + "−" + cur + " = " + (boat - cur) + "（千米）。" }; } },
+        if (R(1, 2) === 1) return { type: "tiankong", q: "船在静水中每小时行 " + boat + " 千米,水流每小时 " + cur + " 千米。顺水每小时行多少千米?", input: "num", ans: String(boat + cur),
+          explain: boat + "+" + cur + " = " + (boat + cur) + "(千米)。" };
+        return { type: "tiankong", q: "船在静水中每小时行 " + boat + " 千米,水流每小时 " + cur + " 千米。逆水每小时行多少千米?", input: "num", ans: String(boat - cur),
+          explain: boat + "-" + cur + " = " + (boat - cur) + "(千米)。" }; } },
 
     /* ---------------- 环形跑道 ---------------- */
     { id: "huanxing", name: "环形跑道", icon: "🏟️", color: "#3a86ff", level: "高年级",
       desc: "环形跑道相向而行的相遇问题。",
       points: [ { t: "公式", html: "相遇时间 = 跑道一圈 ÷ 速度和。" } ],
-      examples: [ { tag: "例题", q: "一圈 400 米，甲乙速度和 100，几分钟后相遇？", steps: ["400÷100", "= 4"], explain: "一圈÷速度和。" } ],
+      examples: [ { tag: "例题", q: "一圈 400 米,甲乙速度和 100,几分钟后相遇?", steps: ["400÷100", "= 4"], explain: "一圈÷速度和。" } ],
       gen: function () { var v1 = R(40, 70), v2 = R(50, 80), t = R(3, 8), total = (v1 + v2) * t;
-        return { type: "tiankong", q: "环形跑道一圈 " + total + " 米，甲乙从同地同时相向出发，甲每分走 " + v1 + " 米，乙每分走 " + v2 + " 米。几分钟后相遇？", input: "num", ans: String(t),
-          explain: total + "÷(" + v1 + "+" + v2 + ") = " + t + "（分钟）。" }; } },
+        return { type: "tiankong", q: "环形跑道一圈 " + total + " 米,甲乙从同地同时相向出发,甲每分走 " + v1 + " 米,乙每分走 " + v2 + " 米。几分钟后相遇?", input: "num", ans: String(t),
+          explain: total + "÷(" + v1 + "+" + v2 + ") = " + t + "(分钟)。" }; } },
 
     /* ---------------- 合作工程 ---------------- */
     { id: "hezuo", name: "合作工程", icon: "🤝", color: "#06d6a0", level: "高年级",
       desc: "两人合作完成任务。",
-      points: [ { t: "公式", html: "合作时间 = 1 ÷（两人效率之和）。" } ],
-      examples: [ { tag: "例题", q: "甲独做 4 天，乙独做 4 天，合作几天？", steps: ["1/(1/4+1/4)", "= 2"], explain: "2 天。" } ],
+      points: [ { t: "公式", html: "合作时间 = 1 ÷(两人效率之和)。" } ],
+      examples: [ { tag: "例题", q: "甲独做 4 天,乙独做 4 天,合作几天?", steps: ["1/(1/4+1/4)", "= 2"], explain: "2 天。" } ],
       gen: function () { var pairs = [[2, 2, 1], [3, 6, 2], [4, 4, 2], [6, 6, 3]];
         var p = P(pairs);
-        return { type: "tiankong", q: "一件工作甲单独做要 " + p[0] + " 天，乙单独做要 " + p[1] + " 天。两人合作几天完成？", input: "num", ans: String(p[2]),
-          explain: "1÷(1/" + p[0] + "+1/" + p[1] + ") = " + p[2] + "（天）。" }; } },
+        return { type: "tiankong", q: "一件工作甲单独做要 " + p[0] + " 天,乙单独做要 " + p[1] + " 天。两人合作几天完成?", input: "num", ans: String(p[2]),
+          explain: "1÷(1/" + p[0] + "+1/" + p[1] + ") = " + p[2] + "(天)。" }; } },
 
     /* ---------------- 利率问题 ---------------- */
     { id: "lilv", name: "利率问题", icon: "🏦", color: "#0a7fa0", level: "高年级",
       desc: "利息 = 本金 × 利率 × 存期。",
       points: [ { t: "公式", html: "利息 = 本金 × 利率 × 存期。" } ],
-      examples: [ { tag: "例题", q: "存 1000 元，年利率 3%，存 2 年，利息多少？", steps: ["1000×3%×2", "= 60"], explain: "本金×利率×存期。" } ],
+      examples: [ { tag: "例题", q: "存 1000 元,年利率 3%,存 2 年,利息多少?", steps: ["1000×3%×2", "= 60"], explain: "本金×利率×存期。" } ],
       gen: function () { var ben = P([1000, 2000, 5000]), rate = P([2, 3, 5]), yr = R(1, 3);
         var li = ben * rate / 100 * yr;
-        return { type: "num", q: "把 " + ben + " 元存入银行，年利率 " + rate + "%，存 " + yr + " 年。到期可得利息多少元？", input: "num", ans: String(li),
-          explain: ben + "×" + rate + "%×" + yr + " = " + li + "（元）。" }; } }
+        return { type: "num", q: "把 " + ben + " 元存入银行,年利率 " + rate + "%,存 " + yr + " 年。到期可得利息多少元?", input: "num", ans: String(li),
+          explain: ben + "×" + rate + "%×" + yr + " = " + li + "(元)。" }; } }
     ,
-    /* ---------------- 周期规律（奥数） ---------------- */
+    /* ---------------- 周期规律(奥数) ---------------- */
     { id: "zhouqi", name: "周期规律", icon: "🔁", color: "#3a86ff", level: "中年级",
-      desc: "按周期重复排列，用除法找余数定位。",
-      points: [ { t: "周期问题", html: "事物按固定周期重复。求第 N 个，用 <b>N÷周期</b>，看<b>余数</b>对应周期里的第几个；余数为 0 则是周期最后一个。" } ],
-      examples: [ { tag: "例题", q: "○△□○△□…第 8 个是什么？", steps: ["周期是 3", "8÷3=2…2", "余 2 对应第 2 个△"], explain: "余数定位。" } ],
+      desc: "按周期重复排列,用除法找余数定位。",
+      points: [ { t: "周期问题", html: "事物按固定周期重复。求第 N 个,用 <b>N÷周期</b>,看<b>余数</b>对应周期里的第几个;余数为 0 则是周期最后一个。" } ],
+      examples: [ { tag: "例题", q: "○△□○△□...第 8 个是什么?", steps: ["周期是 3", "8÷3=2...2", "余 2 对应第 2 个△"], explain: "余数定位。" } ],
       gen: function () {
         var pats = [["○", "△", "□"], ["红", "黄", "蓝"], ["☆", "★"], ["春", "夏", "秋", "冬"]];
         var pat = P(pats), len = pat.length, n = R(len + 2, len * 5);
         var rem = n % len, idx = rem === 0 ? len - 1 : rem - 1;
         var ans = pat[idx];
         var opts = pat.slice(); while (opts.length < 4) opts.push("无");
-        return { type: "xuanze", q: "按 " + pat.join("、") + " 的规律反复排列，第 " + n + " 个是什么？", input: "choice", options: QE.shuffle(opts.slice(0, Math.max(len, 3))), ans: ans,
-          explain: "周期是 " + len + "，" + n + "÷" + len + "=" + Math.floor(n / len) + "…" + rem + (rem === 0 ? "，余 0 是周期最后一个" : "，余 " + rem + " 对应第 " + rem + " 个") + "，是 " + ans + "。" };
+        return { type: "xuanze", q: "按 " + pat.join("、") + " 的规律反复排列,第 " + n + " 个是什么?", input: "choice", options: QE.shuffle(opts.slice(0, Math.max(len, 3))), ans: ans,
+          explain: "周期是 " + len + "," + n + "÷" + len + "=" + Math.floor(n / len) + "..." + rem + (rem === 0 ? ",余 0 是周期最后一个" : ",余 " + rem + " 对应第 " + rem + " 个") + ",是 " + ans + "。" };
       } },
 
     /* ---------------- 分类与对应 ---------------- */
     { id: "fenlei", name: "分类与对应", icon: "🗂️", color: "#06d6a0", level: "低年级",
-      desc: "按标准分类，一一对应比较多少。",
-      points: [ { t: "分类与对应", html: "按同一标准把物体分类；一一对应可以比较两组谁多谁少、多几个。" } ],
-      examples: [ { tag: "例题", q: "5 个杯子配 3 个盖子，还差几个盖子？", steps: ["一一对应", "5−3=2"], explain: "差 2 个。" } ],
+      desc: "按标准分类,一一对应比较多少。",
+      points: [ { t: "分类与对应", html: "按同一标准把物体分类;一一对应可以比较两组谁多谁少、多几个。" } ],
+      examples: [ { tag: "例题", q: "5 个杯子配 3 个盖子,还差几个盖子?", steps: ["一一对应", "5-3=2"], explain: "差 2 个。" } ],
       gen: function () {
         var kind = R(1, 2);
         if (kind === 1) { var a = R(4, 9), b = R(1, a - 1);
-          return { type: "num", q: a + " 只小兔，每只配 1 根胡萝卜，现在有 " + (a - b) + " 根胡萝卜，还差几根？", input: "num", ans: String(b), explain: "一一对应：" + a + "−" + (a - b) + "=" + b + "（根）。" }; }
+          return { type: "num", q: a + " 只小兔,每只配 1 根胡萝卜,现在有 " + (a - b) + " 根胡萝卜,还差几根?", input: "num", ans: String(b), explain: "一一对应:" + a + "-" + (a - b) + "=" + b + "(根)。" }; }
         var items = [["苹果", "水果"], ["白菜", "蔬菜"], ["铅笔", "文具"], ["玫瑰", "花"], ["金鱼", "动物"]];
         var it = P(items);
         var wrong = P(["水果", "蔬菜", "文具", "花", "动物"].filter(function (x) { return x !== it[1]; }));
-        return { type: "xuanze", q: "" + it[0] + " 应该分到哪一类？", input: "choice", options: QE.shuffle([it[1], wrong]), ans: it[1], explain: it[0] + " 属于 " + it[1] + "。" };
+        return { type: "xuanze", q: "" + it[0] + " 应该分到哪一类?", input: "choice", options: QE.shuffle([it[1], wrong]), ans: it[1], explain: it[0] + " 属于 " + it[1] + "。" };
       } },
 
     /* ---------------- 位置与方向 ---------------- */
     { id: "weizhi", name: "位置与方向", icon: "🧭", color: "#ff7a2f", level: "低年级",
       desc: "排队的位置、东南西北方向。",
-      points: [ { t: "位置与方向", html: "排队问题注意“从前/从后数”；方向有东、南、西、北，上北下南左西右东。" } ],
-      examples: [ { tag: "例题", q: "小明前面有 3 人，后面有 4 人，这队一共几人？", steps: ["3+4+小明自己", "=8"], explain: "别忘了加自己。" } ],
+      points: [ { t: "位置与方向", html: "排队问题注意「从前/从后数」;方向有东、南、西、北,上北下南左西右东。" } ],
+      examples: [ { tag: "例题", q: "小明前面有 3 人,后面有 4 人,这队一共几人?", steps: ["3+4+小明自己", "=8"], explain: "别忘了加自己。" } ],
       gen: function () {
         var kind = R(1, 2);
         if (kind === 1) { var f = R(2, 7), b = R(2, 7);
-          return { type: "num", q: "排队时，小红前面有 " + f + " 人，后面有 " + b + " 人。这一队一共有多少人？", input: "num", ans: String(f + b + 1), explain: "前面+后面+自己：" + f + "+" + b + "+1=" + (f + b + 1) + "（人）。" }; }
-        var dirs = [["面向东，向右转后面向哪？", "南"], ["面向北，向后转后面向哪？", "南"], ["面向西，向左转后面向哪？", "南"], ["面向南，向右转后面向哪？", "西"]];
+          return { type: "num", q: "排队时,小红前面有 " + f + " 人,后面有 " + b + " 人。这一队一共有多少人?", input: "num", ans: String(f + b + 1), explain: "前面+后面+自己:" + f + "+" + b + "+1=" + (f + b + 1) + "(人)。" }; }
+        var dirs = [["面向东,向右转后面向哪?", "南"], ["面向北,向后转后面向哪?", "南"], ["面向西,向左转后面向哪?", "南"], ["面向南,向右转后面向哪?", "西"]];
         var d = P(dirs);
         return { type: "xuanze", q: d[0], input: "choice", options: QE.shuffle(["东", "南", "西", "北"]), ans: d[1], explain: "按方向转动判断。" };
       } },
 
     /* ---------------- 数阵图与填数 ---------------- */
     { id: "shuzhen", name: "数阵图填数", icon: "🔢", color: "#8338ec", level: "高年级",
-      desc: "在图形里填数，让每条线/每行和相等。",
-      points: [ { t: "数阵图", html: "填数让每条线上的和相等。先确定中心/公共位置，再用总和分配。" } ],
-      examples: [ { tag: "例题", q: "把 1~5 填入十字，使横竖和相等，中心填几？", steps: ["中心放中间数", "放 3"], explain: "中心常放中位数。" } ],
+      desc: "在图形里填数,让每条线/每行和相等。",
+      points: [ { t: "数阵图", html: "填数让每条线上的和相等。先确定中心/公共位置,再用总和分配。" } ],
+      examples: [ { tag: "例题", q: "把 1~5 填入十字,使横竖和相等,中心填几?", steps: ["中心放中间数", "放 3"], explain: "中心常放中位数。" } ],
       gen: function () {
         var kind = R(1, 2);
         if (kind === 1) { var a = R(2, 6), b = R(2, 6), c = R(2, 6), s = a + b + c;
-          return { type: "num", q: "三角形每条边上三个数的和都相等。已知两个角是 " + a + " 和 " + b + "，三个顶点数的和是 " + s + "，第三个角是几？", input: "num", ans: String(c), explain: s + "−" + a + "−" + b + "=" + c + "。" }; }
+          return { type: "num", q: "三角形每条边上三个数的和都相等。已知两个角是 " + a + " 和 " + b + ",三个顶点数的和是 " + s + ",第三个角是几?", input: "num", ans: String(c), explain: s + "-" + a + "-" + b + "=" + c + "。" }; }
         var m = R(2, 5);
-        var magic = 3 * m + 3; /* 简化：三阶幻和提示 */
-        return { type: "num", q: "一个三阶幻方（每行每列每斜线和相等）中心数是 " + m + "，那么每行的和是多少？", input: "num", ans: String(3 * m), explain: "三阶幻方每行和 = 中心数×3 = " + m + "×3=" + (3 * m) + "。" };
+        var magic = 3 * m + 3; /* 简化:三阶幻和提示 */
+        return { type: "num", q: "一个三阶幻方(每行每列每斜线和相等)中心数是 " + m + ",那么每行的和是多少?", input: "num", ans: String(3 * m), explain: "三阶幻方每行和 = 中心数×3 = " + m + "×3=" + (3 * m) + "。" };
       } },
 
-    /* ---------------- 计数与组合（奥数） ---------------- */
+    /* ---------------- 计数与组合(奥数) ---------------- */
     { id: "zuhe", name: "计数与组合", icon: "🎲", color: "#e63999", level: "高年级",
-      desc: "有序计数、搭配组合，不重不漏。",
-      points: [ { t: "计数与组合", html: "分类相加、分步相乘；组合不计顺序，排列计顺序。" } ],
-      examples: [ { tag: "例题", q: "3 件上衣 2 条裤子，几种搭配？", steps: ["3×2", "=6"], explain: "分步相乘。" } ],
+      desc: "有序计数、搭配组合,不重不漏。",
+      points: [ { t: "计数与组合", html: "分类相加、分步相乘;组合不计顺序,排列计顺序。" } ],
+      examples: [ { tag: "例题", q: "3 件上衣 2 条裤子,几种搭配?", steps: ["3×2", "=6"], explain: "分步相乘。" } ],
       gen: function () {
         var kind = R(1, 3);
         if (kind === 1) { var a = R(2, 4), b = R(2, 4);
-          return { type: "num", q: a + " 种主食、" + b + " 种饮料，各选一种，共有多少种搭配？", input: "num", ans: String(a * b), explain: "分步相乘：" + a + "×" + b + "=" + (a * b) + "。" }; }
+          return { type: "num", q: a + " 种主食、" + b + " 种饮料,各选一种,共有多少种搭配?", input: "num", ans: String(a * b), explain: "分步相乘:" + a + "×" + b + "=" + (a * b) + "。" }; }
         if (kind === 2) { var n = R(3, 5);
-          return { type: "num", q: n + " 个人互相握手一次，共握多少次？", input: "num", ans: String(n * (n - 1) / 2), explain: "组合不计顺序：" + n + "×" + (n - 1) + "÷2=" + (n * (n - 1) / 2) + "。" }; }
+          return { type: "num", q: n + " 个人互相握手一次,共握多少次?", input: "num", ans: String(n * (n - 1) / 2), explain: "组合不计顺序:" + n + "×" + (n - 1) + "÷2=" + (n * (n - 1) / 2) + "。" }; }
         var n3 = R(2, 4);
-        return { type: "num", q: "用 1、2、3 组成没有重复数字的两位数，最多能组成几个？（数字够用时）", input: "num", ans: "6", explain: "十位 3 种、个位 2 种：3×2=6 个。" };
+        return { type: "num", q: "用 1、2、3 组成没有重复数字的两位数,最多能组成几个?(数字够用时)", input: "num", ans: "6", explain: "十位 3 种、个位 2 种:3×2=6 个。" };
       } }
     ,
     /* ---------------- 和差问题·求两数 ---------------- */
     { id: "hecha2", name: "和差问题·求两数", icon: "⚖️", color: "#3a86ff", level: "中年级",
-      desc: "已知和与差，求较大数和较小数。",
-      points: [ { t: "和差公式", html: "大数 =（和+差）÷2，小数 =（和−差）÷2。" } ],
-      examples: [ { tag: "例题", q: "两数和 50，差 10。较小数是？", steps: ["(50−10)÷2", "=20"], explain: "小数=(和−差)÷2。" } ],
+      desc: "已知和与差,求较大数和较小数。",
+      points: [ { t: "和差公式", html: "大数 =(和+差)÷2,小数 =(和-差)÷2。" } ],
+      examples: [ { tag: "例题", q: "两数和 50,差 10。较小数是?", steps: ["(50-10)÷2", "=20"], explain: "小数=(和-差)÷2。" } ],
       gen: function () {
         var big = R(20, 60), small = R(6, big - 4);
         var sum = big + small, diff = big - small;
-        if (Math.random() < 0.5) return { type: "num", q: "两个数的和是 " + sum + "，差是 " + diff + "。较小的数是多少？", input: "num", ans: String(small), explain: "小数=(和−差)÷2=(" + sum + "−" + diff + ")÷2=" + small + "。" };
-        return { type: "num", q: "两个数的和是 " + sum + "，差是 " + diff + "。较大的数是多少？", input: "num", ans: String(big), explain: "大数=(和+差)÷2=(" + sum + "+" + diff + ")÷2=" + big + "。" };
+        if (Math.random() < 0.5) return { type: "num", q: "两个数的和是 " + sum + ",差是 " + diff + "。较小的数是多少?", input: "num", ans: String(small), explain: "小数=(和-差)÷2=(" + sum + "-" + diff + ")÷2=" + small + "。" };
+        return { type: "num", q: "两个数的和是 " + sum + ",差是 " + diff + "。较大的数是多少?", input: "num", ans: String(big), explain: "大数=(和+差)÷2=(" + sum + "+" + diff + ")÷2=" + big + "。" };
       } },
 
     /* ---------------- 和倍问题·求较大数 ---------------- */
     { id: "hebei2", name: "和倍问题·求较大数", icon: "📈", color: "#3a86ff", level: "高年级",
-      desc: "已知和与倍数关系，求较大数。",
-      points: [ { t: "和倍公式", html: "小数 = 和÷(倍数+1)，大数 = 小数×倍数。" } ],
-      examples: [ { tag: "例题", q: "甲乙和 40，甲是乙的 3 倍。甲是？", steps: ["乙=40÷4=10", "甲=10×3=30"], explain: "先求小数再乘倍数。" } ],
+      desc: "已知和与倍数关系,求较大数。",
+      points: [ { t: "和倍公式", html: "小数 = 和÷(倍数+1),大数 = 小数×倍数。" } ],
+      examples: [ { tag: "例题", q: "甲乙和 40,甲是乙的 3 倍。甲是?", steps: ["乙=40÷4=10", "甲=10×3=30"], explain: "先求小数再乘倍数。" } ],
       gen: function () {
         var k = R(2, 4), x = R(5, 15), sum = x * (k + 1);
-        return { type: "num", q: "甲乙两数的和是 " + sum + "，甲是乙的 " + k + " 倍。甲是多少？", input: "num", ans: String(x * k), explain: "乙=" + sum + "÷" + (k + 1) + "=" + x + "，甲=" + x + "×" + k + "=" + (x * k) + "。" };
+        return { type: "num", q: "甲乙两数的和是 " + sum + ",甲是乙的 " + k + " 倍。甲是多少?", input: "num", ans: String(x * k), explain: "乙=" + sum + "÷" + (k + 1) + "=" + x + ",甲=" + x + "×" + k + "=" + (x * k) + "。" };
       } },
 
     /* ---------------- 差倍问题·求和 ---------------- */
     { id: "chabei2", name: "差倍问题·求和", icon: "📉", color: "#3a86ff", level: "高年级",
-      desc: "已知差与倍数关系，求两数的和。",
-      points: [ { t: "差倍公式", html: "小数 = 差÷(倍数−1)，大数 = 小数×倍数，和 = 大数+小数。" } ],
-      examples: [ { tag: "例题", q: "甲比乙多 20，甲是乙的 3 倍。两数和是？", steps: ["乙=20÷2=10", "甲=30，和=40"], explain: "先求小数再求和。" } ],
+      desc: "已知差与倍数关系,求两数的和。",
+      points: [ { t: "差倍公式", html: "小数 = 差÷(倍数-1),大数 = 小数×倍数,和 = 大数+小数。" } ],
+      examples: [ { tag: "例题", q: "甲比乙多 20,甲是乙的 3 倍。两数和是?", steps: ["乙=20÷2=10", "甲=30,和=40"], explain: "先求小数再求和。" } ],
       gen: function () {
         var k = R(2, 4), x = R(5, 15), diff = x * (k - 1);
         var big = x * k, sum = big + x;
-        return { type: "num", q: "甲比乙多 " + diff + "，甲是乙的 " + k + " 倍。甲乙两数的和是多少？", input: "num", ans: String(sum), explain: "乙=" + diff + "÷" + (k - 1) + "=" + x + "，甲=" + x + "×" + k + "=" + big + "，和=" + x + "+" + big + "=" + sum + "。" };
+        return { type: "num", q: "甲比乙多 " + diff + ",甲是乙的 " + k + " 倍。甲乙两数的和是多少?", input: "num", ans: String(sum), explain: "乙=" + diff + "÷" + (k - 1) + "=" + x + ",甲=" + x + "×" + k + "=" + big + ",和=" + x + "+" + big + "=" + sum + "。" };
       } },
 
     /* ---------------- 年龄和差 ---------------- */
     { id: "nianlingh", name: "年龄和差问题", icon: "🎂", color: "#06d6a0", level: "中年级",
-      desc: "年龄差不变，用和差思路解年龄题。",
-      points: [ { t: "年龄和差", html: "年龄差永远不变；每过 1 年，两人年龄和增加 2。" } ],
-      examples: [ { tag: "例题", q: "父子年龄和 45，父比子大 27。子几岁？", steps: ["(45−27)÷2", "=14"], explain: "小数=(和−差)÷2。" } ],
+      desc: "年龄差不变,用和差思路解年龄题。",
+      points: [ { t: "年龄和差", html: "年龄差永远不变;每过 1 年,两人年龄和增加 2。" } ],
+      examples: [ { tag: "例题", q: "父子年龄和 45,父比子大 27。子几岁?", steps: ["(45-27)÷2", "=14"], explain: "小数=(和-差)÷2。" } ],
       gen: function () {
         var s = R(6, 15), diff = R(22, 32), f = s + diff;
         var sum = f + s;
-        if (Math.random() < 0.5) return { type: "num", q: "爸爸和儿子的年龄和是 " + sum + " 岁，爸爸比儿子大 " + diff + " 岁。儿子多少岁？", input: "num", ans: String(s), explain: "儿子=(和−差)÷2=(" + sum + "−" + diff + ")÷2=" + s + "（岁）。" };
-        return { type: "num", q: "爸爸和儿子的年龄和是 " + sum + " 岁，爸爸比儿子大 " + diff + " 岁。爸爸多少岁？", input: "num", ans: String(f), explain: "爸爸=(和+差)÷2=(" + sum + "+" + diff + ")÷2=" + f + "（岁）。" };
+        if (Math.random() < 0.5) return { type: "num", q: "爸爸和儿子的年龄和是 " + sum + " 岁,爸爸比儿子大 " + diff + " 岁。儿子多少岁?", input: "num", ans: String(s), explain: "儿子=(和-差)÷2=(" + sum + "-" + diff + ")÷2=" + s + "(岁)。" };
+        return { type: "num", q: "爸爸和儿子的年龄和是 " + sum + " 岁,爸爸比儿子大 " + diff + " 岁。爸爸多少岁?", input: "num", ans: String(f), explain: "爸爸=(和+差)÷2=(" + sum + "+" + diff + ")÷2=" + f + "(岁)。" };
       } }
     ,
-    /* ---------------- 定义新运算（奥数） ---------------- */
+    /* ---------------- 定义新运算(奥数) ---------------- */
     { id: "xinyunsuan", name: "定义新运算", icon: "✨", color: "#8338ec", level: "高年级",
       desc: "按新定义的运算符号规则计算。",
-      points: [ { t: "定义新运算", html: "题目定义一个新符号的运算规则，按规则代入计算。关键是<b>严格按规则代入</b>。" } ],
-      examples: [ { tag: "例题", q: "定义 a※b = a×b + a。求 3※4。", steps: ["按规则：3※4 = 3×4 + 3", "= 12 + 3 = 15"], explain: "代入规则计算。" } ],
+      points: [ { t: "定义新运算", html: "题目定义一个新符号的运算规则,按规则代入计算。关键是<b>严格按规则代入</b>。" } ],
+      examples: [ { tag: "例题", q: "定义 a※b = a×b + a。求 3※4。", steps: ["按规则:3※4 = 3×4 + 3", "= 12 + 3 = 15"], explain: "代入规则计算。" } ],
       gen: function () {
         var a = R(2, 6), b = R(2, 6);
         var kind = R(1, 2);
-        if (kind === 1) { var ans = a * b + a; return { type: "num", q: "定义运算：a※b = a×b + a。那么 " + a + "※" + b + " = （____）", input: "num", ans: String(ans), explain: a + "※" + b + " = " + a + "×" + b + " + " + a + " = " + ans + "。" }; }
+        if (kind === 1) { var ans = a * b + a; return { type: "num", q: "定义运算:a※b = a×b + a。那么 " + a + "※" + b + " = (____)", input: "num", ans: String(ans), explain: a + "※" + b + " = " + a + "×" + b + " + " + a + " = " + ans + "。" }; }
         var ans2 = a * b - a;
-        return { type: "num", q: "定义运算：a☆b = a×b − a。那么 " + a + "☆" + b + " = （____）", input: "num", ans: String(ans2), explain: a + "☆" + b + " = " + a + "×" + b + " − " + a + " = " + ans2 + "。" };
+        return { type: "num", q: "定义运算:a☆b = a×b - a。那么 " + a + "☆" + b + " = (____)", input: "num", ans: String(ans2), explain: a + "☆" + b + " = " + a + "×" + b + " - " + a + " = " + ans2 + "。" };
       } },
 
-    /* ---------------- 还原问题（奥数） ---------------- */
+    /* ---------------- 还原问题(奥数) ---------------- */
     { id: "huanyuan", name: "还原问题", icon: "🔙", color: "#3a86ff", level: "高年级",
-      desc: "从结果倒着推，加变减、减变加。",
-      points: [ { t: "还原问题", html: "已知变化后的结果，<b>倒着推</b>回原来的数。加变减、减变加、乘变除、除变乘。" } ],
-      examples: [ { tag: "例题", q: "一个数加 5，再乘 2，得 20。原数是？", steps: ["倒推：20÷2=10", "10−5=5"], explain: "倒着推。" } ],
+      desc: "从结果倒着推,加变减、减变加。",
+      points: [ { t: "还原问题", html: "已知变化后的结果,<b>倒着推</b>回原来的数。加变减、减变加、乘变除、除变乘。" } ],
+      examples: [ { tag: "例题", q: "一个数加 5,再乘 2,得 20。原数是?", steps: ["倒推:20÷2=10", "10-5=5"], explain: "倒着推。" } ],
       gen: function () {
         var x = R(3, 15), a = R(2, 8);
         var kind = R(1, 2);
-        if (kind === 1) { var res = (x + a) * 2; return { type: "num", q: "一个数加上 " + a + "，再乘 2，结果是 " + res + "。这个数原来是（____）", input: "num", ans: String(x), explain: "倒推：" + res + "÷2=" + (res / 2) + "，" + (res / 2) + "−" + a + "=" + x + "。" }; }
+        if (kind === 1) { var res = (x + a) * 2; return { type: "num", q: "一个数加上 " + a + ",再乘 2,结果是 " + res + "。这个数原来是(____)", input: "num", ans: String(x), explain: "倒推:" + res + "÷2=" + (res / 2) + "," + (res / 2) + "-" + a + "=" + x + "。" }; }
         var res2 = (x - a) * 3;
-        return { type: "num", q: "一个数减去 " + a + "，再乘 3，结果是 " + res2 + "。这个数原来是（____）", input: "num", ans: String(x), explain: "倒推：" + res2 + "÷3=" + (res2 / 3) + "，" + (res2 / 3) + "+" + a + "=" + x + "。" };
+        return { type: "num", q: "一个数减去 " + a + ",再乘 3,结果是 " + res2 + "。这个数原来是(____)", input: "num", ans: String(x), explain: "倒推:" + res2 + "÷3=" + (res2 / 3) + "," + (res2 / 3) + "+" + a + "=" + x + "。" };
       } },
 
-    /* ---------------- 最值问题（奥数） ---------------- */
+    /* ---------------- 最值问题(奥数) ---------------- */
     { id: "zuizhi", name: "最值问题", icon: "🏔️", color: "#e63999", level: "高年级",
       desc: "求最大或最小的可能值。",
-      points: [ { t: "最值问题", html: "求最大：让大的尽量大；求最小：让小的尽量小。注意约束条件。" } ],
-      examples: [ { tag: "例题", q: "用 1、2、3 组成最大的两位数？", steps: ["大的放十位", "32"], explain: "十位放最大的。" } ],
+      points: [ { t: "最值问题", html: "求最大:让大的尽量大;求最小:让小的尽量小。注意约束条件。" } ],
+      examples: [ { tag: "例题", q: "用 1、2、3 组成最大的两位数?", steps: ["大的放十位", "32"], explain: "十位放最大的。" } ],
       gen: function () {
         var kind = R(1, 2);
-        if (kind === 1) { var ds = shuffle([R(1, 5), R(5, 9), R(1, 9)]); var sorted = ds.slice().sort(function (x, y) { return y - x; }); var max = sorted[0] * 10 + sorted[1]; return { type: "num", q: "用数字 " + ds.join("、") + " 组成最大的两位数是（____）", input: "num", ans: String(max), explain: "最大的放十位，次大放个位：" + max + "。" }; }
-        var ds2 = shuffle([R(2, 5), R(5, 9), R(2, 9)]); var sorted2 = ds2.slice().sort(function (x, y) { return x - y; }); var min = sorted2[0] * 10 + sorted2[1]; return { type: "num", q: "用数字 " + ds2.join("、") + " 组成最小的两位数是（____）", input: "num", ans: String(min), explain: "最小的放十位（不能是0），次小放个位：" + min + "。" };
+        if (kind === 1) { var ds = shuffle([R(1, 5), R(5, 9), R(1, 9)]); var sorted = ds.slice().sort(function (x, y) { return y - x; }); var max = sorted[0] * 10 + sorted[1]; return { type: "num", q: "用数字 " + ds.join("、") + " 组成最大的两位数是(____)", input: "num", ans: String(max), explain: "最大的放十位,次大放个位:" + max + "。" }; }
+        var ds2 = shuffle([R(2, 5), R(5, 9), R(2, 9)]); var sorted2 = ds2.slice().sort(function (x, y) { return x - y; }); var min = sorted2[0] * 10 + sorted2[1]; return { type: "num", q: "用数字 " + ds2.join("、") + " 组成最小的两位数是(____)", input: "num", ans: String(min), explain: "最小的放十位(不能是0),次小放个位:" + min + "。" };
       } },
 
-    /* ---------------- 浓度问题（奥数） ---------------- */
+    /* ---------------- 浓度问题(奥数) ---------------- */
     { id: "nongdu2", name: "浓度问题", icon: "🧪", color: "#0a7fa0", level: "高年级",
       desc: "浓度 = 溶质 ÷ 溶液。",
       points: [ { t: "浓度公式", html: "浓度 = 溶质 ÷ 溶液 ×100%。溶液 = 溶质 + 溶剂。" } ],
-      examples: [ { tag: "例题", q: "20 克盐溶在 80 克水里，浓度？", steps: ["20÷(20+80)", "=20%"], explain: "盐÷盐水。" } ],
+      examples: [ { tag: "例题", q: "20 克盐溶在 80 克水里,浓度?", steps: ["20÷(20+80)", "=20%"], explain: "盐÷盐水。" } ],
       gen: function () {
         var salt = P([10, 20, 25, 30]), water = P([70, 80, 120, 170]);
         var pct = Math.round(salt / (salt + water) * 100);
-        return { type: "text", q: "把 " + salt + " 克盐溶在 " + water + " 克水中，盐水浓度是（____）%。（填百分数）", input: "text", ans: pct + "%", accept: [pct + "%", String(pct)], explain: salt + "÷(" + salt + "+" + water + ")×100% = " + pct + "%。" };
+        return { type: "text", q: "把 " + salt + " 克盐溶在 " + water + " 克水中,盐水浓度是(____)%。(填百分数)", input: "text", ans: pct + "%", accept: [pct + "%", String(pct)], explain: salt + "÷(" + salt + "+" + water + ")×100% = " + pct + "%。" };
       } },
 
-    /* ---------------- 利润问题（奥数） ---------------- */
+    /* ---------------- 利润问题(奥数) ---------------- */
     { id: "lirun2", name: "利润与折扣", icon: "💹", color: "#06d6a0", level: "高年级",
-      desc: "利润 = 售价 − 成本；折扣 = 现价 ÷ 原价。",
-      points: [ { t: "利润与折扣", html: "利润 = 售价 − 成本。折扣 = 现价 ÷ 原价。打几折就是原价的百分之几十。" } ],
-      examples: [ { tag: "例题", q: "成本 80 元，卖 100 元，利润率？", steps: ["利润 100−80=20", "20÷80=25%"], explain: "利润÷成本。" } ],
+      desc: "利润 = 售价 - 成本;折扣 = 现价 ÷ 原价。",
+      points: [ { t: "利润与折扣", html: "利润 = 售价 - 成本。折扣 = 现价 ÷ 原价。打几折就是原价的百分之几十。" } ],
+      examples: [ { tag: "例题", q: "成本 80 元,卖 100 元,利润率?", steps: ["利润 100-80=20", "20÷80=25%"], explain: "利润÷成本。" } ],
       gen: function () {
         var kind = R(1, 2);
-        if (kind === 1) { var cost = P([50, 80, 100]), sell = cost + P([20, 25, 50]); var pct = Math.round((sell - cost) / cost * 100); return { type: "text", q: "商品成本 " + cost + " 元，卖 " + sell + " 元。利润率是（____）%。", input: "text", ans: pct + "%", accept: [pct + "%", String(pct)], explain: "(" + sell + "−" + cost + ")÷" + cost + "×100% = " + pct + "%。" }; }
+        if (kind === 1) { var cost = P([50, 80, 100]), sell = cost + P([20, 25, 50]); var pct = Math.round((sell - cost) / cost * 100); return { type: "text", q: "商品成本 " + cost + " 元,卖 " + sell + " 元。利润率是(____)%。", input: "text", ans: pct + "%", accept: [pct + "%", String(pct)], explain: "(" + sell + "-" + cost + ")÷" + cost + "×100% = " + pct + "%。" }; }
         var price = P([80, 100, 200]), z = P([7, 8, 9]);
-        return { type: "num", q: "一件衣服原价 " + price + " 元，打 " + z + " 折。现价多少元？", input: "num", ans: String(price * z / 10), explain: price + "×" + (z * 10) + "% = " + (price * z / 10) + "（元）。" };
+        return { type: "num", q: "一件衣服原价 " + price + " 元,打 " + z + " 折。现价多少元?", input: "num", ans: String(price * z / 10), explain: price + "×" + (z * 10) + "% = " + (price * z / 10) + "(元)。" };
       } },
 
-    /* ---------------- 计数原理（奥数） ---------------- */
+    /* ---------------- 计数原理(奥数) ---------------- */
     { id: "jishu2", name: "计数原理", icon: "🔢", color: "#e63999", level: "高年级",
       desc: "加法原理与乘法原理。",
-      points: [ { t: "两个原理", html: "加法原理：分类完成，各类相加。乘法原理：分步完成，各步相乘。" } ],
-      examples: [ { tag: "例题", q: "从甲地到乙地有 2 条路，乙地到丙地有 3 条路。甲到丙几种走法？", steps: ["分步相乘", "2×3=6"], explain: "乘法原理。" } ],
+      points: [ { t: "两个原理", html: "加法原理:分类完成,各类相加。乘法原理:分步完成,各步相乘。" } ],
+      examples: [ { tag: "例题", q: "从甲地到乙地有 2 条路,乙地到丙地有 3 条路。甲到丙几种走法?", steps: ["分步相乘", "2×3=6"], explain: "乘法原理。" } ],
       gen: function () {
         var a = R(2, 4), b = R(2, 4);
         var kind = R(1, 2);
-        if (kind === 1) { return { type: "num", q: "从甲地到乙地有 " + a + " 条路，从乙地到丙地有 " + b + " 条路。从甲地经乙地到丙地共有几种走法？", input: "num", ans: String(a * b), explain: "乘法原理：" + a + "×" + b + "=" + (a * b) + "。" }; }
-        return { type: "num", q: "书架上有 " + a + " 本不同的数学书和 " + b + " 本不同的语文书，任取一本，有几种取法？", input: "num", ans: String(a + b), explain: "加法原理：" + a + "+" + b + "=" + (a + b) + "。" };
+        if (kind === 1) { return { type: "num", q: "从甲地到乙地有 " + a + " 条路,从乙地到丙地有 " + b + " 条路。从甲地经乙地到丙地共有几种走法?", input: "num", ans: String(a * b), explain: "乘法原理:" + a + "×" + b + "=" + (a * b) + "。" }; }
+        return { type: "num", q: "书架上有 " + a + " 本不同的数学书和 " + b + " 本不同的语文书,任取一本,有几种取法?", input: "num", ans: String(a + b), explain: "加法原理:" + a + "+" + b + "=" + (a + b) + "。" };
       } },
 
-    /* ---------------- 几何计数（奥数） ---------------- */
+    /* ---------------- 几何计数(奥数) ---------------- */
     { id: "jiheshuju", name: "几何计数", icon: "📐", color: "#8338ec", level: "高年级",
       desc: "数线段、数角、数三角形。",
-      points: [ { t: "几何计数", html: "n 个点两两连线段：n(n−1)÷2。从一个顶点引出 n 条射线的角数也是 n(n−1)÷2。" } ],
-      examples: [ { tag: "例题", q: "一条线上 5 个点，几条线段？", steps: ["5×4÷2", "=10"], explain: "n(n−1)÷2。" } ],
+      points: [ { t: "几何计数", html: "n 个点两两连线段:n(n-1)÷2。从一个顶点引出 n 条射线的角数也是 n(n-1)÷2。" } ],
+      examples: [ { tag: "例题", q: "一条线上 5 个点,几条线段?", steps: ["5×4÷2", "=10"], explain: "n(n-1)÷2。" } ],
       gen: function () {
         var n = R(4, 7);
         var kind = R(1, 2);
-        if (kind === 1) { return { type: "num", q: "一条直线上有 " + n + " 个点，一共能组成几条线段？", input: "num", ans: String(n * (n - 1) / 2), explain: n + "×" + (n - 1) + "÷2 = " + (n * (n - 1) / 2) + "。" }; }
-        return { type: "num", q: "从一个顶点引出 " + n + " 条射线，一共能组成几个角？", input: "num", ans: String(n * (n - 1) / 2), explain: n + "×" + (n - 1) + "÷2 = " + (n * (n - 1) / 2) + "。" };
+        if (kind === 1) { return { type: "num", q: "一条直线上有 " + n + " 个点,一共能组成几条线段?", input: "num", ans: String(n * (n - 1) / 2), explain: n + "×" + (n - 1) + "÷2 = " + (n * (n - 1) / 2) + "。" }; }
+        return { type: "num", q: "从一个顶点引出 " + n + " 条射线,一共能组成几个角?", input: "num", ans: String(n * (n - 1) / 2), explain: n + "×" + (n - 1) + "÷2 = " + (n * (n - 1) / 2) + "。" };
       } },
 
-    /* ---------------- 牛吃草（奥数进阶） ---------------- */
+    /* ---------------- 牛吃草(奥数进阶) ---------------- */
     { id: "niuchi2", name: "牛吃草问题", icon: "🐮", color: "#06d6a0", level: "高年级",
-      desc: "草在长，牛在吃，用方程思想。",
-      points: [ { t: "牛吃草", html: "草匀速生长。设每头牛每天吃 1 份，草每天长 x 份，原有 y 份，列式求解。" } ],
-      examples: [ { tag: "例题", q: "草可供 10 头牛吃 20 天，或 15 头牛吃 10 天。供 25 头牛吃几天？", steps: ["列式求生长量", "供25头吃5天"], explain: "牛吃草模型。" } ],
+      desc: "草在长,牛在吃,用方程思想。",
+      points: [ { t: "牛吃草", html: "草匀速生长。设每头牛每天吃 1 份,草每天长 x 份,原有 y 份,列式求解。" } ],
+      examples: [ { tag: "例题", q: "草可供 10 头牛吃 20 天,或 15 头牛吃 10 天。供 25 头牛吃几天?", steps: ["列式求生长量", "供25头吃5天"], explain: "牛吃草模型。" } ],
       gen: function () {
-        return { type: "num", q: "牧场草匀速生长。可供 10 头牛吃 20 天，或供 15 头牛吃 10 天。那么可供 25 头牛吃几天？", input: "num", ans: "5", explain: "设每牛每天吃1份，草每天长5份、原有100份：100÷(25−5)=5（天）。" };
+        return { type: "num", q: "牧场草匀速生长。可供 10 头牛吃 20 天,或供 15 头牛吃 10 天。那么可供 25 头牛吃几天?", input: "num", ans: "5", explain: "设每牛每天吃1份,草每天长5份、原有100份:100÷(25-5)=5(天)。" };
       } }
   ];
 
 
-  /* ---------- 母题精讲（代表性母题 + 解题思路，配合闯关举一反三） ---------- */
+  /* ---------- 母题精讲(代表性母题 + 解题思路,配合闯关举一反三) ---------- */
   var MUTI = [
     { id: "jitu", icon: "🐰", name: "鸡兔同笼", level: "高年级",
-      mu: "笼子里有鸡和兔共 10 只，数腿共 32 条。鸡和兔各有几只？",
-      steps: ["① 假设 10 只全是鸡：10×2=20 条腿", "② 比实际少：32−20=12 条腿", "③ 每把一只鸡换成兔多 2 条腿", "④ 兔：12÷2=6（只），鸡：10−6=4（只）"],
-      key: "假设法：先假设全是其中一种，再用腿的差÷每只腿差。",
-      tip: "兔 =（总腿数 − 2×总头数）÷ 2" },
+      mu: "笼子里有鸡和兔共 10 只,数腿共 32 条。鸡和兔各有几只?",
+      steps: ["1 假设 10 只全是鸡:10×2=20 条腿", "2 比实际少:32-20=12 条腿", "3 每把一只鸡换成兔多 2 条腿", "4 兔:12÷2=6(只),鸡:10-6=4(只)"],
+      key: "假设法:先假设全是其中一种,再用腿的差÷每只腿差。",
+      tip: "兔 =(总腿数 - 2×总头数)÷ 2" },
     { id: "hecha", icon: "⚖️", name: "和差问题", level: "中年级",
-      mu: "两个数的和是 50，差是 10。这两个数各是多少？",
-      steps: ["① 大数 =（和+差）÷2 =（50+10）÷2=25", "② 小数 =（和−差）÷2 =（50−10）÷2=20"],
-      key: "记住公式：大数=(和+差)÷2，小数=(和−差)÷2。",
-      tip: "线段图：把差补上或去掉，两数就一样大了。" },
+      mu: "两个数的和是 50,差是 10。这两个数各是多少?",
+      steps: ["1 大数 =(和+差)÷2 =(50+10)÷2=25", "2 小数 =(和-差)÷2 =(50-10)÷2=20"],
+      key: "记住公式:大数=(和+差)÷2,小数=(和-差)÷2。",
+      tip: "线段图:把差补上或去掉,两数就一样大了。" },
     { id: "hebei", icon: "📈", name: "和倍问题", level: "高年级",
-      mu: "甲乙两数的和是 40，甲是乙的 3 倍。甲乙各是多少？",
-      steps: ["① 乙是 1 份，甲是 3 份，共 4 份", "② 每份：40÷4=10", "③ 乙=10，甲=10×3=30"],
-      key: "先求份数：和÷(倍数+1)=小数，再乘倍数得大数。",
-      tip: "小数 = 和 ÷（倍数+1）" },
+      mu: "甲乙两数的和是 40,甲是乙的 3 倍。甲乙各是多少?",
+      steps: ["1 乙是 1 份,甲是 3 份,共 4 份", "2 每份:40÷4=10", "3 乙=10,甲=10×3=30"],
+      key: "先求份数:和÷(倍数+1)=小数,再乘倍数得大数。",
+      tip: "小数 = 和 ÷(倍数+1)" },
     { id: "xingcheng", icon: "🚗", name: "相遇问题", level: "高年级",
-      mu: "甲乙从相距 300 米的两地同时相向而行，甲每分走 40 米，乙每分走 60 米。几分后相遇？",
-      steps: ["① 速度和：40+60=100（米/分）", "② 相遇时间 = 总路程÷速度和 = 300÷100=3（分）"],
-      key: "相向而行用速度和：相遇时间=总路程÷速度和。",
+      mu: "甲乙从相距 300 米的两地同时相向而行,甲每分走 40 米,乙每分走 60 米。几分后相遇?",
+      steps: ["1 速度和:40+60=100(米/分)", "2 相遇时间 = 总路程÷速度和 = 300÷100=3(分)"],
+      key: "相向而行用速度和:相遇时间=总路程÷速度和。",
       tip: "总路程 = 速度和 × 相遇时间" },
     { id: "zhishu", icon: "🌳", name: "植树问题", level: "高年级",
-      mu: "在 100 米的路一边种树，每隔 5 米一棵，两端都种。共多少棵？",
-      steps: ["① 段数：100÷5=20（段）", "② 两端都种：棵数=段数+1=21（棵）"],
-      key: "先求段数，再看种法：两端都种+1，只种一端不加，两端不种−1。",
-      tip: "棵数 = 段数 ± 1（看两端）" },
+      mu: "在 100 米的路一边种树,每隔 5 米一棵,两端都种。共多少棵?",
+      steps: ["1 段数:100÷5=20(段)", "2 两端都种:棵数=段数+1=21(棵)"],
+      key: "先求段数,再看种法:两端都种+1,只种一端不加,两端不种-1。",
+      tip: "棵数 = 段数 ± 1(看两端)" },
     { id: "yingkui", icon: "🎁", name: "盈亏问题", level: "高年级",
-      mu: "分糖果，每人分 5 颗多 8 颗；每人分 7 颗正好分完。有几个小朋友？",
-      steps: ["① 两次每人相差：7−5=2（颗）", "② 多出的 8 颗 ÷ 每人多分的 2 颗 = 4（人）"],
-      key: "人数 = 盈（亏）÷ 两次每人分的差。",
-      tip: "人数 = 盈亏数 ÷ 每人差" }
+      mu: "分糖果,每人分 5 颗多 8 颗;每人分 7 颗正好分完。有几个小朋友?",
+      steps: ["1 两次每人相差:7-5=2(颗)", "2 多出的 8 颗 ÷ 每人多分的 2 颗 = 4(人)"],
+      key: "人数 = 盈(亏)÷ 两次每人分的差。",
+      tip: "人数 = 盈亏数 ÷ 每人差" },
+    { id: "daotui", icon: "🔄", name: "还原问题", level: "中年级",
+      mu: "一个数加上 5,再乘 3,结果是 30。这个数原来是多少?",
+      steps: ["1 正向:原数→+5→×3→=30", "2 倒推:30÷3=10,10-5=5", "3 原数是 5"],
+      key: "从结果倒着推,运算全部反过来:加变减、减变加、乘变除、除变乘。",
+      tip: "倒推口诀:加减互换,乘除互换" },
+    { id: "nianling", icon: "👨‍👦", name: "年龄问题", level: "中年级",
+      mu: "今年爸爸 40 岁,儿子 12 岁。几年前爸爸年龄是儿子的 5 倍?",
+      steps: ["1 年龄差永远不变:40-12=28(岁)", "2 爸爸是儿子 5 倍时:差=4 份=28,每份=7", "3 那时儿子 7 岁,是 12-7=5 年前"],
+      key: "年龄差永远不变!不管过多少年,两人的差始终一样。",
+      tip: "年龄差 = 大年龄 - 小年龄(永不变)" },
+    { id: "daihuan", icon: "⚖️", name: "等量代换", level: "中年级",
+      mu: "1 个西瓜 = 4 个苹果,1 个苹果 = 3 个橘子。1 个西瓜等于几个橘子?",
+      steps: ["1 先把西瓜换成苹果:1 西瓜 = 4 苹果", "2 再把苹果换成橘子:4 苹果 = 4×3 = 12 橘子", "3 所以 1 西瓜 = 12 橘子"],
+      key: "链式代换:一层层换,把未知量全部统一成同一种。",
+      tip: "找准等量关系,一步步替换" },
+    { id: "fangzhen", icon: "🔲", name: "方阵问题", level: "高年级",
+      mu: "一个方阵最外层每边站 8 人。最外层一共站多少人?整个方阵多少人?",
+      steps: ["1 最外层:4×8-4=28(人,四个角不重复算)", "2 总人数需要知道每边人数:8×8=64(人)"],
+      key: "最外层=4×每边人数-4(角不重复);总人数=每边人数²。",
+      tip: "最外层 = 4n - 4,总数 = n²" }
   ];
   return { topics: topics, MUTI: MUTI };
 })();
@@ -13012,6 +13102,13 @@ window.THINK = (function () {
       '<div class="type-grid">' + types.map(function (t) {
         return '<button class="type-chip" data-t="' + t + '">' + QE.TYPE_NAME[t] + '</button>';
       }).join("") + '</div>' +
+      '<div style="font-weight:800;margin:12px 0 8px">难度</div>' +
+      '<div class="type-grid">' + [
+        { v: "normal", n: "⭐ 标准" },
+        { v: "hard", n: "⭐⭐ 挑战" }
+      ].map(function (d) {
+        return '<button class="type-chip diff' + (d.v === "normal" ? " sel" : "") + '" data-d="' + d.v + '">' + d.n + '</button>';
+      }).join("") + '</div>' +
       '<div style="font-weight:800;margin:12px 0 8px">出题数量</div>' +
       '<div class="type-grid">' + [5, 10, 15, 20].map(function (n) {
         return '<button class="type-chip cnt' + (n === 10 ? " sel" : "") + '" data-n="' + n + '">' + n + ' 题</button>';
@@ -13027,11 +13124,19 @@ window.THINK = (function () {
         c.classList.add("sel");
       };
     });
+    $$(".type-chip.diff", el).forEach(function (c) {
+      c.onclick = function () {
+        $$(".type-chip.diff", el).forEach(function (x) { x.classList.remove("sel"); });
+        c.classList.add("sel");
+      };
+    });
     $("#startUnit").onclick = function () {
       var sel = $$(".type-chip.sel[data-t]", el).map(function (c) { return c.dataset.t; });
       var cnt = parseInt($(".type-chip.cnt.sel", el).dataset.n, 10) || 10;
-      var qs = QE.makePaper(uid, cnt, sel);
-      startSession({ title: meta.book.label + " · 第" + meta.unit.num + "单元 " + meta.unit.title, unit: uid, questions: qs });
+      var diff = ($(".type-chip.diff.sel", el) || {}).dataset;
+      var diffVal = diff ? diff.d : "normal";
+      var qs = QE.makePaper(uid, cnt, sel, diffVal);
+      startSession({ title: meta.book.label + " · 第" + meta.unit.num + "单元 " + esc(meta.unit.title), unit: uid, questions: qs });
     };
   }
 
@@ -13249,7 +13354,7 @@ window.THINK = (function () {
       html += '<input class="answer-input" id="ansInput" placeholder="在这里写答案" autocomplete="off" inputmode="' + ((q.input === "num" && !_ns) ? "decimal" : "text") + '">';
     }
     html += '<div class="feedback" id="fb"></div>' +
-      '<div style="margin-top:14px;display:flex;gap:10px">' +
+      '<div class="btn-sticky-row">' +
       '<button class="btn block" id="btnCheck">✅ 提交答案</button>' +
       '<button class="btn block hidden" id="btnNext">下一题 →</button></div></div>';
     el.innerHTML = html;
@@ -13287,7 +13392,7 @@ window.THINK = (function () {
       };
     });
     var inp = $("#ansInput", el);
-    if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") $("#btnCheck").click(); };
+    if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); $("#btnCheck").click(); } };
 
     $("#btnCheck").onclick = function () {
       if (answered) return;
@@ -13756,7 +13861,17 @@ window.THINK = (function () {
 
     var fsi = $("#formulaSearchInput");
     if (fsi) {
-      fsi.oninput = function () { formulaSearch = fsi.value; renderFormulas(); var el2 = $("#formulaSearchInput"); if (el2) { el2.focus(); el2.setSelectionRange(el2.value.length, el2.value.length); } };
+      var fTimer = null;
+      fsi.oninput = function () {
+        var val = fsi.value, pos = fsi.selectionStart;
+        clearTimeout(fTimer);
+        fTimer = setTimeout(function () {
+          formulaSearch = val;
+          renderFormulas();
+          var el2 = $("#formulaSearchInput");
+          if (el2) { el2.focus(); el2.setSelectionRange(Math.min(pos, el2.value.length), Math.min(pos, el2.value.length)); }
+        }, 180);
+      };
     }
     $$(".fgrade", $("#formulaWrap")).forEach(function (c) {
       c.onclick = function () { formulaGrade = parseInt(c.dataset.g, 10); renderFormulas(); };
@@ -13885,14 +14000,14 @@ window.THINK = (function () {
       '<div class="pw-svg">' + it.svg + '</div>' +
       inputHtml +
       '<div class="feedback" id="fb"></div>' +
-      '<div style="margin-top:14px;display:flex;gap:10px">' +
+      '<div class="btn-sticky-row">' +
       '<button class="btn block" id="btnCheck">✅ 提交答案</button>' +
       '<button class="btn block hidden" id="btnNext">' + (state.idx + 1 < state.qs.length ? '下一题 →' : '完成 🎉') + '</button></div></div>';
     $("#pwSessBack").onclick = renderPicwordHome;
     var answered = false, userAns = null;
     $$(".opt-btn", el).forEach(function (b) { b.onclick = function () { if (answered) return; $$(".opt-btn", el).forEach(function (x) { x.classList.remove("sel"); }); b.classList.add("sel"); userAns = b.dataset.opt; }; });
     var inp = $("#ansInput", el);
-    if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") $("#btnCheck").click(); };
+    if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); $("#btnCheck").click(); } };
     $("#btnCheck").onclick = function () {
       if (answered) return;
       var val = (it.input === "choice") ? userAns : (inp ? inp.value.trim() : "");
@@ -13951,7 +14066,7 @@ window.THINK = (function () {
       '<div class="pw-svg">' + it.svg + '</div>' +
       inputHtml +
       '<div class="feedback" id="fb"></div>' +
-      '<div style="margin-top:14px;display:flex;gap:10px">' +
+      '<div class="btn-sticky-row">' +
       '<button class="btn block" id="btnCheck">✅ 提交答案</button>' +
       '<button class="btn block hidden" id="btnNext">返回图解列表</button></div></div>';
     $("#pwSessBack").onclick = renderPicwordHome;
@@ -13959,7 +14074,7 @@ window.THINK = (function () {
     $$(".opt-btn", el).forEach(function (b) { b.onclick = function () { if (answered) return; $$(".opt-btn", el).forEach(function (x) { x.classList.remove("sel"); }); b.classList.add("sel"); userAns = b.dataset.opt; }; });
     $$(".judge-btn", el).forEach(function (b) { b.onclick = function () { if (answered) return; $$(".judge-btn", el).forEach(function (x) { x.classList.remove("sel"); }); b.classList.add("sel"); userAns = b.dataset.j; }; });
     var inp = $("#ansInput", el);
-    if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") $("#btnCheck").click(); };
+    if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); $("#btnCheck").click(); } };
     $("#btnCheck").onclick = function () {
       if (answered) return;
       var val = (it.input === "choice" || it.input === "judge") ? userAns : (inp ? inp.value.trim() : "");
@@ -14048,7 +14163,17 @@ window.THINK = (function () {
     $$("[data-tsk]", $("#thinkHome")).forEach(function (b) { b.onclick = function () { thinkSkill = b.dataset.tsk; renderThinkHome(); }; });
     var tsi = $("#thinkSearchInput");
     if (tsi) {
-      tsi.oninput = function () { thinkSearch = tsi.value; renderThinkHome(); var el2 = $("#thinkSearchInput"); if (el2) { el2.focus(); el2.setSelectionRange(el2.value.length, el2.value.length); } };
+      var tTimer = null;
+      tsi.oninput = function () {
+        var val = tsi.value, pos = tsi.selectionStart;
+        clearTimeout(tTimer);
+        tTimer = setTimeout(function () {
+          thinkSearch = val;
+          renderThinkHome();
+          var el2 = $("#thinkSearchInput");
+          if (el2) { el2.focus(); el2.setSelectionRange(Math.min(pos, el2.value.length), Math.min(pos, el2.value.length)); }
+        }, 180);
+      };
     }
     $$("[data-topic]", $("#thinkHome")).forEach(function (btn) {
       btn.onclick = function () { openThinkTopic(btn.dataset.topic); };
@@ -14066,15 +14191,16 @@ window.THINK = (function () {
     $("#thinkHome").classList.add("hidden");
     var el = $("#thinkDetail");
     el.classList.remove("hidden");
-    var stepsHtml = m.steps.map(function (s, i) { return '<div class="step-item">' + s + '</div>'; }).join("");
-    var html = '<div class="back-row"><button class="back-btn" id="thinkBack">‹</button><div class="page-title">' + m.icon + ' 母题 · ' + esc(m.name) + '</div></div>' +
-      '<div class="kp-card" style="border:2px solid #ffd9a8"><div class="kp-head" style="background:#fff7ec"><span class="kp-num" style="background:#e8930a">母</span>母题</div>' +
-      '<div class="kp-body"><div style="font-size:15px;font-weight:700;color:#4a2c3d;line-height:1.7">' + esc(m.mu) + '</div></div></div>' +
-      '<div class="section-title"><span class="bar" style="background:#e8930a"></span>解题思路</div>' +
-      '<div class="kp-card"><div class="kp-body step-list">' + stepsHtml + '</div></div>' +
-      '<div class="kbox tip"><div class="kb-title">🔑 关键</div>' + esc(m.key) + '</div>' +
-      '<div class="kbox" style="background:#f0f8ff;border:1px solid #cfe6ff"><div class="kb-title" style="color:#1a5a8a">📝 公式/口诀</div>' + esc(m.tip) + '</div>' +
-      '<div style="margin:18px 0"><button class="btn block" id="mutiPractice">🎯 举一反三练一练</button></div>';
+    var stepsHtml = m.steps.map(function (s, i) { return '<div class="step-item" style="padding:6px 10px;font-size:13px">' + s + '</div>'; }).join("");
+    var html = '<div class="back-row"><button class="back-btn" id="thinkBack">‹</button><div class="page-title">' + m.icon + ' ' + esc(m.name) + '</div></div>' +
+      '<div class="kp-card" style="border:2px solid #ffd9a8;padding:10px 12px"><div class="kp-head" style="background:#fff7ec;padding:6px 10px"><span class="kp-num" style="background:#e8930a;width:24px;height:24px;font-size:12px">母</span><span style="font-size:14px">母题</span></div>' +
+      '<div class="kp-body" style="padding:8px 10px"><div style="font-size:14px;font-weight:700;color:#4a2c3d;line-height:1.6">' + esc(m.mu) + '</div></div></div>' +
+      '<div style="margin:10px 0 6px;font-size:13px;font-weight:700;color:#e8930a">💡 解题思路</div>' +
+      '<div class="kp-card" style="padding:8px 10px"><div class="kp-body step-list" style="padding:0">' + stepsHtml + '</div></div>' +
+      '<div style="display:flex;gap:8px;margin:10px 0">' +
+      '<div class="kbox tip" style="flex:1;padding:8px 10px;margin:0"><div class="kb-title" style="font-size:12px">🔑 关键</div><div style="font-size:12px;line-height:1.5">' + esc(m.key) + '</div></div>' +
+      '<div class="kbox" style="flex:1;background:#f0f8ff;border:1px solid #cfe6ff;padding:8px 10px;margin:0"><div class="kb-title" style="font-size:12px;color:#1a5a8a">📝 口诀</div><div style="font-size:12px;line-height:1.5;color:#1a5a8a">' + esc(m.tip) + '</div></div></div>' +
+      '<div style="margin:12px 0"><button class="btn block" id="mutiPractice" style="padding:10px">🎯 举一反三练一练</button></div>';
     el.innerHTML = html;
     $("#thinkBack").onclick = renderThinkHome;
     $("#mutiPractice").onclick = function () {
@@ -14139,14 +14265,14 @@ window.THINK = (function () {
         '<div class="qcard"><div class="q-top"><span class="q-type-tag tt-xuanze">思维题</span><span class="q-progress">' + (idx + 1) + ' / ' + qs.length + '</span></div>' +
         '<div class="q-text">' + q.q + '</div>' + inputHtml +
         '<div class="feedback" id="fb"></div>' +
-        '<div style="margin-top:14px;display:flex;gap:10px">' +
+        '<div class="btn-sticky-row">' +
         '<button class="btn block" id="btnCheck">✅ 提交答案</button>' +
         '<button class="btn block hidden" id="btnNext">下一题 →</button></div></div>';
       $("#thinkSessBack").onclick = function () { if (window.SCRATCH) SCRATCH.hide(); openThinkTopic(t.id); };
       var answered = false, userAns = null;
       $$(".opt-btn", el).forEach(function (b) { b.onclick = function () { if (answered) return; $$(".opt-btn", el).forEach(function (x) { x.classList.remove("sel"); }); b.classList.add("sel"); userAns = b.dataset.opt; }; });
       var inp = $("#ansInput", el);
-      if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") $("#btnCheck").click(); };
+      if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); $("#btnCheck").click(); } };
       $("#btnCheck").onclick = function () {
         if (answered) return;
         var val = q.input === "choice" ? userAns : (inp ? inp.value.trim() : "");
