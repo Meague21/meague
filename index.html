@@ -690,6 +690,15 @@ main{padding:14px 14px 92px}
 <div class="toast" id="toast"></div>
 <button class="fab-back" id="fabBack" aria-label="返回">‹ 返回</button>
 
+<!-- 错题溯源·错因分析弹窗 -->
+<div class="modal-mask" id="causeModal">
+  <div class="modal">
+    <button class="modal-close" data-close="causeModal">✕</button>
+    <h3>🔍 错题溯源</h3>
+    <div id="causeBody"></div>
+  </div>
+</div>
+
 <!-- 草稿本：侧边小黄豆，点开是画板 -->
 <button class="scratch-bean" id="scratchBean" aria-label="草稿本">✏️</button>
 <div class="scratch-panel hidden" id="scratchPanel">
@@ -731,6 +740,12 @@ window.MD = {
 
   /* ---------------- 版本日志（应用内展示） ---------------- */
   changelog: [
+    { ver: "v3.6.0", date: "2026-08-20", items: [
+      "新增「学会讲题」模式：不直接做题，而是讲清第一步做什么/核心考点/易错点，输出式学习练审题",
+      "错题本新增「错因分析」：每道错题选错因（计算错误/概念不懂/审题错误/思路不会），附改进建议+举一反三再练",
+      "错题本按错因统计，错题卡片显示错因标签",
+      "修复：讲题模块未打包进单文件的问题"
+    ]},
     { ver: "v3.5.0", date: "2026-08-20", items: [
       "四五六年级真题大幅扩充（各年级新增计算/概念/应用真题）",
       "四年级「认识更大的数」新增数位顺序表图（数级/数位/计数单位对照），并补充数位/计数单位专项题",
@@ -9787,6 +9802,16 @@ window.WB = (function () {
     list.forEach(function (e) { if (e.id === id) e.mastered = false; });
     save(list);
   }
+  function setCause(id, cause) {
+    var list = load();
+    list.forEach(function (e) { if (e.id === id) e.cause = cause; });
+    save(list);
+  }
+  function causeStats() {
+    var list = load(), m = {};
+    list.forEach(function (e) { if (e.cause) m[e.cause] = (m[e.cause] || 0) + 1; });
+    return m;
+  }
 
   /* 举一反三：根据错题的 单元+题型+变体（知识点）出同类题 */
   function similarQuestions(entry, n) {
@@ -9806,7 +9831,7 @@ window.WB = (function () {
     return map;
   }
 
-  return { add: add, all: all, pending: pending, count: count, remove: remove, master: master, unmaster: unmaster, similarQuestions: similarQuestions, groups: groups };
+  return { add: add, all: all, pending: pending, count: count, remove: remove, master: master, unmaster: unmaster, similarQuestions: similarQuestions, groups: groups, setCause: setCause, causeStats: causeStats };
 })();
 /* =====================================================================
  * 烧脑数学 · 应用题图解模式
@@ -10757,6 +10782,104 @@ window.LIFE = (function () {
   }
 
   return { gen: gen, session: session, GEN: GEN };
+})();
+/* =====================================================================
+ * 烧脑数学 · 学会讲题（输出式学习）
+ * 不直接做题，而是让孩子讲清：第一步做什么、核心考点、易错点。
+ * 训练审题与思维倒推，拒绝只会套答案。
+ * ===================================================================== */
+window.EXPLAIN = (function () {
+  var QS = [
+    { q: "小明有 20 个苹果，吃了 8 个，又买来 5 个。现在有多少个苹果？",
+      first: { opts: ["先算 20−8", "先算 20+5", "先算 8+5"], ans: "先算 20−8",
+        why: "按事情发生的顺序：先吃掉（减），再买来（加），所以先算 20−8。" },
+      core: { opts: ["加减混合运算", "乘法", "比较大小"], ans: "加减混合运算",
+        why: "这道题有加有减，是加减混合，按顺序从左往右算。" },
+      pitfall: { opts: ["把吃掉的 8 当成加", "先算了 8+5", "忘记加买来的 5"], ans: "把吃掉的 8 当成加",
+        why: "“吃了”是减少，要用减法；看错成加是最常见的错。" } },
+    { q: "每盒有 6 支笔，买了 4 盒。一共有多少支笔？",
+      first: { opts: ["想 4 个 6 是多少", "算 6+4", "算 6−4"], ans: "想 4 个 6 是多少",
+        why: "求几个相同加数的和，用乘法，即 4 个 6。" },
+      core: { opts: ["乘法的意义", "除法", "加减混合"], ans: "乘法的意义",
+        why: "每盒同样多，求总数，用乘法（几个几）。" },
+      pitfall: { opts: ["把 6 和 4 相加", "把 6 和 4 相减", "算成 6÷4"], ans: "把 6 和 4 相加",
+        why: "看到两个数就加是最常见的错；这里是“每盒 6 支、有 4 盒”，是几个几，用乘法。" } },
+    { q: "把 24 个橘子平均分给 4 个小朋友，每人分几个？",
+      first: { opts: ["想 24 里面有几个 4", "算 24+4", "算 24×4"], ans: "想 24 里面有几个 4",
+        why: "平均分用除法，想 24 里面有几个 4。" },
+      core: { opts: ["除法的意义", "乘法", "加减"], ans: "除法的意义",
+        why: "平均分用除法，总数÷份数=每份数。" },
+      pitfall: { opts: ["用乘法 24×4", "用加法", "把份数当成每份数"], ans: "用乘法 24×4",
+        why: "看到两个数就乘是常见错；平均分要用除法。" } },
+    { q: "一件衣服原价 80 元，打八折出售。现价多少元？",
+      first: { opts: ["想八折是原价的 80%", "算 80−8", "算 80+8"], ans: "想八折是原价的 80%",
+        why: "先理解“打八折”=原价的 80%，再算 80×80%。" },
+      core: { opts: ["折扣问题", "加减法", "面积"], ans: "折扣问题",
+        why: "打几折就是原价的百分之几十，这是折扣问题。" },
+      pitfall: { opts: ["把八折当成减 8 元", "算成 80×8", "忘记百分号"], ans: "把八折当成减 8 元",
+        why: "“打八折”不是减 8 元，而是原价的 80%。" } },
+    { q: "长方形长 8 厘米、宽 5 厘米，周长是多少厘米？",
+      first: { opts: ["先算长+宽", "直接算 8×5", "算 8+5+8"], ans: "先算长+宽",
+        why: "长方形周长 =（长+宽）×2，先算长+宽。" },
+      core: { opts: ["长方形周长公式", "面积公式", "乘法口诀"], ans: "长方形周长公式",
+        why: "求周长用周长公式（长+宽）×2。" },
+      pitfall: { opts: ["把周长算成面积 8×5", "只算一条长和一条宽", "忘记乘 2"], ans: "把周长算成面积 8×5",
+        why: "周长和面积公式容易混；周长是围一圈，要（长+宽）×2。" } },
+    { q: "鸡兔同笼，共 10 个头、32 条腿。兔有几只？",
+      first: { opts: ["假设全是鸡", "直接 32÷4", "算 10×4"], ans: "假设全是鸡",
+        why: "用假设法：先假设全是鸡，再用腿的差推出兔。" },
+      core: { opts: ["假设法", "加法", "面积"], ans: "假设法",
+        why: "鸡兔同笼用假设法，先假设一种再调整。" },
+      pitfall: { opts: ["把腿数当头数", "忘记换一只鸡多2条腿", "直接除"], ans: "忘记换一只鸡多2条腿",
+        why: "关键是每换一只兔多 2 条腿，用腿差÷2 求兔。" } },
+    { q: "甲乙从相距 300 米的两地同时相向而行，甲每分走 40 米，乙每分走 60 米。几分后相遇？",
+      first: { opts: ["先算速度和", "算 300÷40", "算 40×60"], ans: "先算速度和",
+        why: "相向而行用速度和：先算 40+60，再用总路程÷速度和。" },
+      core: { opts: ["相遇问题", "追及问题", "工程问题"], ans: "相遇问题",
+        why: "两人相向而行，用速度和求相遇时间。" },
+      pitfall: { opts: ["只除一个人的速度", "把速度相乘", "忘记相向用速度和"], ans: "只除一个人的速度",
+        why: "相向而行要除以两人的速度和，不能只除一个。" } },
+    { q: "一个数加上 5，再乘 2，结果是 20。这个数原来是多少？",
+      first: { opts: ["从结果倒着推", "从 5 开始加", "直接 20×2"], ans: "从结果倒着推",
+        why: "还原问题从结果倒推：先 20÷2，再减 5。" },
+      core: { opts: ["还原问题", "和差问题", "行程问题"], ans: "还原问题",
+        why: "已知变化后的结果求原数，是还原问题，倒着推。" },
+      pitfall: { opts: ["顺序没倒过来", "先加后乘", "忘记倒推"], ans: "顺序没倒过来",
+        why: "还原要倒着：原来加现在减、原来乘现在除。" } },
+    { q: "3.5 + 2.7 = ？",
+      first: { opts: ["小数点对齐", "末位对齐", "直接 35+27"], ans: "小数点对齐",
+        why: "小数加减法第一步是小数点对齐。" },
+      core: { opts: ["小数加法", "整数加法", "乘法"], ans: "小数加法",
+        why: "小数加法的关键是小数点对齐。" },
+      pitfall: { opts: ["小数点没对齐", "忘记进位", "当成整数算"], ans: "小数点没对齐",
+        why: "小数加减最常见错是小数点没对齐。" } },
+    { q: "一个三角形底 8 厘米、高 5 厘米，面积是多少平方厘米？",
+      first: { opts: ["用底×高÷2", "算 8×5", "算 8+5"], ans: "用底×高÷2",
+        why: "三角形面积 = 底×高÷2，别忘了除以 2。" },
+      core: { opts: ["三角形面积公式", "周长", "乘法"], ans: "三角形面积公式",
+        why: "求三角形面积用底×高÷2。" },
+      pitfall: { opts: ["忘记除以 2", "把高当成另一条边", "算成周长"], ans: "忘记除以 2",
+        why: "三角形面积最容易忘记除以 2。" } },
+    { q: "1/2 + 1/3 = ？",
+      first: { opts: ["先通分", "分子分母分别相加", "直接 1+1"], ans: "先通分",
+        why: "异分母分数相加，先通分成同分母。" },
+      core: { opts: ["异分母分数加法", "整数加法", "乘法"], ans: "异分母分数加法",
+        why: "分母不同要先通分再加。" },
+      pitfall: { opts: ["分子分母直接相加", "忘记通分", "把分母相加"], ans: "分子分母直接相加",
+        why: "最常见错是分子分母分别相加；要先通分。" } },
+    { q: "修一条路，每天修 20 米，修了 5 天后还剩 40 米。这条路共多长？",
+      first: { opts: ["先算已修的米数", "直接 20+40", "算 20×40"], ans: "先算已修的米数",
+        why: "先算已修：20×5，再加上剩下的 40。" },
+      core: { opts: ["乘加应用", "除法", "周长"], ans: "乘加应用",
+        why: "先乘（已修）再加（剩余），是乘加问题。" },
+      pitfall: { opts: ["忘记加剩下的", "把 20 和 40 相加", "忘记乘 5"], ans: "忘记加剩下的",
+        why: "最容易只算已修、忘记把剩下的加上去。" } }
+  ];
+
+  function gen() {
+    return QS[Math.floor(Math.random() * QS.length)];
+  }
+  return { QS: QS, gen: gen };
 })();
 /* =====================================================================
  * 烧脑数学 · 音效（WebAudio 合成，无需外部文件）
@@ -12836,6 +12959,7 @@ window.THINK = (function () {
       '<button class="mode-card" id="modeTest"><span class="m-icon">📝</span><span style="flex:1"><span class="m-title">' + esc(currentBook().label) + '综合测试</span><br><span class="m-sub">全册抽 20 题（混入本年级真题）</span></span><span class="unit-arrow">›</span></button>' +
       '<button class="mode-card" id="modeReal"><span class="m-icon">🏆</span><span style="flex:1"><span class="m-title">真题挑战</span><br><span class="m-sub">按年级精选真题，12 道测真实水平</span></span><span class="unit-arrow">›</span></button>' +
       '<button class="mode-card" id="modeExtend"><span class="m-icon">🌟</span><span style="flex:1"><span class="m-title">课外延伸</span><br><span class="m-sub">和差/和倍/相遇/鸡兔同笼…常考应用题</span></span><span class="unit-arrow">›</span></button>' +
+      '<button class="mode-card" id="modeExplain"><span class="m-icon">🎤</span><span style="flex:1"><span class="m-title">学会讲题</span><br><span class="m-sub">讲清第一步/核心考点/易错点，学会审题</span></span><span class="unit-arrow">›</span></button>' +
       '<button class="mode-card" id="modeWrong"' + (wbCount ? '' : ' style="opacity:.75"') + '>' +
       '<span class="m-icon">📒</span><span style="flex:1"><span class="m-title">错题本' + (wbCount ? '（' + wbCount + ' 题待巩固）' : '') + '</span><br>' +
       '<span class="m-sub">做错的题自动收录，举一反三消灭它</span></span><span class="unit-arrow">›</span></button>';
@@ -12867,6 +12991,7 @@ window.THINK = (function () {
     $("#modeTest").onclick = startTestSession;
     $("#modeReal").onclick = renderRealSetup;
     $("#modeExtend").onclick = startExtensionSession;
+    $("#modeExplain").onclick = startExplainSession;
     $("#modeWrong").onclick = renderWrongBook;
     $("#modePicword").onclick = renderPicwordHome;
     $("#modeLife").onclick = startLifeSession;
@@ -12980,6 +13105,71 @@ window.THINK = (function () {
       qs.push(q);
     }
     startSession({ title: "课外延伸 · 常考应用题", unit: null, questions: qs });
+  }
+
+  /* 学会讲题：输出式学习（第一步/核心考点/易错点） */
+  function startExplainSession() {
+    var pool = window.EXPLAIN ? EXPLAIN.QS.slice() : [];
+    pool = pool.sort(function () { return Math.random() - 0.5; }).slice(0, 6);
+    ["practiceHome", "practiceSetup", "practiceResult"].forEach(function (id) { $("#" + id).classList.add("hidden"); });
+    var el = $("#practiceSession");
+    el.classList.remove("hidden");
+    var pi = 0, stageIdx = 0, score = 0; /* stageIdx: 0=第一步 1=核心考点 2=易错点 */
+    var STAGE_NAME = ["第一步做什么", "核心考点是什么", "哪里最容易错"];
+    function cur() { return pool[pi]; }
+    function stageData() {
+      var c = cur();
+      return stageIdx === 0 ? c.first : (stageIdx === 1 ? c.core : c.pitfall);
+    }
+    function renderExp() {
+      var c = cur(), sd = stageData();
+      var opts = sd.opts.slice().sort(function () { return Math.random() - 0.5; });
+      el.innerHTML =
+        '<div class="back-row"><button class="back-btn" id="expBack">‹</button><div class="page-title">🎤 学会讲题</div></div>' +
+        '<div class="progress-bar"><i style="width:' + ((pi * 3 + stageIdx) / (pool.length * 3) * 100) + '%"></i></div>' +
+        '<div class="qcard"><div class="q-top"><span class="q-type-tag tt-xuanze">讲一讲</span><span class="q-progress">第 ' + (pi + 1) + ' 题 · ' + (stageIdx + 1) + '/3</span></div>' +
+        '<div class="q-text" style="font-size:15px;line-height:1.8">' + esc(c.q) + '</div>' +
+        '<div class="kbox" style="background:#f0f8ff;border:1px solid #cfe6ff;margin:10px 0"><div class="kb-title" style="color:#1a5a8a">🤔 ' + STAGE_NAME[stageIdx] + '？</div></div>' +
+        '<div class="opt-list">' + opts.map(function (o) {
+          return '<button class="opt-btn" data-opt="' + esc(o) + '">' + esc(o) + '</button>';
+        }).join("") + '</div>' +
+        '<div class="feedback" id="fb"></div></div>';
+      $("#expBack").onclick = renderPracticeHome;
+      var answered = false;
+      $$(".opt-btn", el).forEach(function (b) {
+        b.onclick = function () {
+          if (answered) return; answered = true;
+          var ok = b.dataset.opt === sd.ans;
+          if (ok) { score++; if (window.SND) SND.correct(); } else { if (window.SND) SND.wrong(); }
+          b.classList.add(ok ? "correct" : "wrong");
+          $$(".opt-btn", el).forEach(function (x) { if (x.dataset.opt === sd.ans) x.classList.add("correct"); x.disabled = true; });
+          var fb = $("#fb");
+          fb.className = "feedback show " + (ok ? "ok" : "no");
+          fb.innerHTML = '<div class="fb-title">' + (ok ? "🎉 讲得对！" : "❌ 再想想") + '</div><div class="fb-exp">💡 ' + esc(sd.why) + '</div>' +
+            '<button class="btn block" id="expNext" style="margin-top:10px">' + (stageIdx < 2 ? "下一问 →" : (pi < pool.length - 1 ? "下一题 →" : "看结果")) + '</button>';
+          $("#expNext").onclick = function () {
+            if (stageIdx < 2) { stageIdx++; renderExp(); }
+            else if (pi < pool.length - 1) { pi++; stageIdx = 0; renderExp(); }
+            else finishExp();
+          };
+        };
+      });
+    }
+    function finishExp() {
+      var total = pool.length * 3;
+      var acc = Math.round(score / total * 100);
+      if (window.GARDEN) GARDEN.addPoints(score >= total * 0.7 ? 1.5 : 1, "学会讲题");
+      el.innerHTML =
+        '<div class="result-card">' +
+        '<div style="font-size:14px;font-weight:800;color:var(--ink-2)">🎤 学会讲题 · 完成</div>' +
+        '<div class="result-score">' + acc + '<span style="font-size:20px">%</span></div>' +
+        '<div style="font-size:13px;color:var(--ink-2)">讲对 ' + score + ' / ' + total + ' 问</div>' +
+        '<div class="result-msg">' + (acc >= 80 ? "太棒了！你能把题讲明白，说明真懂了！🏆" : acc >= 60 ? "不错！讲题能帮你真正理解题意。" : "多练习讲题，学会审题和思考！") + '</div>' +
+        '<div class="result-btns" style="margin-top:12px"><button class="btn ghost" id="rBack">返回</button><button class="btn" id="rAgain">再讲一次</button></div></div>';
+      $("#rBack").onclick = renderPracticeHome;
+      $("#rAgain").onclick = startExplainSession;
+    }
+    renderExp();
   }
 
   /* 真题挑战：按年级选择，做该年级真题 */
@@ -13253,6 +13443,60 @@ window.THINK = (function () {
   /* =====================================================
    * 错题本
    * ===================================================== */
+  /* 错题溯源·错因分析 */
+  var CAUSES = [
+    { id: "calc", icon: "🔢", name: "计算错误", tip: "思路对，但算错了。多练口算、细心验算。" },
+    { id: "concept", icon: "📖", name: "概念不懂", tip: "知识点没吃透。回「学一学」把概念再看一遍。" },
+    { id: "read", icon: "👀", name: "审题错误", tip: "看漏条件或看错问题。读题时圈出关键信息。" },
+    { id: "method", icon: "💡", name: "思路不会", tip: "不知道用什么方法。看下面精讲，学会思路再做同类题。" }
+  ];
+  function openCauseAnalysis(entry) {
+    var body = $("#causeBody");
+    var q = entry.q;
+    var qHtml = '<div class="wb-q-preview" style="max-height:none;font-size:14px;line-height:1.7">' + (q.q || "") + '</div>';
+    if (!entry.cause) {
+      body.innerHTML =
+        '<div style="font-size:13.5px;color:var(--ink-2);margin-bottom:8px">先别急着看答案，<b>想一想你当时为什么错</b>，错在哪一步？</div>' +
+        qHtml +
+        '<div style="font-size:13px;font-weight:800;margin:12px 0 8px">👇 选一选错因（诚实面对才能进步）</div>' +
+        '<div style="display:flex;flex-direction:column;gap:8px">' + CAUSES.map(function (c) {
+          return '<button class="btn ghost cause-btn" data-cause="' + c.id + '" style="text-align:left;padding:10px 12px"><b>' + c.icon + ' ' + c.name + '</b><br><span style="font-size:12px;color:var(--ink-2)">' + c.tip + '</span></button>';
+        }).join("") + '</div>';
+      $$(".cause-btn", body).forEach(function (b) {
+        b.onclick = function () {
+          WB.setCause(entry.id, b.dataset.cause);
+          var causeObj = null;
+          CAUSES.forEach(function (c) { if (c.id === b.dataset.cause) causeObj = c; });
+          showCauseDetail(entry, causeObj);
+        };
+      });
+    } else {
+      var causeObj = null;
+      CAUSES.forEach(function (c) { if (c.id === entry.cause) causeObj = c; });
+      showCauseDetail(entry, causeObj);
+    }
+    $("#causeModal").classList.add("show");
+
+    function showCauseDetail(entry, causeObj) {
+      var q = entry.q;
+      var explain = q.explain || "把这道题的知识点再复习一遍。";
+      body.innerHTML =
+        qHtml +
+        (causeObj ? '<div class="kbox" style="background:#fff3e0;border:1px solid #ffd9a8;margin-top:10px"><div class="kb-title" style="color:#b8762a">' + causeObj.icon + ' 你的错因：' + causeObj.name + '</div>' + causeObj.tip + '</div>' : '') +
+        '<div class="section-title" style="margin-top:12px"><span class="bar" style="background:#e8930a"></span>精讲解析</div>' +
+        '<div class="kbox tip" style="border-left:4px solid #e8930a"><div class="kb-title">💡 为什么这样做</div>' + esc(explain) + '</div>' +
+        (q.ans != null ? '<div class="kbox" style="background:#e8f8ee;border:1px solid #a8e6b0;margin-top:10px"><div class="kb-title" style="color:#059e76">✅ 正确答案</div><span style="font-size:15px;font-weight:800">' + esc(String(q.ans)) + '</span></div>' : '') +
+        '<div style="margin-top:14px;display:flex;gap:10px">' +
+        '<button class="btn block" id="causeAgain">🔁 举一反三再练</button>' +
+        '<button class="btn ghost block" data-close="causeModal">知道了</button></div>';
+      $("[data-close]", body).onclick = function () { $("#causeModal").classList.remove("show"); };
+      $("#causeAgain").onclick = function () {
+        $("#causeModal").classList.remove("show");
+        startSimilarSession(entry);
+      };
+    }
+  }
+
   function renderWrongBook() {
     ["practiceSetup", "practiceSession", "practiceResult"].forEach(function (id) { $("#" + id).classList.add("hidden"); });
     var el = $("#practiceHome");
@@ -13271,20 +13515,33 @@ window.THINK = (function () {
     }
 
     if (pending.length) {
+      /* 高频易错点统计 */
+      var stats = WB.causeStats();
+      var statKeys = Object.keys(stats).sort(function (a, b) { return stats[b] - stats[a]; });
+      if (statKeys.length) {
+        var statHtml = statKeys.map(function (cid) {
+          var co = null; CAUSES.forEach(function (c) { if (c.id === cid) co = c; });
+          return co ? '<span class="chip purple" style="margin:2px">' + co.icon + ' ' + co.name + ' ×' + stats[cid] + '</span>' : '';
+        }).join("");
+        html += '<div class="card" style="background:#fff3e0;border:1px solid #ffd9a8"><div style="font-weight:800;color:#b8762a;font-size:13px;margin-bottom:6px">📌 你的高频易错点</div>' + statHtml + '<div style="font-size:11.5px;color:#8a6a3a;margin-top:6px">点每道错题的「错因分析」，先想为什么错，再针对性解决。</div></div>';
+      }
       html += '<div class="section-title"><span class="bar" style="background:#ef476f"></span>待巩固（' + pending.length + ' 题）</div>';
-      html += '<div class="card" style="font-size:12.5px;color:var(--ink-2)">💡 点「举一反三」，会按这道题的知识点出 3 道同类题，全部答对就算掌握！</div>';
+      html += '<div class="card" style="font-size:12.5px;color:var(--ink-2)">💡 先「错因分析」想明白为什么错，再「举一反三」出同类题，全对才算掌握！</div>';
       var groups = WB.groups();
       Object.keys(groups).forEach(function (gkey) {
         html += '<div class="section-title" style="font-size:14px"><span class="bar" style="background:#ffb703"></span>' + esc(gkey) + '（' + groups[gkey].length + '）</div>';
         groups[gkey].forEach(function (e) {
+          var causeTag = "";
+          if (e.cause) { var co2 = null; CAUSES.forEach(function (c) { if (c.id === e.cause) co2 = c; }); if (co2) causeTag = '<span class="chip purple">错因:' + co2.name + '</span>'; }
           html += '<div class="card wb-card" data-id="' + e.id + '">' +
             '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">' +
             '<span class="chip">' + esc(e.bookLabel) + '</span>' +
             '<span class="chip blue">' + esc(e.unitTitle) + '</span>' +
             '<span class="chip green">' + esc(e.typeName) + '</span>' +
-            (e.times > 1 ? '<span class="chip purple">错过 ' + e.times + ' 次</span>' : '') + '</div>' +
+            (e.times > 1 ? '<span class="chip purple">错过 ' + e.times + ' 次</span>' : '') + causeTag + '</div>' +
             '<div class="wb-q-preview">' + esc(stripHtml(e.q.q).slice(0, 90)) + '</div>' +
             '<div style="display:flex;gap:8px;margin-top:8px">' +
+            '<button class="btn ghost" style="flex:1;padding:9px;font-size:14px" data-act="cause">🔍 错因分析</button>' +
             '<button class="btn" style="flex:1;padding:9px;font-size:14px" data-act="similar">🔁 举一反三</button>' +
             '<button class="btn ghost" style="padding:9px 12px;font-size:13px" data-act="del">删除</button>' +
             '</div></div>';
@@ -13311,6 +13568,11 @@ window.THINK = (function () {
         var entry = null;
         WB.all().forEach(function (e) { if (e.id === id) entry = e; });
         if (entry) startSimilarSession(entry);
+      };
+      $('[data-act="cause"]', card).onclick = function () {
+        var entry = null;
+        WB.all().forEach(function (e) { if (e.id === id) entry = e; });
+        if (entry) openCauseAnalysis(entry);
       };
       $('[data-act="del"]', card).onclick = function () {
         WB.remove(id);
