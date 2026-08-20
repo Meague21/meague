@@ -167,10 +167,9 @@ main{padding:14px 14px 92px}
 .muti-q{font-size:14px;font-weight:700;color:#4a2c3d;line-height:1.6}
 .muti-section-title{font-size:13px;font-weight:700;color:#e8930a;margin:12px 0 8px}
 .muti-row{display:flex;gap:8px;margin:12px 0}
-.muti-tip{flex:1;background:#e8f5e9;border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.5}
+.muti-tip{background:#e8f5e9;border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.5}
 .muti-tip.blue{background:#e3f2fd}
-.muti-tip .muti-tip-title{font-weight:800;font-size:12px;margin-bottom:3px}
-.muti-tip .muti-tip-title{color:#059e76}
+.muti-tip .muti-tip-title{font-weight:800;font-size:12px;margin-bottom:3px;color:#059e76}
 .muti-tip.blue .muti-tip-title{color:#1565c0}
 .step-item .calc{font-weight:800;color:var(--primary-dark);font-family:"Courier New",monospace;font-size:15px}
 .method-tabs{display:flex;gap:6px;margin:10px 0 8px;flex-wrap:wrap}
@@ -519,7 +518,7 @@ main{padding:14px 14px 92px}
 .scratch-bean.dragging{cursor:grabbing;opacity:.7}
 .scratch-bean.hidden{display:none}
 .scratch-bean:active{transform:translateY(-50%) scale(.92)}
-.scratch-overlay{position:fixed;inset:0;z-index:200;background:rgba(255,253,246,.72);backdrop-filter:blur(2px);display:flex;flex-direction:column;align-items:center;padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom)}
+.scratch-overlay{position:fixed;inset:0;z-index:200;background:rgba(255,253,246,.45);backdrop-filter:blur(1px);display:flex;flex-direction:column;align-items:center;padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom)}
 .scratch-overlay.hidden{display:none}
 .scratch-head{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:600px;padding:10px 0 6px}
 .scratch-title{font-size:14px;font-weight:800;color:#8a5a20}
@@ -591,9 +590,9 @@ main{padding:14px 14px 92px}
 .place-table .pt-wan{background:#e8f8ee;color:#1a7a4a}
 .place-table .pt-yi{background:#fde8f0;color:#b03a6a}
 .quan-focus{background:#ffe9a8;border-radius:6px;padding:1px 6px;border-bottom:2px solid #ffb703;font-weight:800;color:#8a5a20}
-.muti-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
-.muti-chip{background:#fff;border:2px solid #ffe0bd;border-radius:10px;padding:6px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;font-weight:700;color:#8a5a20}
-.muti-chip span:first-child{font-size:18px}
+.muti-row{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:14px}
+.muti-chip{background:#fff;border:1.5px solid #ffe0bd;border-radius:8px;padding:5px 2px;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:10px;font-weight:700;color:#8a5a20}
+.muti-chip span:first-child{font-size:16px}
 .tan-pieces{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
 .tan-piece{display:flex;align-items:center;gap:8px;background:#fff;border:2px solid #eef0f6;border-radius:12px;padding:8px 10px;font-size:12px;font-weight:700;color:#4a2c3d}
 .tan-piece.sel{border-color:#e8930a;background:#fff7ec}
@@ -11756,8 +11755,8 @@ window.THINK = (function () {
         { t: "找规律三步法", html: "1 看相邻两个数的<b>差</b>或<b>倍数</b>;2 验证这个规则在整列数上都成立;3 用规律推出下一个数。" }
       ],
       examples: [
-        { tag: "例题 · 等差", q: "2、5、8、11、( )", steps: ["相邻两数都差 3", "11 + 3 = 14"], explain: "每次都加 3,是等差数列。" },
-        { tag: "例题 · 等比", q: "3、6、12、24、( )", steps: ["每次乘 2", "24 × 2 = 48"], explain: "每次都乘 2,是等比数列。" }
+        { tag: "例题 · 等差", q: "2、5、8、11、( )", steps: ["相邻两数都差 3", "+ 3 = 14"], explain: "每次都加 3,是等差数列。" },
+        { tag: "例题 · 等比", q: "3、6、12、24、( )", steps: ["每次乘 2", "× 2 = 48"], explain: "每次都乘 2,是等比数列。" }
       ],
       gen: function () {
         var kind = R(1, 3);
@@ -11782,7 +11781,7 @@ window.THINK = (function () {
         { t: "代换三步法", html: "1 找出谁和谁相等;2 把相等的量互相替换,把未知量统一;3 算出一个,再代回去求另一个。" }
       ],
       examples: [
-        { tag: "例题", q: "1 个● = 2 个▲,1 个● + 1 个▲ = 12,那么 1 个▲等于几?", steps: ["把●换成 2 个▲", "2 个▲ + 1 个▲ = 3 个▲ = 12", "1 个▲ = 4"], explain: "把●换成 2 个▲,就变成 3 个▲=12。" }
+        { tag: "例题", q: "1 个● = 2 个▲,1 个● + 1 个▲ = 12,那么 1 个▲等于几?", steps: ["把●换成 2 个▲", "个▲ + 1 个▲ = 3 个▲ = 12", "个▲ = 4"], explain: "把●换成 2 个▲,就变成 3 个▲=12。" }
       ],
       gen: function () {
         var kind = R(1, 2);
@@ -11838,7 +11837,7 @@ window.THINK = (function () {
         { t: "和的变化", html: "每过 1 年,每个人都长 1 岁,所以两个人的年龄<b>和</b>每过 1 年增加 2。" }
       ],
       examples: [
-        { tag: "例题", q: "今年爸爸 35 岁,儿子 7 岁。5 年后两人一共多少岁?", steps: ["每过 1 年两人共长 2 岁", "5 年共长 5×2=10 岁", "35+7+10=52"], explain: "年龄和每年加 2。" }
+        { tag: "例题", q: "今年爸爸 35 岁,儿子 7 岁。5 年后两人一共多少岁?", steps: ["每过 1 年两人共长 2 岁", "年共长 5×2=10 岁", "35+7+10=52"], explain: "年龄和每年加 2。" }
       ],
       gen: function () {
         var kind = R(1, 2);
@@ -11860,7 +11859,7 @@ window.THINK = (function () {
         { t: "乘法原理", html: "做一件事分几步,第一步有 a 种方法,第二步有 b 种方法,那么一共有 <b>a×b</b> 种方法。" }
       ],
       examples: [
-        { tag: "例题 · 搭配", q: "2 件上衣、3 条裤子,一共有几种不同的穿法?", steps: ["每件上衣可以配 3 条裤子", "2 × 3 = 6(种)"], explain: "乘法原理:2×3=6。" }
+        { tag: "例题 · 搭配", q: "2 件上衣、3 条裤子,一共有几种不同的穿法?", steps: ["每件上衣可以配 3 条裤子", "× 3 = 6(种)"], explain: "乘法原理:2×3=6。" }
       ],
       gen: function () {
         var kind = R(1, 3);
@@ -12044,7 +12043,7 @@ window.THINK = (function () {
         { t: "运算要反过来", html: "原来加了的,倒推时减去;原来减了的,倒推时加上;乘了的除以,除了的乘回来。" }
       ],
       examples: [
-        { tag: "例题", q: "一些糖,吃了 6 颗还剩 10 颗。原来有几颗?", steps: ["倒推:剩的 + 吃的", "10 + 6 = 16"], explain: "第一步：正向是「原来−吃了=剩的」。第二步：倒推要反过来——原来=剩的+吃的。第三步：原来=10+6=16颗。核心规则：加变减、减变加、乘变除、除变乘——运算全部反过来。" }
+        { tag: "例题", q: "一些糖,吃了 6 颗还剩 10 颗。原来有几颗?", steps: ["倒推:剩的 + 吃的", "+ 6 = 16"], explain: "第一步：正向是「原来−吃了=剩的」。第二步：倒推要反过来——原来=剩的+吃的。第三步：原来=10+6=16颗。核心规则：加变减、减变加、乘变除、除变乘——运算全部反过来。" }
       ],
       gen: function () {
         var kind = R(1, 3);
@@ -12096,7 +12095,7 @@ window.THINK = (function () {
     { id: "hebei", name: "和倍问题", icon: "🤝", color: "#3a86ff", level: "中年级",
       desc: "知道两数的和与倍数关系,求这两个数。",
       points: [ { t: "和倍公式", html: "把小数看作 1 份,大数是几份,和就是(倍数+1)份。<b>小数 = 和 ÷(倍数+1)</b>。" } ],
-      examples: [ { tag: "例题", q: "甲乙两数和是 40,甲是乙的 3 倍。乙是多少?", steps: ["40 ÷ (3+1)", "= 10"], explain: "和÷(倍数+1)。" } ],
+      examples: [ { tag: "例题", q: "甲乙两数和是 40,甲是乙的 3 倍。乙是多少?", steps: ["÷ (3+1)", "= 10"], explain: "和÷(倍数+1)。" } ],
       gen: function () { var k = R(2, 4), x = R(3, 12), sum = x * (k + 1);
         return { type: "tiankong", q: "甲乙两个数的和是 " + sum + ",甲是乙的 " + k + " 倍。乙是多少?", input: "num", ans: String(x),
           explain: "乙 = 和÷(倍数+1) = " + sum + "÷" + (k + 1) + " = " + x + "。" }; } },
@@ -12105,7 +12104,7 @@ window.THINK = (function () {
     { id: "chabei", name: "差倍问题", icon: "📉", color: "#3a86ff", level: "中年级",
       desc: "知道两数的差与倍数关系,求这两个数。",
       points: [ { t: "差倍公式", html: "大数比小数多的部分 =(倍数-1)份。<b>小数 = 差 ÷(倍数-1)</b>。" } ],
-      examples: [ { tag: "例题", q: "甲比乙多 20,甲是乙的 3 倍。乙是多少?", steps: ["20 ÷ (3-1)", "= 10"], explain: "差÷(倍数-1)。" } ],
+      examples: [ { tag: "例题", q: "甲比乙多 20,甲是乙的 3 倍。乙是多少?", steps: ["÷ (3-1)", "= 10"], explain: "差÷(倍数-1)。" } ],
       gen: function () { var k = R(2, 4), x = R(3, 12), diff = x * (k - 1);
         return { type: "tiankong", q: "甲比乙多 " + diff + ",甲是乙的 " + k + " 倍。乙是多少?", input: "num", ans: String(x),
           explain: "乙 = 差÷(倍数-1) = " + diff + "÷" + (k - 1) + " = " + x + "。" }; } },
@@ -12170,7 +12169,7 @@ window.THINK = (function () {
     { id: "zuche", name: "租车优化", icon: "🚌", color: "#ff7a2f", level: "中年级",
       desc: "怎样租车最省钱,尽量坐满不留空位。",
       points: [ { t: "优化思路", html: "先算大车人均更便宜还是小车,尽量多坐大车、不留空位最省钱。" } ],
-      examples: [ { tag: "例题", q: "大车坐 10 人,小车坐 5 人,25 人怎样坐满?", steps: ["2 大 + 1 小", "20+5=25"], explain: "尽量坐满。" } ],
+      examples: [ { tag: "例题", q: "大车坐 10 人,小车坐 5 人,25 人怎样坐满?", steps: ["大 + 1 小", "20+5=25"], explain: "尽量坐满。" } ],
       gen: function () { var big = 10, small = 5, bn = R(1, 3), sn = R(1, 3);
         var total = big * bn + small * sn;
         return { type: "num", q: "大车坐 " + big + " 人,小车坐 " + small + " 人。" + total + " 人出行,租了 " + bn + " 辆大车,还需要几辆小车刚好坐满?", input: "num", ans: String(sn),
@@ -12362,7 +12361,7 @@ window.THINK = (function () {
     { id: "qishuhe", name: "奇数求和", icon: "➕", color: "#3a86ff", level: "高年级",
       desc: "1+3+5+...+(2n-1)= n2。",
       points: [ { t: "规律", html: "前 n 个连续奇数的和 = <b>n2</b>。" } ],
-      examples: [ { tag: "例题", q: "1+3+5+7+9 = ?", steps: ["5 个奇数", "= 52 = 25"], explain: "n2。" } ],
+      examples: [ { tag: "例题", q: "1+3+5+7+9 = ?", steps: ["个奇数", "= 52 = 25"], explain: "n2。" } ],
       gen: function () { var n = R(3, 10);
         return { type: "tiankong", q: "1 + 3 + 5 + ... + " + (2 * n - 1) + " = (____)", input: "num", ans: String(n * n),
           explain: "共 " + n + " 个连续奇数,和 = " + n + "2 = " + (n * n) + "。" }; } },
@@ -12664,49 +12663,62 @@ window.THINK = (function () {
 
     /* ---------------- 小学几何八大模型 ---------------- */
     { id: "geometry_models", name: "几何八大模型", icon: "📐", color: "#e63999", level: "高年级",
-      desc: "小学几何核心模型:等积变换、蝴蝶、鸟头、沙漏、金字塔、一半、弦图、燕尾。",
+      desc: "小学几何核心模型:等积变换、蝴蝶、鸟头、沙漏、金字塔、一半、弦图、燕尾。掌握这些模型,几何题迎刃而解!",
       points: [
-        { t: "1. 等积变换模型", html: "底和高都相同的三角形面积相等。关键:同底等高→面积相等。常用于把不规则图形转化为规则图形。" },
-        { t: "2. 蝴蝶模型", html: "梯形中,对角线把它分成4个三角形。左右两个三角形(蝴蝶翅膀)面积相等。即 S左=S右。" },
-        { t: "3. 鸟头模型", html: "两个三角形共一个角(鸟头),面积比等于夹这个角的两边乘积的比。S₁/S₂ = (a₁×b₁)/(a₂×b₂)。" },
-        { t: "4. 沙漏模型", html: "两条平行线之间,两条直线相交形成沙漏形。上下两个三角形相似,面积比等于对应边长比的平方。" },
-        { t: "5. 金字塔模型", html: "从三角形的一个顶点作一条平行于底的线,形成金字塔。小三角形与大三角形相似,面积比=边长比的平方。" },
-        { t: "6. 一半模型", html: "三角形面积=等底等高平行四边形面积的一半。常用于求三角形面积或比较面积。" },
-        { t: "7. 弦图模型", html: "正方形内接正方形(旋转45°),形成4个全等直角三角形。利用勾股定理或面积差求边长。" },
-        { t: "8. 燕尾模型", html: "三角形内一点与三个顶点连线,把三角形分成3个小三角形(像燕尾)。面积比等于对应底边比。" }
+        { t: "1. 等积变换模型", html: "<b>核心原理:</b>同底等高的三角形面积相等。<br><br><b>应用场景:</b><br>① 把不规则图形转化为规则图形<br>② 比较两个三角形面积大小<br>③ 求阴影部分面积<br><br><b>关键步骤:</b><br>第一步:找到两个三角形的底边<br>第二步:确认它们的高相等(在同一条平行线上)<br>第三步:得出面积相等的结论" },
+        { t: "2. 蝴蝶模型", html: "<b>核心原理:</b>梯形中,两条对角线把梯形分成4个三角形,左右两个三角形(蝴蝶翅膀)面积相等。<br><br><b>数学表达:</b>S<sub>左</sub> = S<sub>右</sub><br><br><b>应用场景:</b><br>① 已知一个三角形面积,求另一个<br>② 求梯形中阴影部分面积<br>③ 证明两个三角形面积相等<br><br><b>关键步骤:</b><br>第一步:确认是梯形(有平行边)<br>第二步:画出两条对角线<br>第三步:左右三角形面积相等" },
+        { t: "3. 鸟头模型", html: "<b>核心原理:</b>两个三角形共一个角(像鸟头),它们的面积比等于夹这个角的两边乘积的比。<br><br><b>数学表达:</b>S₁/S₂ = (a₁×b₁)/(a₂×b₂)<br><br><b>应用场景:</b><br>① 已知一个三角形面积,求另一个<br>② 比较两个共角三角形的面积<br><br><b>关键步骤:</b><br>第一步:找到共同的角<br>第二步:测量夹这个角的两条边<br>第三步:用公式计算面积比" },
+        { t: "4. 沙漏模型", html: "<b>核心原理:</b>两条平行线之间,两条直线相交形成沙漏形状,上下两个三角形相似。<br><br><b>数学表达:</b>面积比 = (边长比)²<br><br><b>应用场景:</b><br>① 已知边长比求面积比<br>② 已知面积比求边长比<br>③ 求平行线间的三角形面积<br><br><b>关键步骤:</b><br>第一步:确认有平行线<br>第二步:找到相交的交点<br>第三步:计算边长比,再平方得面积比" },
+        { t: "5. 金字塔模型", html: "<b>核心原理:</b>从三角形的一个顶点作一条平行于底边的线,形成一个小三角形,小三角形与大三角形相似。<br><br><b>数学表达:</b>面积比 = (边长比)²<br><br><b>应用场景:</b><br>① 已知小三角形面积,求大三角形<br>② 求截断后的三角形面积<br><br><b>关键步骤:</b><br>第一步:找到平行于底边的线<br>第二步:确认小三角形与大三角形相似<br>第三步:用边长比的平方求面积比" },
+        { t: "6. 一半模型", html: "<b>核心原理:</b>三角形的面积等于等底等高平行四边形面积的一半。<br><br><b>数学表达:</b>S<sub>三角形</sub> = S<sub>平行四边形</sub> ÷ 2<br><br><b>应用场景:</b><br>① 已知平行四边形面积,求三角形<br>② 已知三角形面积,求平行四边形<br>③ 比较三角形和平行四边形面积<br><br><b>关键步骤:</b><br>第一步:确认三角形和平行四边形等底等高<br>第二步:用公式计算<br>第三步:注意单位统一" },
+        { t: "7. 弦图模型", html: "<b>核心原理:</b>正方形内接一个旋转45°的小正方形,形成4个全等直角三角形。<br><br><b>数学表达:</b>小正方形面积 = 大正方形面积 ÷ 2<br><br><b>应用场景:</b><br>① 已知大正方形边长,求小正方形面积<br>② 求直角三角形的边长(勾股定理)<br><br><b>关键步骤:</b><br>第一步:确认是正方形内接正方形<br>第二步:计算大正方形面积<br>第三步:小正方形面积 = 大正方形面积 ÷ 2" },
+        { t: "8. 燕尾模型", html: "<b>核心原理:</b>三角形内一点与三个顶点连线,把三角形分成3个小三角形(像燕尾),面积比等于对应底边比。<br><br><b>数学表达:</b>S₁:S₂:S₃ = a₁:a₂:a₃<br><br><b>应用场景:</b><br>① 已知总面积,求各部分面积<br>② 已知一部分面积,求总面积<br><br><b>关键步骤:</b><br>第一步:找到内部点P<br>第二步:确认三个小三角形等高<br>第三步:面积比等于底边比" }
       ],
       examples: [
-        { tag: "蝴蝶模型", q: "梯形 ABCD 中,AD∥BC,对角线交于 O。△ABO 面积=6,求△CDO 面积。", steps: ["蝴蝶模型:左右面积相等", "△ABO = △CDO = 6"], explain: "蝴蝶模型:梯形对角线分成的左右两个三角形面积相等。" },
-        { tag: "一半模型", q: "平行四边形底 8cm、高 5cm,里面一个三角形与它等底等高,三角形面积是多少?", steps: ["平行四边形面积=8×5=40", "三角形面积=40÷2=20"], explain: "等底等高的三角形面积是平行四边形的一半。" }
+        { tag: "蝴蝶模型", q: "梯形 ABCD 中,AD∥BC,对角线交于 O。△ABO 面积=6,求△CDO 面积。", steps: ["确认是梯形,有平行边AD和BC", "画出对角线AC和BD,交于O", "根据蝴蝶模型,左右三角形面积相等", "△ABO = △CDO = 6"], explain: "蝴蝶模型:梯形对角线分成的左右两个三角形(蝴蝶翅膀)面积相等。" },
+        { tag: "一半模型", q: "平行四边形底 8cm、高 5cm,里面一个三角形与它等底等高,三角形面积是多少?", steps: ["平行四边形面积 = 底×高 = 8×5 = 40cm²", "三角形与平行四边形等底等高", "三角形面积 = 平行四边形面积 ÷ 2 = 40÷2 = 20cm²"], explain: "等底等高的三角形面积是平行四边形的一半。" },
+        { tag: "沙漏模型", q: "两条平行线间,上下两个三角形相似,对应边长比是 1:3。上三角形面积是 5cm²,下三角形面积是多少?", steps: ["确认是沙漏模型(有平行线)", "边长比 = 1:3", "面积比 = (边长比)² = 1:9", "下三角形面积 = 5×9 = 45cm²"], explain: "沙漏模型:相似三角形面积比等于边长比的平方。" },
+        { tag: "弦图模型", q: "正方形边长 10cm,里面内接一个旋转45°的小正方形。小正方形面积是多少?", steps: ["大正方形面积 = 10×10 = 100cm²", "弦图模型:小正方形面积 = 大正方形面积 ÷ 2", "小正方形面积 = 100÷2 = 50cm²"], explain: "弦图模型:内接正方形(旋转45°)的面积等于外正方形面积的一半。" },
+        { tag: "鸟头模型", q: "两个三角形共一个角,第一个三角形夹这个角的两边是 3cm 和 4cm,面积是 6cm²。第二个三角形夹这个角的两边是 6cm 和 8cm,面积是多少?", steps: ["确认是鸟头模型(共一个角)", "第一个三角形:3×4 = 12", "第二个三角形:6×8 = 48", "面积比 = 12:48 = 1:4", "第二个面积 = 6×4 = 24cm²"], explain: "鸟头模型:共角三角形面积比等于夹这个角的两边乘积的比。" }
       ],
       gen: function () {
-        var kind = R(1, 6);
+        var kind = R(1, 8);
         if (kind === 1) {
           var s = R(3, 12);
-          return { type: "num", q: "梯形中对角线交于 O,左边三角形面积是 " + s + ",右边三角形面积是多少?(蝴蝶模型)", input: "num", ans: String(s), explain: "蝴蝶模型:梯形对角线分成的左右两个三角形(蝴蝶翅膀)面积相等,所以右边也是 " + s + "。" };
+          return { type: "num", q: "梯形中对角线交于 O,左边三角形面积是 " + s + "cm²,右边三角形面积是多少?(蝴蝶模型)", input: "num", ans: String(s), explain: "蝴蝶模型:梯形对角线分成的左右两个三角形(蝴蝶翅膀)面积相等,所以右边也是 " + s + "cm²。" };
         }
         if (kind === 2) {
           var base = R(4, 12), h = R(3, 10);
           var area = base * h;
-          return { type: "num", q: "平行四边形底 " + base + "cm、高 " + h + "cm,里面一个三角形与它等底等高,三角形面积是多少?(一半模型)", input: "num", ans: String(area / 2), explain: "平行四边形面积=" + base + "×" + h + "=" + area + ",三角形面积=" + area + "÷2=" + (area / 2) + "(cm²)。" };
+          return { type: "num", q: "平行四边形底 " + base + "cm、高 " + h + "cm,里面一个三角形与它等底等高,三角形面积是多少?(一半模型)", input: "num", ans: String(area / 2), explain: "平行四边形面积=" + base + "×" + h + "=" + area + "cm²,三角形面积=" + area + "÷2=" + (area / 2) + "cm²。" };
         }
         if (kind === 3) {
-          var a = R(2, 6), b = R(2, 6);
+          var a = R(2, 5);
           var ratio = a * a;
-          return { type: "num", q: "沙漏模型中,上下两个三角形相似,对应边长比是 1:" + a + ",面积比是多少?(填数字,如 1:4 填 4)", input: "num", ans: String(ratio), explain: "沙漏模型:相似三角形面积比=对应边长比的平方。边长比 1:" + a + ",面积比=1:" + a + "²=1:" + ratio + "。" };
+          return { type: "num", q: "沙漏模型中,上下两个三角形相似,对应边长比是 1:" + a + ",面积比是多少?(填大数,如 1:4 填 4)", input: "num", ans: String(ratio), explain: "沙漏模型:相似三角形面积比=对应边长比的平方。边长比 1:" + a + ",面积比=1:" + a + "²=1:" + ratio + "。" };
         }
         if (kind === 4) {
-          var s1 = R(2, 8), s2 = R(2, 8);
-          return { type: "num", q: "鸟头模型中,两个三角形共一个角,第一个三角形夹这个角的两边是 3 和 4,第二个是 6 和 8。第二个面积是第一个的几倍?", input: "num", ans: "4", explain: "鸟头模型:面积比=(3×4):(6×8)=12:48=1:4。第二个是第一个的 4 倍。" };
+          var side = R(4, 10);
+          var inner = side * side / 2;
+          return { type: "num", q: "弦图模型:正方形边长 " + side + "cm,里面内接一个旋转45°的小正方形。小正方形面积是多少?", input: "num", ans: String(inner), explain: "弦图模型:内接正方形(旋转45°)的面积=外正方形面积÷2=" + side + "²÷2=" + (side * side) + "÷2=" + inner + "cm²。" };
         }
         if (kind === 5) {
-          var base = R(6, 15), div = R(2, 4);
-          var part = base / div;
-          return { type: "num", q: "燕尾模型:三角形 ABC 内一点 P,PA、PB、PC 把三角形分成 3 个小三角形。如果 BC 被分成 " + div + " 等份,最左边小三角形底是 " + part.toFixed(1) + ",它的面积占大三角形的几分之几?(填分母,如 1/3 填 3)", input: "num", ans: String(div), explain: "燕尾模型:3 个小三角形等高(从 P 到 BC 的距离相同),面积比=底边比。BC 分成 " + div + " 等份,每份占 1/" + div + "。" };
+          var a1 = R(2, 5), b1 = R(3, 6);
+          var a2 = a1 * 2, b2 = b1 * 2;
+          var ratio = (a2 * b2) / (a1 * b1);
+          return { type: "num", q: "鸟头模型:两个三角形共一个角,第一个夹这个角的两边是 " + a1 + "cm 和 " + b1 + "cm,第二个是 " + a2 + "cm 和 " + b2 + "cm。第二个面积是第一个的几倍?", input: "num", ans: String(ratio), explain: "鸟头模型:面积比=(" + a1 + "×" + b1 + "):(" + a2 + "×" + b2 + ")=" + (a1 * b1) + ":" + (a2 * b2) + "=1:" + ratio + "。第二个是第一个的 " + ratio + " 倍。" };
         }
-        var side = R(4, 10);
-        var inner = side * side / 2;
-        return { type: "num", q: "弦图模型:正方形边长 " + side + "cm,里面内接一个旋转 45° 的小正方形。小正方形面积是多少?", input: "num", ans: String(inner), explain: "弦图模型:内接正方形(旋转 45°)的面积=外正方形面积÷2=" + side + "²÷2=" + (side * side) + "÷2=" + inner + "(cm²)。" };
+        if (kind === 6) {
+          var base = R(6, 15), div = R(2, 4);
+          return { type: "num", q: "燕尾模型:三角形 ABC 内一点 P,PA、PB、PC 把三角形分成 3 个小三角形。如果底边 BC 被分成 " + div + " 等份,最左边小三角形面积是 " + (30 / div) + "cm²,整个三角形面积是多少?", input: "num", ans: "30", explain: "燕尾模型:3 个小三角形等高,面积比=底边比。BC 分成 " + div + " 等份,每份占 1/" + div + ",总面积=" + (30 / div) + "×" + div + "=30cm²。" };
+        }
+        if (kind === 7) {
+          var a = R(2, 6), b = R(2, 6);
+          return { type: "num", q: "等积变换:两个三角形底都是 " + a + "cm,高都是 " + b + "cm。第一个面积是 " + (a * b / 2) + "cm²,第二个面积是多少?", input: "num", ans: String(a * b / 2), explain: "等积变换:同底等高的三角形面积相等。两个三角形底都是 " + a + "cm,高都是 " + b + "cm,面积都是 " + (a * b / 2) + "cm²。" };
+        }
+        var side = R(5, 12);
+        var area = side * side;
+        return { type: "num", q: "金字塔模型:从三角形顶点作平行于底边的线,小三角形边长是大三角形的 1/" + R(2, 3) + "。大三角形面积是 " + area + "cm²,小三角形面积是多少?", input: "num", ans: String(Math.round(area / 4)), explain: "金字塔模型:小三角形与大三角形相似,面积比=边长比的平方。边长比 1:2,面积比 1:4,小三角形面积=" + area + "÷4=" + Math.round(area / 4) + "cm²。" };
       }
     }
   ];
@@ -12716,54 +12728,99 @@ window.THINK = (function () {
   var MUTI = [
     { id: "jitu", icon: "🐰", name: "鸡兔同笼", level: "高年级",
       mu: "笼子里有鸡和兔共 10 只,数腿共 32 条。鸡和兔各有几只?",
-      steps: ["1 假设 10 只全是鸡:10×2=20 条腿", "2 比实际少:32-20=12 条腿", "3 每把一只鸡换成兔多 2 条腿", "4 兔:12÷2=6(只),鸡:10-6=4(只)"],
+      steps: ["假设 10 只全是鸡:10×2=20 条腿", "比实际少:32-20=12 条腿", "每把一只鸡换成兔多 2 条腿", "兔:12÷2=6(只),鸡:10-6=4(只)"],
       key: "假设法:先假设全是其中一种,再用腿的差÷每只腿差。",
       tip: "兔 =(总腿数 - 2×总头数)÷ 2" },
     { id: "hecha", icon: "⚖️", name: "和差问题", level: "中年级",
       mu: "两个数的和是 50,差是 10。这两个数各是多少?",
-      steps: ["1 大数 =(和+差)÷2 =(50+10)÷2=25", "2 小数 =(和-差)÷2 =(50-10)÷2=20"],
+      steps: ["大数 =(和+差)÷2 =(50+10)÷2=25", "小数 =(和-差)÷2 =(50-10)÷2=20"],
       key: "记住公式:大数=(和+差)÷2,小数=(和-差)÷2。",
       tip: "线段图:把差补上或去掉,两数就一样大了。" },
     { id: "hebei", icon: "📈", name: "和倍问题", level: "高年级",
       mu: "甲乙两数的和是 40,甲是乙的 3 倍。甲乙各是多少?",
-      steps: ["1 乙是 1 份,甲是 3 份,共 4 份", "2 每份:40÷4=10", "3 乙=10,甲=10×3=30"],
+      steps: ["乙是 1 份,甲是 3 份,共 4 份", "每份:40÷4=10", "乙=10,甲=10×3=30"],
       key: "先求份数:和÷(倍数+1)=小数,再乘倍数得大数。",
       tip: "小数 = 和 ÷(倍数+1)" },
     { id: "xingcheng", icon: "🚗", name: "相遇问题", level: "高年级",
       mu: "甲乙从相距 300 米的两地同时相向而行,甲每分走 40 米,乙每分走 60 米。几分后相遇?",
-      steps: ["1 速度和:40+60=100(米/分)", "2 相遇时间 = 总路程÷速度和 = 300÷100=3(分)"],
+      steps: ["速度和:40+60=100(米/分)", "相遇时间 = 总路程÷速度和 = 300÷100=3(分)"],
       key: "相向而行用速度和:相遇时间=总路程÷速度和。",
       tip: "总路程 = 速度和 × 相遇时间" },
     { id: "zhishu", icon: "🌳", name: "植树问题", level: "高年级",
       mu: "在 100 米的路一边种树,每隔 5 米一棵,两端都种。共多少棵?",
-      steps: ["1 段数:100÷5=20(段)", "2 两端都种:棵数=段数+1=21(棵)"],
+      steps: ["段数:100÷5=20(段)", "两端都种:棵数=段数+1=21(棵)"],
       key: "先求段数,再看种法:两端都种+1,只种一端不加,两端不种-1。",
       tip: "棵数 = 段数 ± 1(看两端)" },
     { id: "yingkui", icon: "🎁", name: "盈亏问题", level: "高年级",
       mu: "分糖果,每人分 5 颗多 8 颗;每人分 7 颗正好分完。有几个小朋友?",
-      steps: ["1 两次每人相差:7-5=2(颗)", "2 多出的 8 颗 ÷ 每人多分的 2 颗 = 4(人)"],
+      steps: ["两次每人相差:7-5=2(颗)", "多出的 8 颗 ÷ 每人多分的 2 颗 = 4(人)"],
       key: "人数 = 盈(亏)÷ 两次每人分的差。",
       tip: "人数 = 盈亏数 ÷ 每人差" },
     { id: "daotui", icon: "🔄", name: "还原问题", level: "中年级",
       mu: "一个数加上 5,再乘 3,结果是 30。这个数原来是多少?",
-      steps: ["1 正向:原数→+5→×3→=30", "2 倒推:30÷3=10,10-5=5", "3 原数是 5"],
+      steps: ["正向:原数→+5→×3→=30", "倒推:30÷3=10,10-5=5", "原数是 5"],
       key: "从结果倒着推,运算全部反过来:加变减、减变加、乘变除、除变乘。",
       tip: "倒推口诀:加减互换,乘除互换" },
     { id: "nianling", icon: "👨‍👦", name: "年龄问题", level: "中年级",
       mu: "今年爸爸 40 岁,儿子 12 岁。几年前爸爸年龄是儿子的 5 倍?",
-      steps: ["1 年龄差永远不变:40-12=28(岁)", "2 爸爸是儿子 5 倍时:差=4 份=28,每份=7", "3 那时儿子 7 岁,是 12-7=5 年前"],
+      steps: ["年龄差永远不变:40-12=28(岁)", "爸爸是儿子 5 倍时:差=4 份=28,每份=7", "那时儿子 7 岁,是 12-7=5 年前"],
       key: "年龄差永远不变!不管过多少年,两人的差始终一样。",
       tip: "年龄差 = 大年龄 - 小年龄(永不变)" },
     { id: "daihuan", icon: "⚖️", name: "等量代换", level: "中年级",
       mu: "1 个西瓜 = 4 个苹果,1 个苹果 = 3 个橘子。1 个西瓜等于几个橘子?",
-      steps: ["1 先把西瓜换成苹果:1 西瓜 = 4 苹果", "2 再把苹果换成橘子:4 苹果 = 4×3 = 12 橘子", "3 所以 1 西瓜 = 12 橘子"],
+      steps: ["先把西瓜换成苹果:1 西瓜 = 4 苹果", "再把苹果换成橘子:4 苹果 = 4×3 = 12 橘子", "所以 1 西瓜 = 12 橘子"],
       key: "链式代换:一层层换,把未知量全部统一成同一种。",
       tip: "找准等量关系,一步步替换" },
     { id: "fangzhen", icon: "🔲", name: "方阵问题", level: "高年级",
       mu: "一个方阵最外层每边站 8 人。最外层一共站多少人?整个方阵多少人?",
-      steps: ["1 最外层:4×8-4=28(人,四个角不重复算)", "2 总人数需要知道每边人数:8×8=64(人)"],
+      steps: ["最外层:4×8-4=28(人,四个角不重复算)", "总人数需要知道每边人数:8×8=64(人)"],
       key: "最外层=4×每边人数-4(角不重复);总人数=每边人数²。",
-      tip: "最外层 = 4n - 4,总数 = n²" }
+      tip: "最外层 = 4n - 4,总数 = n²" },
+    { id: "dengcha", icon: "➕", name: "等差数列", level: "高年级",
+      mu: "等差数列 2,5,8,11,…,第 20 项是多少?前 20 项的和是多少?",
+      steps: ["公差=5-2=3", "第20项=2+(20-1)×3=59", "和=(首项+末项)×项数÷2=(2+59)×20÷2=610"],
+      key: "第n项=首项+(n-1)×公差;和=(首项+末项)×项数÷2。",
+      tip: "高斯求和:(首+末)×项÷2" },
+    { id: "dengbi", icon: "✖️", name: "等比数列", level: "高年级",
+      mu: "等比数列 1,2,4,8,…,第 10 项是多少?前 10 项的和是多少?",
+      steps: ["公比=2÷1=2", "第10项=1×2⁹=512", "和=首项×(公比ⁿ-1)÷(公比-1)=1×(1024-1)÷1=1023"],
+      key: "第n项=首项×公比^(n-1);和=首项×(公比ⁿ-1)÷(公比-1)。",
+      tip: "等比求和:S=a₁(qⁿ-1)/(q-1)" },
+    { id: "zhouqi", icon: "🔄", name: "周期问题", level: "中年级",
+      mu: "一串彩灯按红黄蓝绿排列,第 50 盏灯是什么颜色?",
+      steps: ["周期=4(红黄蓝绿)", "50÷4=12…2", "余2对应第2个颜色=黄色"],
+      key: "找周期长度,用总数÷周期,看余数对应哪个位置。",
+      tip: "余数=0时对应周期最后一个" },
+    { id: "shuzi", icon: "🔢", name: "数字谜", level: "中年级",
+      mu: "A+B=10,A×B=21,A和B各是多少?",
+      steps: ["和=10,积=21", "尝试:3+7=10,3×7=21", "A=3,B=7(或A=7,B=3)"],
+      key: "已知和与积,可用试数法或因式分解求解。",
+      tip: "和积问题:试数或因式分解" },
+    { id: "jishu", icon: "🔢", name: "计数原理", level: "高年级",
+      mu: "从A到B有3条路,从B到C有2条路。从A经B到C共有几种走法?",
+      steps: ["A到B有3种选择", "B到C有2种选择", "乘法原理:3×2=6(种)"],
+      key: "分步用乘法,分类用加法。",
+      tip: "乘法原理:分步相乘" },
+    { id: "rongji2", icon: "📦", name: "体积问题", level: "高年级",
+      mu: "正方体棱长6cm,体积是多少?表面积是多少?",
+      steps: ["体积=棱长³=6×6×6=216(cm³)", "表面积=6×棱长²=6×36=216(cm²)"],
+      key: "正方体:体积=棱长³,表面积=6×棱长²。",
+      tip: "V=a³, S=6a²" },
+    { id: "shizhong", icon: "🕐", name: "钟表问题", level: "中年级",
+      mu: "3点整时,时针和分针的夹角是多少度?",
+      steps: ["钟面12个数字,每格=360÷12=30°", "3点整:时针在3,分针在12", "夹角=3×30=90°"],
+      key: "每格30°,整点夹角=|时针数-12|×30°或时针数×30°。",
+      tip: "每小时=30°,每分钟分针=6°" },
+    { id: "guilv2", icon: "🔍", name: "找规律填图", level: "低年级",
+      mu: "○△□○△□○△□…,第 20 个图形是什么?",
+      steps: ["周期=3(○△□)", "20÷3=6…2", "余2对应第2个图形=△"],
+      key: "找重复周期,用除法看余数。",
+      tip: "周期问题:总数÷周期=看余数" },
+    { id: "yidong", icon: "🚶", name: "行程综合", level: "高年级",
+      mu: "甲乙同时从A地出发去B地,甲每小时走5km,乙每小时走3km。甲到B地后立即返回,在距B地4km处遇到乙。AB相距多少km?",
+      steps: ["相遇时甲走了全程+4km,乙走了全程-4km", "甲比乙多走了4+4=8km", "甲比乙每小时快5-3=2km", "相遇时间=8÷2=4小时", "乙走了3×4=12km", "AB=12+4=16km"],
+      key: "行程问题核心:路程=速度×时间,抓住路程差或路程和。",
+      tip: "画线段图,标出关键位置" }
   ];
   return { topics: topics, MUTI: MUTI };
 })();
@@ -14599,10 +14656,8 @@ window.STATS = (function () {
       '</div>' +
       '<div class="muti-section-title">💡 解题思路</div>' +
       '<div class="step-list">' + stepsHtml + '</div>' +
-      '<div class="muti-row">' +
-        '<div class="muti-tip"><div class="muti-tip-title">🔑 关键</div><div>' + esc(m.key) + '</div></div>' +
-        '<div class="muti-tip blue"><div class="muti-tip-title">📝 口诀</div><div>' + esc(m.tip) + '</div></div>' +
-      '</div>' +
+      '<div class="muti-tip"><div class="muti-tip-title">🔑 关键</div><div>' + esc(m.key) + '</div></div>' +
+      '<div class="muti-tip blue" style="margin-top:6px"><div class="muti-tip-title">📝 口诀</div><div>' + esc(m.tip) + '</div></div>' +
       '<div style="margin:16px 0"><button class="btn block" id="mutiPractice">🎯 举一反三练一练</button></div>';
     el.innerHTML = html;
     $("#thinkBack").onclick = renderThinkHome;
