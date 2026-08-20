@@ -529,6 +529,53 @@ main{padding:14px 14px 92px}
 .st-btn.close{background:#ff6b6b;color:#fff;border-color:#ff6b6b;font-size:18px}
 #scratchCanvas{flex:1;width:100%;max-width:600px;background:repeating-linear-gradient(#fffdf6,#fffdf6 27px,#f3ead2 28px);border:1.5px solid #eadfc2;border-radius:12px;touch-action:none;display:block;margin-bottom:8px}
 .scratch-hint{font-size:11px;color:#a8a9b5;padding:4px 0}
+/* 学习报告 */
+.stats-tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
+.stats-tab{flex:1;min-width:0;padding:8px 4px;border-radius:10px;background:#f8f9fa;font-size:12px;font-weight:600;color:var(--ink-2);border:none;white-space:nowrap}
+.stats-tab.active{background:var(--primary);color:#fff}
+.stats-hero{margin-bottom:16px}
+.hero-card{background:linear-gradient(135deg,#fff7ec,#fffdf6);border-radius:16px;padding:16px;text-align:center;border:2px solid #ffd9a8}
+.hero-icon{font-size:36px;margin-bottom:4px}
+.hero-title{font-size:16px;font-weight:800;color:#4a2c3d;margin-bottom:8px}
+.hero-bar{height:8px;background:#f0e6d2;border-radius:4px;overflow:hidden;margin-bottom:4px}
+.hero-bar-fill{height:100%;background:linear-gradient(90deg,#ffd93f,#ff7a2f);border-radius:4px;transition:width .5s}
+.hero-label{font-size:11px;color:var(--ink-2)}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.stat-card{background:#fff;border-radius:12px;padding:12px 8px;text-align:center;box-shadow:var(--shadow)}
+.stat-num{font-size:22px;font-weight:800;color:var(--primary-dark)}
+.stat-pct{font-size:14px}
+.stat-label{font-size:11px;color:var(--ink-2);margin-top:2px}
+.mini-chart{display:flex;gap:6px;align-items:flex-end;height:100px;padding:8px 0}
+.mini-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.mini-bar{width:100%;background:linear-gradient(180deg,#06d6a0,#059e76);border-radius:4px 4px 0 0;min-height:4px}
+.mini-label{font-size:10px;color:var(--ink-2);margin-top:4px}
+.daily-chart{display:flex;gap:4px;align-items:flex-end;height:180px;padding:8px 0}
+.daily-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end}
+.daily-bar{width:100%;border-radius:4px 4px 0 0;min-height:4px}
+.daily-num{font-size:10px;font-weight:700;margin-top:2px}
+.daily-acc{font-size:9px;color:var(--ink-2)}
+.daily-date{font-size:9px;color:var(--ink-2);margin-top:2px}
+.weakness-list{display:flex;flex-direction:column;gap:8px}
+.weakness-item{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:10px 12px;box-shadow:var(--shadow)}
+.weakness-rank{width:24px;height:24px;border-radius:50%;background:#f0f0f0;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;color:var(--ink-2)}
+.weakness-info{flex:1;min-width:0}
+.weakness-name{font-size:13px;font-weight:600;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.weakness-bar-bg{height:6px;background:#f0f0f0;border-radius:3px;overflow:hidden}
+.weakness-bar{height:100%;border-radius:3px;transition:width .5s}
+.weakness-acc{font-size:14px;font-weight:800;min-width:40px;text-align:right}
+.weakness-count{font-size:11px;color:var(--ink-2);min-width:40px;text-align:right}
+.ach-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.ach-card{background:#fff;border-radius:12px;padding:12px;text-align:center;box-shadow:var(--shadow);opacity:.5}
+.ach-card.got{opacity:1;background:linear-gradient(135deg,#fffdf4,#fff5e0)}
+.ach-icon{font-size:32px;margin-bottom:4px}
+.ach-name{font-size:13px;font-weight:800;color:#4a2c3d}
+.ach-desc{font-size:11px;color:var(--ink-2);margin-top:2px;line-height:1.4}
+.ach-got{font-size:10px;color:#059e76;font-weight:700;margin-top:6px}
+.ach-lock{font-size:10px;color:#c3c7cf;margin-top:6px}
+.parent-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.parent-stat{background:#fff;border-radius:10px;padding:10px 6px;text-align:center;box-shadow:var(--shadow)}
+.parent-num{font-size:18px;font-weight:800;color:var(--primary-dark)}
+.parent-label{font-size:10px;color:var(--ink-2);margin-top:2px}
 /* 百数表 */
 .hundred-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
 .hg-cell{padding:6px 0;font-size:11.5px;font-weight:700;color:#5a4634;background:#fff7ec;border:1px solid #f0e2c8;border-radius:6px;text-align:center}
@@ -679,6 +726,9 @@ main{padding:14px 14px 92px}
   <section class="page" id="page-garden">
     <div id="gardenWrap"></div>
   </section>
+  <section class="page" id="page-stats">
+    <div id="statsWrap"></div>
+  </section>
 </main>
 
 <!-- ===================== 底部导航 ===================== -->
@@ -690,6 +740,7 @@ main{padding:14px 14px 92px}
   <button class="tab-item" data-tab="think"><span class="t-icon">🧩</span>有思维</button>
   <button class="tab-item" data-tab="formulas"><span class="t-icon">🧮</span>有公式</button>
   <button class="tab-item" data-tab="garden"><span class="t-icon">🏡</span>家园</button>
+  <button class="tab-item" data-tab="stats"><span class="t-icon">📊</span>报告</button>
 </nav>
 
 <!-- ===================== 版本日志弹窗 ===================== -->
@@ -12708,6 +12759,237 @@ window.THINK = (function () {
   return { topics: topics, MUTI: MUTI };
 })();
 /* =====================================================================
+ * 烧脑数学 · 学习统计模块
+ * 记录每次答题、练习会话，生成学习报告
+ * ===================================================================== */
+window.STATS = (function () {
+  var STORAGE_KEY = "snmath_stats_v1";
+  var ACHIEVEMENTS_KEY = "snmath_achievements_v1";
+
+  /* ---------- 数据记录 ---------- */
+  function record(data) {
+    var list = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    data.ts = Date.now();
+    list.push(data);
+    // 保留最近 5000 条记录
+    if (list.length > 5000) list = list.slice(-5000);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    checkAchievements();
+  }
+
+  /* 记录单次答题 */
+  function logAnswer(q, correct, sessionType) {
+    record({
+      type: "answer",
+      unit: q.unit || "unknown",
+      questionType: q.type || "unknown",
+      kp: q.kp || "",
+      correct: correct,
+      sessionType: sessionType || "practice",
+      ts: Date.now()
+    });
+  }
+
+  /* 记录完整会话 */
+  function logSession(data) {
+    record({
+      type: "session",
+      title: data.title || "练习",
+      total: data.total || 0,
+      correct: data.correct || 0,
+      duration: data.duration || 0,
+      sessionType: data.sessionType || "practice",
+      ts: Date.now()
+    });
+  }
+
+  /* ---------- 统计查询 ---------- */
+  function getAll() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+  }
+
+  function getAnswers() {
+    return getAll().filter(function (r) { return r.type === "answer"; });
+  }
+
+  function getSessions() {
+    return getAll().filter(function (r) { return r.type === "session"; });
+  }
+
+  /* 按时间范围过滤 */
+  function getRange(startTime, endTime) {
+    var all = getAll();
+    return all.filter(function (r) {
+      return r.ts >= startTime && r.ts <= endTime;
+    });
+  }
+
+  /* 获取最近 N 天的每日统计 */
+  function getDailyStats(days) {
+    days = days || 7;
+    var now = Date.now();
+    var result = [];
+    for (var i = days - 1; i >= 0; i--) {
+      var dayStart = new Date();
+      dayStart.setHours(0, 0, 0, 0);
+      dayStart.setDate(dayStart.getDate() - i);
+      var dayEnd = new Date(dayStart);
+      dayEnd.setHours(23, 59, 59, 999);
+      
+      var dayData = getRange(dayStart.getTime(), dayEnd.getTime());
+      var answers = dayData.filter(function (r) { return r.type === "answer"; });
+      var sessions = dayData.filter(function (r) { return r.type === "session"; });
+      
+      var total = answers.length;
+      var correct = answers.filter(function (a) { return a.correct; }).length;
+      var duration = sessions.reduce(function (sum, s) { return sum + (s.duration || 0); }, 0);
+      
+      result.push({
+        date: dayStart.toISOString().split("T")[0],
+        total: total,
+        correct: correct,
+        accuracy: total > 0 ? Math.round(correct / total * 100) : 0,
+        duration: Math.round(duration / 60), // 分钟
+        sessions: sessions.length
+      });
+    }
+    return result;
+  }
+
+  /* 获取知识点统计（用于薄弱分析） */
+  function getKPStats() {
+    var answers = getAnswers();
+    var kpMap = {};
+    answers.forEach(function (a) {
+      var kp = a.kp || "未知";
+      if (!kpMap[kp]) kpMap[kp] = { total: 0, correct: 0 };
+      kpMap[kp].total++;
+      if (a.correct) kpMap[kp].correct++;
+    });
+    // 转换为数组并排序
+    var result = Object.keys(kpMap).map(function (kp) {
+      var data = kpMap[kp];
+      return {
+        kp: kp,
+        total: data.total,
+        correct: data.correct,
+        accuracy: Math.round(data.correct / data.total * 100)
+      };
+    });
+    result.sort(function (a, b) { return a.accuracy - b.accuracy; });
+    return result;
+  }
+
+  /* 获取连续学习天数 */
+  function getStreak() {
+    var daily = getDailyStats(30);
+    var streak = 0;
+    for (var i = daily.length - 1; i >= 0; i--) {
+      if (daily[i].total > 0) {
+        streak++;
+      } else if (i < daily.length - 1) {
+        // 今天可以没做题，但昨天必须做了
+        if (i === daily.length - 1) continue;
+        break;
+      }
+    }
+    return streak;
+  }
+
+  /* ---------- 成就系统 ---------- */
+  var ACHIEVEMENT_DEFS = [
+    { id: "first_10", name: "初学者", desc: "完成 10 道题", icon: "🌱", check: function () { return getAnswers().length >= 10; } },
+    { id: "first_100", name: "勤奋者", desc: "完成 100 道题", icon: "📚", check: function () { return getAnswers().length >= 100; } },
+    { id: "first_500", name: "学霸", desc: "完成 500 道题", icon: "🎓", check: function () { return getAnswers().length >= 500; } },
+    { id: "streak_3", name: "三天打鱼", desc: "连续学习 3 天", icon: "🔥", check: function () { return getStreak() >= 3; } },
+    { id: "streak_7", name: "一周坚持", desc: "连续学习 7 天", icon: "⚡", check: function () { return getStreak() >= 7; } },
+    { id: "streak_30", name: "月度达人", desc: "连续学习 30 天", icon: "🏆", check: function () { return getStreak() >= 30; } },
+    { id: "perfect_10", name: "十全十美", desc: "一次练习 10 题全对", icon: "💯", check: function () {
+      var sessions = getSessions();
+      return sessions.some(function (s) { return s.total >= 10 && s.correct === s.total; });
+    }},
+    { id: "accuracy_90", name: "精准射手", desc: "总体正确率达到 90%", icon: "🎯", check: function () {
+      var answers = getAnswers();
+      if (answers.length < 50) return false;
+      var correct = answers.filter(function (a) { return a.correct; }).length;
+      return correct / answers.length >= 0.9;
+    }},
+    { id: "think_master", name: "思维大师", desc: "完成 50 道思维题", icon: "🧠", check: function () {
+      return getAnswers().filter(function (a) { return a.sessionType === "think"; }).length >= 50;
+    }},
+    { id: "explorer", name: "探索者", desc: "尝试过 5 种不同的题型", icon: "🗺️", check: function () {
+      var types = {};
+      getAnswers().forEach(function (a) { types[a.questionType] = true; });
+      return Object.keys(types).length >= 5;
+    }}
+  ];
+
+  function getAchievements() {
+    return JSON.parse(localStorage.getItem(ACHIEVEMENTS_KEY) || "{}");
+  }
+
+  function checkAchievements() {
+    var unlocked = getAchievements();
+    var newUnlocks = [];
+    ACHIEVEMENT_DEFS.forEach(function (def) {
+      if (!unlocked[def.id] && def.check()) {
+        unlocked[def.id] = Date.now();
+        newUnlocks.push(def);
+      }
+    });
+    if (newUnlocks.length > 0) {
+      localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(unlocked));
+      // 触发成就解锁通知（由 UI 层处理）
+      if (window.STATS && STATS.onAchievementUnlock) {
+        STATS.onAchievementUnlock(newUnlocks);
+      }
+    }
+  }
+
+  /* 获取等级（基于总答题数） */
+  function getLevel() {
+    var total = getAnswers().length;
+    var levels = [
+      { min: 0, name: "数学新手", icon: "🌱" },
+      { min: 50, name: "数学学徒", icon: "📖" },
+      { min: 150, name: "数学能手", icon: "✏️" },
+      { min: 300, name: "数学达人", icon: "🌟" },
+      { min: 500, name: "数学高手", icon: "💫" },
+      { min: 1000, name: "数学大师", icon: "👑" },
+      { min: 2000, name: "数学宗师", icon: "🏆" }
+    ];
+    var level = levels[0];
+    for (var i = levels.length - 1; i >= 0; i--) {
+      if (total >= levels[i].min) {
+        level = levels[i];
+        break;
+      }
+    }
+    var nextLevel = levels[levels.indexOf(level) + 1];
+    return {
+      current: level,
+      next: nextLevel,
+      progress: nextLevel ? Math.min(100, Math.round((total - level.min) / (nextLevel.min - level.min) * 100)) : 100,
+      total: total
+    };
+  }
+
+  return {
+    record: record,
+    logAnswer: logAnswer,
+    logSession: logSession,
+    getAll: getAll,
+    getAnswers: getAnswers,
+    getSessions: getSessions,
+    getDailyStats: getDailyStats,
+    getKPStats: getKPStats,
+    getStreak: getStreak,
+    getAchievements: getAchievements,
+    getLevel: getLevel,
+    ACHIEVEMENT_DEFS: ACHIEVEMENT_DEFS
+  };
+})();
+/* =====================================================================
  * 烧脑数学 · 主应用 v1.1（书目导航 / 学习 / 练习 / 错题本 / 游戏 / 公式）
  * ===================================================================== */
 (function () {
@@ -12768,7 +13050,7 @@ window.THINK = (function () {
   }
 
   /* ---------- 页签切换 ---------- */
-  var tabPages = { home: "page-home", learn: "page-learn", practice: "page-practice", play: "page-play", think: "page-think", formulas: "page-formulas", garden: "page-garden" };
+  var tabPages = { home: "page-home", learn: "page-learn", practice: "page-practice", play: "page-play", think: "page-think", formulas: "page-formulas", garden: "page-garden", stats: "page-stats" };
   function switchTab(name) {
     $$(".tab-item").forEach(function (b) { b.classList.toggle("active", b.dataset.tab === name); });
     Object.keys(tabPages).forEach(function (k) {
@@ -12780,6 +13062,7 @@ window.THINK = (function () {
     if (name === "think") renderThinkHome();
     if (name === "formulas") renderFormulas();
     if (name === "garden") renderGardenHome();
+    if (name === "stats") renderStatsPage();
     if (name === "home") renderHome();
     if (name !== "learn" && name !== "practice" && window.GARDEN) GARDEN.endActivity();
     try { localStorage.setItem("snmath_tab", name); } catch (e) {}
@@ -13474,6 +13757,7 @@ window.THINK = (function () {
 
       var ok = checkAnswer(q, val);
       if (window.SND) ok ? SND.correct() : SND.wrong();
+      if (window.STATS) STATS.logAnswer(q, ok, cfg.sessionType || "practice");
       if (ok) { cfg.correct++; if (window.GARDEN) GARDEN.addPoints(0.5, "答对一题"); }
       else {
         // 收录错题
@@ -13566,6 +13850,16 @@ window.THINK = (function () {
       GARDEN.addSession(cfg.correct, cfg.total);
       var bonus = acc >= 100 ? 1.5 : (acc >= 60 ? 1 : 0.5);
       earnedBonus = GARDEN.addPoints(bonus, "完成练习");
+    }
+    /* 记录学习统计 */
+    if (window.STATS && cfg.startTs) {
+      STATS.logSession({
+        title: cfg.title || "练习",
+        total: denom,
+        correct: cfg.correct,
+        duration: (Date.now() - cfg.startTs) / 1000,
+        sessionType: cfg.sessionType || "practice"
+      });
     }
 
     /* 举一反三巩固结果判定 */
@@ -14876,6 +15170,241 @@ window.THINK = (function () {
     var u = GARDEN.activeUser();
     var btn = $("#btnUser");
     if (btn) { btn.textContent = u ? u.avatar : "🦊"; btn.title = u ? ("当前：" + u.name + "（点击切换）") : "选择用户"; }
+  }
+
+  /* =====================================================
+   * 学习报告页面
+   * ===================================================== */
+  var statsTab = "overview";
+  function renderStatsPage() {
+    $("#statsWrap").innerHTML = "";
+    var tabs = [
+      { id: "overview", name: "概览", icon: "📈" },
+      { id: "daily", name: "趋势", icon: "📊" },
+      { id: "weakness", name: "薄弱", icon: "🎯" },
+      { id: "achievements", name: "成就", icon: "🏆" },
+      { id: "parent", name: "家长", icon: "👨‍👩‍👧" }
+    ];
+    var html = '<div class="stats-tabs">';
+    tabs.forEach(function (t) {
+      html += '<button class="stats-tab' + (statsTab === t.id ? " active" : "") + '" data-stats="' + t.id + '">' + t.icon + t.name + '</button>';
+    });
+    html += '</div><div id="statsContent"></div>';
+    $("#statsWrap").innerHTML = html;
+    $$(".stats-tab", $("#statsWrap")).forEach(function (btn) {
+      btn.onclick = function () {
+        statsTab = btn.dataset.stats;
+        renderStatsPage();
+      };
+    });
+    if (statsTab === "overview") renderStatsOverview();
+    else if (statsTab === "daily") renderStatsDaily();
+    else if (statsTab === "weakness") renderStatsWeakness();
+    else if (statsTab === "achievements") renderStatsAchievements();
+    else if (statsTab === "parent") renderStatsParent();
+  }
+
+  function renderStatsOverview() {
+    var el = $("#statsContent");
+    if (!window.STATS) { el.innerHTML = '<div class="card">统计模块未加载</div>'; return; }
+    var level = STATS.getLevel();
+    var streak = STATS.getStreak();
+    var answers = STATS.getAnswers();
+    var total = answers.length;
+    var correct = answers.filter(function (a) { return a.correct; }).length;
+    var acc = total > 0 ? Math.round(correct / total * 100) : 0;
+
+    var html = '<div class="stats-hero">';
+    html += '<div class="hero-card"><div class="hero-icon">' + level.current.icon + '</div>';
+    html += '<div class="hero-title">' + esc(level.current.name) + '</div>';
+    html += '<div class="hero-bar"><div class="hero-bar-fill" style="width:' + level.progress + '%"></div></div>';
+    html += '<div class="hero-label">' + (level.next ? '距下一级还需 ' + (level.next.min - total) + ' 题' : '已满级 🎉') + '</div></div>';
+
+    html += '<div class="stats-grid">';
+    html += '<div class="stat-card"><div class="stat-num">' + total + '</div><div class="stat-label">总答题</div></div>';
+    html += '<div class="stat-card"><div class="stat-num">' + acc + '<span class="stat-pct">%</span></div><div class="stat-label">正确率</div></div>';
+    html += '<div class="stat-card"><div class="stat-num">' + streak + '</div><div class="stat-label">连续天数</div></div>';
+    html += '</div></div>';
+
+    // 最近 7 天快速预览
+    var daily = STATS.getDailyStats(7);
+    html += '<div class="section-title"><span class="bar"></span>最近 7 天</div>';
+    html += '<div class="mini-chart">';
+    daily.forEach(function (d) {
+      var h = Math.min(80, d.total * 4);
+      html += '<div class="mini-bar-wrap"><div class="mini-bar" style="height:' + h + 'px"></div><div class="mini-label">' + d.date.slice(-2) + '</div></div>';
+    });
+    html += '</div>';
+
+    el.innerHTML = html;
+  }
+
+  function renderStatsDaily() {
+    var el = $("#statsContent");
+    if (!window.STATS) { el.innerHTML = '<div class="card">统计模块未加载</div>'; return; }
+    var days = 14;
+    var daily = STATS.getDailyStats(days);
+    var maxTotal = Math.max.apply(null, daily.map(function (d) { return d.total; })) || 1;
+
+    var html = '<div class="section-title"><span class="bar"></span>最近 ' + days + ' 天趋势</div>';
+    html += '<div class="daily-chart">';
+    daily.forEach(function (d) {
+      var h = Math.max(4, Math.round(d.total / maxTotal * 120));
+      html += '<div class="daily-bar-wrap">';
+      html += '<div class="daily-bar" style="height:' + h + 'px;background:' + (d.accuracy >= 80 ? '#06d6a0' : d.accuracy >= 60 ? '#ffd93f' : '#ff6b6b') + '"></div>';
+      html += '<div class="daily-num">' + d.total + '</div>';
+      html += '<div class="daily-acc">' + d.accuracy + '%</div>';
+      html += '<div class="daily-date">' + d.date.slice(5) + '</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+    html += '<div class="card" style="font-size:12px;color:var(--ink-2);margin-top:12px">柱高=答题数，颜色=正确率（绿≥80% 黄≥60% 红&lt;60%）</div>';
+    el.innerHTML = html;
+  }
+
+  function renderStatsWeakness() {
+    var el = $("#statsContent");
+    if (!window.STATS) { el.innerHTML = '<div class="card">统计模块未加载</div>'; return; }
+    var kpStats = STATS.getKPStats().filter(function (k) { return k.total >= 3; });
+
+    var html = '<div class="section-title"><span class="bar" style="background:#ff6b6b"></span>薄弱知识点（正确率从低到高）</div>';
+    if (kpStats.length === 0) {
+      html += '<div class="card" style="text-align:center;color:var(--ink-2)">还没有足够的数据，多做几道题就能看到分析啦～</div>';
+    } else {
+      html += '<div class="weakness-list">';
+      kpStats.slice(0, 15).forEach(function (k, i) {
+        var color = k.accuracy < 60 ? '#ff6b6b' : (k.accuracy < 80 ? '#ffd93f' : '#06d6a0');
+        html += '<div class="weakness-item">';
+        html += '<div class="weakness-rank">' + (i + 1) + '</div>';
+        html += '<div class="weakness-info"><div class="weakness-name">' + esc(k.kp) + '</div>';
+        html += '<div class="weakness-bar-bg"><div class="weakness-bar" style="width:' + k.accuracy + '%;background:' + color + '"></div></div></div>';
+        html += '<div class="weakness-acc" style="color:' + color + '">' + k.accuracy + '%</div>';
+        html += '<div class="weakness-count">' + k.correct + '/' + k.total + '</div>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+    el.innerHTML = html;
+  }
+
+  function renderStatsAchievements() {
+    var el = $("#statsContent");
+    if (!window.STATS) { el.innerHTML = '<div class="card">统计模块未加载</div>'; return; }
+    var unlocked = STATS.getAchievements();
+    var defs = STATS.ACHIEVEMENT_DEFS;
+
+    var html = '<div class="section-title"><span class="bar" style="background:#ffd93f"></span>成就徽章</div>';
+    html += '<div class="ach-grid">';
+    defs.forEach(function (def) {
+      var got = unlocked[def.id];
+      html += '<div class="ach-card' + (got ? ' got' : '') + '">';
+      html += '<div class="ach-icon">' + def.icon + '</div>';
+      html += '<div class="ach-name">' + esc(def.name) + '</div>';
+      html += '<div class="ach-desc">' + esc(def.desc) + '</div>';
+      html += got ? '<div class="ach-got">✅ 已解锁</div>' : '<div class="ach-lock">🔒 未解锁</div>';
+      html += '</div>';
+    });
+    html += '</div>';
+    var gotCount = Object.keys(unlocked).length;
+    html += '<div class="card" style="text-align:center;font-size:13px;color:var(--ink-2);margin-top:12px">已解锁 ' + gotCount + ' / ' + defs.length + ' 个成就</div>';
+    el.innerHTML = html;
+  }
+
+  function renderStatsParent() {
+    var el = $("#statsContent");
+    var PIN_KEY = "snmath_parent_pin";
+    var pin = localStorage.getItem(PIN_KEY);
+
+    if (!pin) {
+      // 设置 PIN
+      var html = '<div class="section-title"><span class="bar" style="background:#8338ec"></span>家长模式</div>';
+      html += '<div class="card">';
+      html += '<p style="font-size:13px;color:var(--ink-2);margin-bottom:12px">设置 4 位数字密码，保护学习数据不被孩子随意查看。</p>';
+      html += '<input class="answer-input" id="parentPinInput" placeholder="输入 4 位数字密码" inputmode="numeric" maxlength="4">';
+      html += '<button class="btn block" id="parentPinSet" style="margin-top:12px">设置密码</button>';
+      html += '</div>';
+      el.innerHTML = html;
+      $("#parentPinSet").onclick = function () {
+        var val = $("#parentPinInput").value.trim();
+        if (!/^\d{4}$/.test(val)) { toast("请输入 4 位数字"); return; }
+        localStorage.setItem(PIN_KEY, val);
+        toast("密码设置成功！");
+        renderStatsParent();
+      };
+    } else {
+      // 验证 PIN
+      var html = '<div class="section-title"><span class="bar" style="background:#8338ec"></span>家长模式</div>';
+      html += '<div class="card">';
+      html += '<p style="font-size:13px;color:var(--ink-2);margin-bottom:12px">请输入密码查看学习数据</p>';
+      html += '<input class="answer-input" id="parentPinInput" placeholder="输入 4 位密码" inputmode="numeric" maxlength="4">';
+      html += '<button class="btn block" id="parentPinVerify" style="margin-top:12px">验证</button>';
+      html += '<button class="btn ghost block" id="parentPinReset" style="margin-top:8px;font-size:12px">重置密码</button>';
+      html += '</div>';
+      el.innerHTML = html;
+      $("#parentPinVerify").onclick = function () {
+        var val = $("#parentPinInput").value.trim();
+        if (val === pin) {
+          renderParentDashboard();
+        } else {
+          toast("密码错误");
+        }
+      };
+      $("#parentPinReset").onclick = function () {
+        localStorage.removeItem(PIN_KEY);
+        renderStatsParent();
+      };
+    }
+  }
+
+  function renderParentDashboard() {
+    var el = $("#statsContent");
+    if (!window.STATS) { el.innerHTML = '<div class="card">统计模块未加载</div>'; return; }
+
+    var answers = STATS.getAnswers();
+    var total = answers.length;
+    var correct = answers.filter(function (a) { return a.correct; }).length;
+    var acc = total > 0 ? Math.round(correct / total * 100) : 0;
+    var streak = STATS.getStreak();
+    var sessions = STATS.getSessions();
+    var totalDuration = sessions.reduce(function (s, x) { return s + (x.duration || 0); }, 0);
+    var daily = STATS.getDailyStats(7);
+    var weekTotal = daily.reduce(function (s, d) { return s + d.total; }, 0);
+    var weekCorrect = daily.reduce(function (s, d) { return s + d.correct; }, 0);
+    var weekAcc = weekTotal > 0 ? Math.round(weekCorrect / weekTotal * 100) : 0;
+    var kpStats = STATS.getKPStats().filter(function (k) { return k.total >= 3; });
+    var weaknesses = kpStats.filter(function (k) { return k.accuracy < 70; });
+
+    var html = '<div class="back-row"><button class="back-btn" id="parentBack">‹</button><div class="page-title">👨‍👩‍👧 家长报告</div></div>';
+
+    html += '<div class="parent-summary">';
+    html += '<div class="parent-stat"><div class="parent-num">' + total + '</div><div class="parent-label">总答题</div></div>';
+    html += '<div class="parent-stat"><div class="parent-num">' + acc + '%</div><div class="parent-label">总正确率</div></div>';
+    html += '<div class="parent-stat"><div class="parent-num">' + streak + '</div><div class="parent-label">连续天数</div></div>';
+    html += '<div class="parent-stat"><div class="parent-num">' + Math.round(totalDuration / 60) + '</div><div class="parent-label">学习分钟</div></div>';
+    html += '</div>';
+
+    html += '<div class="section-title"><span class="bar"></span>本周概况</div>';
+    html += '<div class="card"><div style="display:flex;justify-content:space-around;text-align:center">';
+    html += '<div><div style="font-size:20px;font-weight:800">' + weekTotal + '</div><div style="font-size:11px;color:var(--ink-2)">答题数</div></div>';
+    html += '<div><div style="font-size:20px;font-weight:800">' + weekAcc + '%</div><div style="font-size:11px;color:var(--ink-2)">正确率</div></div>';
+    html += '<div><div style="font-size:20px;font-weight:800">' + daily.filter(function (d) { return d.total > 0; }).length + '</div><div style="font-size:11px;color:var(--ink-2)">学习天数</div></div>';
+    html += '</div></div>';
+
+    if (weaknesses.length > 0) {
+      html += '<div class="section-title"><span class="bar" style="background:#ff6b6b"></span>薄弱环节</div>';
+      html += '<div class="card"><div style="font-size:13px;color:var(--ink-2);margin-bottom:8px">以下知识点正确率低于 70%，建议重点练习：</div>';
+      weaknesses.slice(0, 5).forEach(function (k) {
+        html += '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid #f0f0f0">';
+        html += '<span>' + esc(k.kp) + '</span><span style="color:#ff6b6b;font-weight:700">' + k.accuracy + '%</span>';
+        html += '</div>';
+      });
+      html += '</div>';
+    }
+
+    html += '<button class="btn ghost block" id="parentLogout" style="margin-top:16px">退出家长模式</button>';
+    el.innerHTML = html;
+    $("#parentBack").onclick = function () { renderStatsPage(); };
+    $("#parentLogout").onclick = function () { renderStatsParent(); };
   }
 
   /* ---------- 启动 ---------- */
