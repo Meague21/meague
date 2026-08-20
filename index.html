@@ -159,8 +159,19 @@ main{padding:14px 14px 92px}
 .ex-scene{font-size:13px;color:var(--ink-2);background:#f8f9fc;border-radius:10px;padding:8px 10px;margin-bottom:8px}
 .ex-q{font-size:15.5px;font-weight:700;margin-bottom:10px}
 .step-list{counter-reset:step}
-.step-item{position:relative;padding:8px 10px 8px 40px;background:#fffaf2;border-radius:10px;margin-bottom:6px;font-size:14px}
-.step-item::before{counter-increment:step;content:counter(step);position:absolute;left:10px;top:10px;width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.step-item{position:relative;padding:8px 10px 8px 40px;background:#fffaf2;border-radius:10px;margin-bottom:6px;font-size:14px;line-height:1.6}
+.step-item::before{counter-increment:step;content:counter(step);position:absolute;left:10px;top:8px;width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+/* 母题精讲 */
+.muti-card{background:linear-gradient(135deg,#fff7ec,#fffdf6);border:2px solid #ffd9a8;border-radius:14px;padding:12px 14px;margin-bottom:12px;position:relative}
+.muti-badge{display:inline-block;background:#e8930a;color:#fff;font-size:12px;font-weight:800;padding:2px 10px;border-radius:10px;margin-bottom:6px}
+.muti-q{font-size:14px;font-weight:700;color:#4a2c3d;line-height:1.6}
+.muti-section-title{font-size:13px;font-weight:700;color:#e8930a;margin:12px 0 8px}
+.muti-row{display:flex;gap:8px;margin:12px 0}
+.muti-tip{flex:1;background:#e8f5e9;border-radius:10px;padding:8px 10px;font-size:12px;line-height:1.5}
+.muti-tip.blue{background:#e3f2fd}
+.muti-tip .muti-tip-title{font-weight:800;font-size:12px;margin-bottom:3px}
+.muti-tip .muti-tip-title{color:#059e76}
+.muti-tip.blue .muti-tip-title{color:#1565c0}
 .step-item .calc{font-weight:800;color:var(--primary-dark);font-family:"Courier New",monospace;font-size:15px}
 .method-tabs{display:flex;gap:6px;margin:10px 0 8px;flex-wrap:wrap}
 .method-tab{font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:20px;background:#f1f2f7;color:#6b6e7f}
@@ -263,12 +274,12 @@ main{padding:14px 14px 92px}
 .step-blank input{width:52px;border:none;background:transparent;font-size:24px;font-weight:900;text-align:center;outline:none;color:#1d5fd6}
 
 /* ===== 有公式 ===== */
-.formula-card{background:#fff;border-radius:16px;box-shadow:var(--shadow);padding:16px;margin-bottom:12px}
-.formula-card h3{font-size:15px;font-weight:800;display:flex;align-items:center;gap:6px;margin-bottom:10px}
-.formula-item{display:flex;justify-content:space-between;align-items:center;background:#fffaf2;border-radius:10px;padding:9px 12px;margin-bottom:6px;font-size:14px}
+.formula-card{background:#fff;border-radius:14px;box-shadow:var(--shadow);padding:12px 14px;margin-bottom:10px}
+.formula-card h3{font-size:14px;font-weight:800;display:flex;align-items:center;gap:6px;margin-bottom:6px}
+.formula-item{display:flex;justify-content:space-between;align-items:center;background:#fffaf2;border-radius:8px;padding:6px 10px;margin-bottom:4px;font-size:13.5px}
 .formula-item .f-name{color:var(--ink-2);font-weight:600}
-.formula-item .f-val{font-weight:800;color:var(--primary-dark);font-family:"Courier New",monospace;font-size:15px}
-.f-ex{font-size:11.5px;color:#8a8b99;background:#fff;border:1px dashed #eef0f6;border-radius:8px;padding:5px 12px;margin:-2px 0 8px;line-height:1.5}
+.formula-item .f-val{font-weight:800;color:var(--primary-dark);font-family:"Courier New",monospace;font-size:14px}
+.f-ex{font-size:11px;color:#8a8b99;background:#fff;border:1px dashed #eef0f6;border-radius:6px;padding:3px 10px;margin:-1px 0 5px;line-height:1.4}
 .kp-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 12px}
 .kp-tab{padding:8px 14px;border-radius:12px;background:#fff;border:2px solid #eef0f6;font-size:13px;font-weight:700;color:var(--ink-2)}
 .kp-tab.sel{background:#3a86ff;border-color:#3a86ff;color:#fff}
@@ -508,14 +519,16 @@ main{padding:14px 14px 92px}
 .scratch-bean.dragging{cursor:grabbing;opacity:.7}
 .scratch-bean.hidden{display:none}
 .scratch-bean:active{transform:translateY(-50%) scale(.92)}
-.scratch-panel{position:fixed;left:50%;transform:translateX(-50%);bottom:0;z-index:150;width:100%;max-width:600px;background:#fffdf6;border-radius:18px 18px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.22);padding:10px 12px calc(12px + env(safe-area-inset-bottom))}
-.scratch-panel.hidden{display:none}
-.scratch-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.scratch-overlay{position:fixed;inset:0;z-index:200;background:rgba(255,253,246,.72);backdrop-filter:blur(2px);display:flex;flex-direction:column;align-items:center;padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom)}
+.scratch-overlay.hidden{display:none}
+.scratch-head{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:600px;padding:10px 0 6px}
 .scratch-title{font-size:14px;font-weight:800;color:#8a5a20}
 .scratch-tools{display:flex;gap:6px}
 .st-btn{width:34px;height:34px;border-radius:10px;background:#fff;border:2px solid #eef0f6;font-size:16px;display:flex;align-items:center;justify-content:center}
 .st-btn.sel{border-color:#ffb703;background:#fff7ec}
-#scratchCanvas{width:100%;height:280px;background:repeating-linear-gradient(#fffdf6,#fffdf6 27px,#f3ead2 28px);border:1.5px solid #eadfc2;border-radius:12px;touch-action:none;display:block}
+.st-btn.close{background:#ff6b6b;color:#fff;border-color:#ff6b6b;font-size:18px}
+#scratchCanvas{flex:1;width:100%;max-width:600px;background:repeating-linear-gradient(#fffdf6,#fffdf6 27px,#f3ead2 28px);border:1.5px solid #eadfc2;border-radius:12px;touch-action:none;display:block;margin-bottom:8px}
+.scratch-hint{font-size:11px;color:#a8a9b5;padding:4px 0}
 /* 百数表 */
 .hundred-grid{display:grid;grid-template-columns:repeat(10,1fr);gap:3px}
 .hg-cell{padding:6px 0;font-size:11.5px;font-weight:700;color:#5a4634;background:#fff7ec;border:1px solid #f0e2c8;border-radius:6px;text-align:center}
@@ -701,20 +714,21 @@ main{padding:14px 14px 92px}
   </div>
 </div>
 
-<!-- 草稿本：侧边小黄豆，点开是画板 -->
+<!-- 草稿本：侧边小黄豆，点开是全屏透明画板 -->
 <button class="scratch-bean" id="scratchBean" aria-label="草稿本">✏️</button>
-<div class="scratch-panel hidden" id="scratchPanel">
+<div class="scratch-overlay hidden" id="scratchPanel">
   <div class="scratch-head">
-    <span class="scratch-title">📝 草稿本</span>
+    <span class="scratch-title">📝 草稿本（透明覆盖，可看到题目）</span>
     <div class="scratch-tools">
       <button class="st-btn sel" data-tool="pen" title="画笔">✏️</button>
       <button class="st-btn" data-tool="eraser" title="橡皮">🧽</button>
       <button class="st-btn" id="scratchUndo" title="撤销">↩️</button>
       <button class="st-btn" id="scratchClear" title="清空">🗑️</button>
-      <button class="st-btn" id="scratchClose" title="收起">✖</button>
+      <button class="st-btn close" id="scratchClose" title="收起">✕</button>
     </div>
   </div>
   <canvas id="scratchCanvas"></canvas>
+  <div class="scratch-hint">画完后点右上角 ✕ 收起</div>
 </div>
 
 <!-- 用户门：创建 / 选择用户 -->
@@ -12579,7 +12593,55 @@ window.THINK = (function () {
       examples: [ { tag: "例题", q: "草可供 10 头牛吃 20 天,或 15 头牛吃 10 天。供 25 头牛吃几天?", steps: ["列式求生长量", "供25头吃5天"], explain: "牛吃草模型。" } ],
       gen: function () {
         return { type: "num", q: "牧场草匀速生长。可供 10 头牛吃 20 天,或供 15 头牛吃 10 天。那么可供 25 头牛吃几天?", input: "num", ans: "5", explain: "设每牛每天吃1份,草每天长5份、原有100份:100÷(25-5)=5(天)。" };
-      } }
+      } },
+
+    /* ---------------- 小学几何八大模型 ---------------- */
+    { id: "geometry_models", name: "几何八大模型", icon: "📐", color: "#e63999", level: "高年级",
+      desc: "小学几何核心模型:等积变换、蝴蝶、鸟头、沙漏、金字塔、一半、弦图、燕尾。",
+      points: [
+        { t: "1. 等积变换模型", html: "底和高都相同的三角形面积相等。关键:同底等高→面积相等。常用于把不规则图形转化为规则图形。" },
+        { t: "2. 蝴蝶模型", html: "梯形中,对角线把它分成4个三角形。左右两个三角形(蝴蝶翅膀)面积相等。即 S左=S右。" },
+        { t: "3. 鸟头模型", html: "两个三角形共一个角(鸟头),面积比等于夹这个角的两边乘积的比。S₁/S₂ = (a₁×b₁)/(a₂×b₂)。" },
+        { t: "4. 沙漏模型", html: "两条平行线之间,两条直线相交形成沙漏形。上下两个三角形相似,面积比等于对应边长比的平方。" },
+        { t: "5. 金字塔模型", html: "从三角形的一个顶点作一条平行于底的线,形成金字塔。小三角形与大三角形相似,面积比=边长比的平方。" },
+        { t: "6. 一半模型", html: "三角形面积=等底等高平行四边形面积的一半。常用于求三角形面积或比较面积。" },
+        { t: "7. 弦图模型", html: "正方形内接正方形(旋转45°),形成4个全等直角三角形。利用勾股定理或面积差求边长。" },
+        { t: "8. 燕尾模型", html: "三角形内一点与三个顶点连线,把三角形分成3个小三角形(像燕尾)。面积比等于对应底边比。" }
+      ],
+      examples: [
+        { tag: "蝴蝶模型", q: "梯形 ABCD 中,AD∥BC,对角线交于 O。△ABO 面积=6,求△CDO 面积。", steps: ["蝴蝶模型:左右面积相等", "△ABO = △CDO = 6"], explain: "蝴蝶模型:梯形对角线分成的左右两个三角形面积相等。" },
+        { tag: "一半模型", q: "平行四边形底 8cm、高 5cm,里面一个三角形与它等底等高,三角形面积是多少?", steps: ["平行四边形面积=8×5=40", "三角形面积=40÷2=20"], explain: "等底等高的三角形面积是平行四边形的一半。" }
+      ],
+      gen: function () {
+        var kind = R(1, 6);
+        if (kind === 1) {
+          var s = R(3, 12);
+          return { type: "num", q: "梯形中对角线交于 O,左边三角形面积是 " + s + ",右边三角形面积是多少?(蝴蝶模型)", input: "num", ans: String(s), explain: "蝴蝶模型:梯形对角线分成的左右两个三角形(蝴蝶翅膀)面积相等,所以右边也是 " + s + "。" };
+        }
+        if (kind === 2) {
+          var base = R(4, 12), h = R(3, 10);
+          var area = base * h;
+          return { type: "num", q: "平行四边形底 " + base + "cm、高 " + h + "cm,里面一个三角形与它等底等高,三角形面积是多少?(一半模型)", input: "num", ans: String(area / 2), explain: "平行四边形面积=" + base + "×" + h + "=" + area + ",三角形面积=" + area + "÷2=" + (area / 2) + "(cm²)。" };
+        }
+        if (kind === 3) {
+          var a = R(2, 6), b = R(2, 6);
+          var ratio = a * a;
+          return { type: "num", q: "沙漏模型中,上下两个三角形相似,对应边长比是 1:" + a + ",面积比是多少?(填数字,如 1:4 填 4)", input: "num", ans: String(ratio), explain: "沙漏模型:相似三角形面积比=对应边长比的平方。边长比 1:" + a + ",面积比=1:" + a + "²=1:" + ratio + "。" };
+        }
+        if (kind === 4) {
+          var s1 = R(2, 8), s2 = R(2, 8);
+          return { type: "num", q: "鸟头模型中,两个三角形共一个角,第一个三角形夹这个角的两边是 3 和 4,第二个是 6 和 8。第二个面积是第一个的几倍?", input: "num", ans: "4", explain: "鸟头模型:面积比=(3×4):(6×8)=12:48=1:4。第二个是第一个的 4 倍。" };
+        }
+        if (kind === 5) {
+          var base = R(6, 15), div = R(2, 4);
+          var part = base / div;
+          return { type: "num", q: "燕尾模型:三角形 ABC 内一点 P,PA、PB、PC 把三角形分成 3 个小三角形。如果 BC 被分成 " + div + " 等份,最左边小三角形底是 " + part.toFixed(1) + ",它的面积占大三角形的几分之几?(填分母,如 1/3 填 3)", input: "num", ans: String(div), explain: "燕尾模型:3 个小三角形等高(从 P 到 BC 的距离相同),面积比=底边比。BC 分成 " + div + " 等份,每份占 1/" + div + "。" };
+        }
+        var side = R(4, 10);
+        var inner = side * side / 2;
+        return { type: "num", q: "弦图模型:正方形边长 " + side + "cm,里面内接一个旋转 45° 的小正方形。小正方形面积是多少?", input: "num", ans: String(inner), explain: "弦图模型:内接正方形(旋转 45°)的面积=外正方形面积÷2=" + side + "²÷2=" + (side * side) + "÷2=" + inner + "(cm²)。" };
+      }
+    }
   ];
 
 
@@ -13823,10 +13885,17 @@ window.THINK = (function () {
     "比例尺": "例：图上1厘米代表实际100米，比例尺=1∶10000。",
     "利息": "例：存1000元年利率3%存2年，利息=1000×3%×2=60。"
   };
+  var formulaSearchTimer = null;
   function renderFormulas() {
     var grades = [ { v: 0, n: "全部" }, { v: 1, n: "一" }, { v: 2, n: "二" }, { v: 3, n: "三" }, { v: 4, n: "四" }, { v: 5, n: "五" }, { v: 6, n: "六" } ];
     var themes = ["all", "calc", "geo", "rel", "unit", "num", "other"];
     var fkw = formulaSearch.trim();
+
+    /* 保留旧输入框元素（避免手机键盘收起） */
+    var oldInput = document.getElementById("formulaSearchInput");
+    var hadFocus = oldInput && document.activeElement === oldInput;
+    var cursorPos = hadFocus ? oldInput.selectionStart : 0;
+
     var html = '<div class="section-title"><span class="bar" style="background:#8338ec"></span>公式知识库</div>' +
       '<input class="answer-input" id="formulaSearchInput" placeholder="🔍 搜索公式（如：周长、面积、进率）" value="' + esc(formulaSearch) + '" style="margin-bottom:10px">' +
       '<div class="type-grid" style="margin-bottom:8px">' + grades.map(function (g) {
@@ -13839,7 +13908,6 @@ window.THINK = (function () {
     MD.formulas2.forEach(function (cat) {
       if (formulaGrade !== 0 && cat.g !== 0 && cat.g !== formulaGrade) return;
       if (formulaTheme !== "all" && themeOf(cat) !== formulaTheme) return;
-      /* 搜索：按类别名或条目名/值过滤 */
       var items = cat.items;
       if (fkw) {
         items = items.filter(function (r) { return r.n.indexOf(fkw) !== -1 || (r.v || "").indexOf(fkw) !== -1; });
@@ -13859,18 +13927,24 @@ window.THINK = (function () {
       '<p style="font-size:11px;color:#a8a9b5;margin-top:8px">点一点格子，看看它在哪一行哪一列～</p></div>';
     $("#formulaWrap").innerHTML = html;
 
-    var fsi = $("#formulaSearchInput");
+    /* 恢复旧输入框（保持键盘不收起） */
+    var newInput = document.getElementById("formulaSearchInput");
+    if (oldInput && newInput) {
+      oldInput.value = formulaSearch;
+      newInput.parentNode.replaceChild(oldInput, newInput);
+    }
+    var fsi = document.getElementById("formulaSearchInput");
+    if (fsi && hadFocus) {
+      fsi.focus();
+      fsi.setSelectionRange(cursorPos, cursorPos);
+    }
     if (fsi) {
-      var fTimer = null;
       fsi.oninput = function () {
-        var val = fsi.value, pos = fsi.selectionStart;
-        clearTimeout(fTimer);
-        fTimer = setTimeout(function () {
-          formulaSearch = val;
+        clearTimeout(formulaSearchTimer);
+        formulaSearchTimer = setTimeout(function () {
+          formulaSearch = fsi.value;
           renderFormulas();
-          var el2 = $("#formulaSearchInput");
-          if (el2) { el2.focus(); el2.setSelectionRange(Math.min(pos, el2.value.length), Math.min(pos, el2.value.length)); }
-        }, 180);
+        }, 280);
       };
     }
     $$(".fgrade", $("#formulaWrap")).forEach(function (c) {
@@ -14102,6 +14176,7 @@ window.THINK = (function () {
   var thinkLv = "all"; /* all|低年级|中年级|高年级 */
   var thinkSkill = "all";
   var thinkSearch = "";
+  var thinkSearchTimer = null;
   var SKILL_NAME = { guilv: "找规律", tuili: "逻辑推理", jishu: "枚举计数", jvqv: "经典趣题", yingyong: "应用问题", jisuan: "计算技巧" };
   var SKILL_OF = {
     guilv: "guilv", dengcha: "guilv", dengchaxiang: "guilv", qishuhe: "guilv", zhouqi: "guilv",
@@ -14115,7 +14190,8 @@ window.THINK = (function () {
     zhekou: "yingyong", lirun: "yingyong", zuche: "yingyong", yunshu: "yingyong", niuchi: "yingyong", zhushui: "yingyong",
     shuiliu: "yingyong", huanxing: "yingyong", hezuo: "yingyong", lilv: "yingyong",
     tongyu: "jisuan", fenshujisuan: "jisuan", jianbian: "jisuan", fangcheng: "jisuan", xinyunsuan: "jisuan",
-    huanyuan: "jvqv", zuizhi: "jvqv", nongdu2: "yingyong", lirun2: "yingyong", jishu2: "jishu", jiheshuju: "jishu", niuchi2: "yingyong"
+    huanyuan: "jvqv", zuizhi: "jvqv", nongdu2: "yingyong", lirun2: "yingyong", jishu2: "jishu", jiheshuju: "jishu", niuchi2: "yingyong",
+    geometry_models: "jvqv"
   };
   function renderThinkHome() {
     $("#thinkHome").classList.remove("hidden");
@@ -14158,21 +14234,36 @@ window.THINK = (function () {
         '<span class="unit-arrow">›</span></button>';
     });
     if (!shown) html += '<div class="card" style="text-align:center;color:var(--ink-2)">这个组合下暂时没有主题，换个筛选试试～</div>';
+
+    /* 保留旧输入框（避免手机键盘收起） */
+    var oldThinkInput = document.getElementById("thinkSearchInput");
+    var hadFocus = oldThinkInput && document.activeElement === oldThinkInput;
+    var cursorPos = hadFocus ? oldThinkInput.selectionStart : 0;
+
     $("#thinkHome").innerHTML = html;
+
+    /* 恢复旧输入框 */
+    var newInput = document.getElementById("thinkSearchInput");
+    if (oldThinkInput && newInput) {
+      oldThinkInput.value = thinkSearch;
+      newInput.parentNode.replaceChild(oldThinkInput, newInput);
+    }
+    var tsiFinal = document.getElementById("thinkSearchInput");
+    if (tsiFinal && hadFocus) {
+      tsiFinal.focus();
+      tsiFinal.setSelectionRange(cursorPos, cursorPos);
+    }
+
     $$("[data-tlv]", $("#thinkHome")).forEach(function (b) { b.onclick = function () { thinkLv = b.dataset.tlv; renderThinkHome(); }; });
     $$("[data-tsk]", $("#thinkHome")).forEach(function (b) { b.onclick = function () { thinkSkill = b.dataset.tsk; renderThinkHome(); }; });
-    var tsi = $("#thinkSearchInput");
+    var tsi = document.getElementById("thinkSearchInput");
     if (tsi) {
-      var tTimer = null;
       tsi.oninput = function () {
-        var val = tsi.value, pos = tsi.selectionStart;
-        clearTimeout(tTimer);
-        tTimer = setTimeout(function () {
-          thinkSearch = val;
+        clearTimeout(thinkSearchTimer);
+        thinkSearchTimer = setTimeout(function () {
+          thinkSearch = tsi.value;
           renderThinkHome();
-          var el2 = $("#thinkSearchInput");
-          if (el2) { el2.focus(); el2.setSelectionRange(Math.min(pos, el2.value.length), Math.min(pos, el2.value.length)); }
-        }, 180);
+        }, 280);
       };
     }
     $$("[data-topic]", $("#thinkHome")).forEach(function (btn) {
@@ -14191,16 +14282,19 @@ window.THINK = (function () {
     $("#thinkHome").classList.add("hidden");
     var el = $("#thinkDetail");
     el.classList.remove("hidden");
-    var stepsHtml = m.steps.map(function (s, i) { return '<div class="step-item" style="padding:6px 10px;font-size:13px">' + s + '</div>'; }).join("");
+    var stepsHtml = m.steps.map(function (s) { return '<div class="step-item" style="font-size:13px">' + s + '</div>'; }).join("");
     var html = '<div class="back-row"><button class="back-btn" id="thinkBack">‹</button><div class="page-title">' + m.icon + ' ' + esc(m.name) + '</div></div>' +
-      '<div class="kp-card" style="border:2px solid #ffd9a8;padding:10px 12px"><div class="kp-head" style="background:#fff7ec;padding:6px 10px"><span class="kp-num" style="background:#e8930a;width:24px;height:24px;font-size:12px">母</span><span style="font-size:14px">母题</span></div>' +
-      '<div class="kp-body" style="padding:8px 10px"><div style="font-size:14px;font-weight:700;color:#4a2c3d;line-height:1.6">' + esc(m.mu) + '</div></div></div>' +
-      '<div style="margin:10px 0 6px;font-size:13px;font-weight:700;color:#e8930a">💡 解题思路</div>' +
-      '<div class="kp-card" style="padding:8px 10px"><div class="kp-body step-list" style="padding:0">' + stepsHtml + '</div></div>' +
-      '<div style="display:flex;gap:8px;margin:10px 0">' +
-      '<div class="kbox tip" style="flex:1;padding:8px 10px;margin:0"><div class="kb-title" style="font-size:12px">🔑 关键</div><div style="font-size:12px;line-height:1.5">' + esc(m.key) + '</div></div>' +
-      '<div class="kbox" style="flex:1;background:#f0f8ff;border:1px solid #cfe6ff;padding:8px 10px;margin:0"><div class="kb-title" style="font-size:12px;color:#1a5a8a">📝 口诀</div><div style="font-size:12px;line-height:1.5;color:#1a5a8a">' + esc(m.tip) + '</div></div></div>' +
-      '<div style="margin:12px 0"><button class="btn block" id="mutiPractice" style="padding:10px">🎯 举一反三练一练</button></div>';
+      '<div class="muti-card">' +
+        '<div class="muti-badge">母题</div>' +
+        '<div class="muti-q">' + esc(m.mu) + '</div>' +
+      '</div>' +
+      '<div class="muti-section-title">💡 解题思路</div>' +
+      '<div class="step-list">' + stepsHtml + '</div>' +
+      '<div class="muti-row">' +
+        '<div class="muti-tip"><div class="muti-tip-title">🔑 关键</div><div>' + esc(m.key) + '</div></div>' +
+        '<div class="muti-tip blue"><div class="muti-tip-title">📝 口诀</div><div>' + esc(m.tip) + '</div></div>' +
+      '</div>' +
+      '<div style="margin:16px 0"><button class="btn block" id="mutiPractice">🎯 举一反三练一练</button></div>';
     el.innerHTML = html;
     $("#thinkBack").onclick = renderThinkHome;
     $("#mutiPractice").onclick = function () {
