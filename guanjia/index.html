@@ -1879,7 +1879,15 @@ function renderEcom() {
   document.getElementById('ecomMonthLabel').textContent = y + '年' + (+m) + '月';
   const range = getEcomRange();
   // 范围选择条
-  const chipDefs = [['month', '📅 本月'], ['7d', '近 7 天'], ['today', '今日'], ['custom', '自定义']];
+  const today = todayStr();
+  const yesterday = fmtDate(new Date(Date.now() - 86400000));
+  const dayBefore = fmtDate(new Date(Date.now() - 2 * 86400000));
+  const chipDefs = [
+    ['month', '📅 本月'], ['7d', '近 7 天'], ['today', '今日'],
+    ['yesterday', '🗓 昨日 ' + yesterday.slice(5)],
+    ['dayBefore', '🗓 前日 ' + dayBefore.slice(5)],
+    ['custom', '自定义'],
+  ];
   let rangeHtml = '<div class="chips" style="margin-bottom:10px">' + chipDefs.map(([k, v]) =>
     '<span class="chip' + (ecomRangeMode === k ? ' on' : '') + '" onclick="setEcomRange(\'' + k + '\')">' + v + '</span>').join('') + '</div>';
   if (ecomRangeMode === 'custom') {
@@ -2025,8 +2033,9 @@ function renderEcom() {
   const itemList = Object.entries(byItem).sort((a, b) => b[1].cost - a[1].cost);
   document.getElementById('ecomItemStat').innerHTML = itemList.length === 0
     ? '<div class="empty" style="padding:14px 0">记录当日销售时添加商品明细，这里会统计各品销量与成本</div>'
-    : '<table class="tbl"><tr><th>商品</th><th>销量</th><th>商品成本</th></tr>' +
-      itemList.map(([name, s]) => '<tr onclick="jumpToItemStore(\'' + esc(s.store) + '\')" style="cursor:pointer"><td>' + esc(name) + '</td><td>' + s.qty + '</td><td>' + money(s.cost) + '</td></tr>').join('') + '</table>';
+    : '<table class="tbl"><tr><th>商品</th><th>销量</th><th>商品成本</th><th>详情</th></tr>' +
+      itemList.map(([name, s]) => '<tr><td>' + esc(name) + '</td><td>' + s.qty + '</td><td>' + money(s.cost) + '</td>' +
+      '<td><button class="btn sm ghost" onclick="showItemDetail(\'' + esc(name) + '\')">查看</button></td></tr>').join('') + '</table>';
 }
 function pickEcomStore(n) { ecomStoreSel = n; renderEcom(); }
 function moveEcomMonth(d) { ecomMonth = shiftMonth(ecomMonth, d); renderEcom(); }
@@ -2740,6 +2749,25 @@ function jumpToItemStore(store) {
   setEcomRange('month');
   const tbl = document.getElementById('ecomDayTable');
   if (tbl) tbl.scrollIntoView({ block: 'start' });
+}
+
+function showItemDetail(name) {
+  const items = DB.ecomItems.filter(i => i.name === name);
+  if (!items.length) { toast('该商品暂无销售记录'); return; }
+  // 按日期+店铺分组
+  const byKey = {};
+  items.forEach(i => {
+    const k = i.date + '|' + i.store;
+    if (!byKey[k]) byKey[k] = { date: i.date, store: i.store, qty: 0, cost: 0 };
+    byKey[k].qty += i.qty;
+    byKey[k].cost += i.qty * i.cost;
+  });
+  const list = Object.values(byKey).sort((a, b) => b.date.localeCompare(a.date));
+  const html = '<div style="font-size:12.5px;color:var(--sub);margin-bottom:10px">共 ' + list.length + ' 条销售记录</div>' +
+    '<table class="tbl"><tr><th>日期</th><th>店铺</th><th>数量</th><th>成本</th></tr>' +
+    list.map(r => '<tr><td>' + r.date + '</td><td>' + esc(r.store) + '</td><td>' + r.qty + '</td><td>' + money(r.cost) + '</td></tr>').join('') +
+    '</table>';
+  openModal('📦 ' + name + ' 销售明细', html);
 }
 /* ============ 账户体系 / 预算 / AI 账目汇总 ============ */
 function acctBalance(a) {
