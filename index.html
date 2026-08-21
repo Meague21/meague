@@ -328,6 +328,12 @@ main{padding:14px 14px 92px}
 .think-card .th-icon{font-size:30px}
 .think-card .th-name{font-weight:800}
 .think-card .th-desc{font-size:12.5px;color:var(--ink-2);margin-top:2px}
+.olympiad-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:10px}
+.olympiad-card{display:flex;flex-direction:column;align-items:center;gap:6px;background:linear-gradient(135deg,#fff5f5,#ffe0e6);border:2px solid #ffc0cb;border-radius:14px;padding:14px 10px;text-align:center;transition:transform 0.15s}
+.olympiad-card:active{transform:scale(0.96)}
+.olympiad-icon{font-size:32px}
+.olympiad-name{font-size:13px;font-weight:800;color:#2d3436}
+.olympiad-level{font-size:11px;font-weight:600}
 .level-tag{font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px}
 .pw-tabs{display:flex;gap:8px;margin:12px 0}
 .pw-tab{flex:1;padding:9px 0;border-radius:12px;background:#fff;border:2px solid #eef0f6;font-size:13px;font-weight:700;color:var(--ink-2);transition:.15s}
@@ -719,6 +725,8 @@ main{padding:14px 14px 92px}
   <section class="page" id="page-think">
     <div id="thinkHome"></div>
     <div id="thinkDetail" class="hidden"></div>
+    <div id="olympiadHome" class="hidden"></div>
+    <div id="olympiadDetail" class="hidden"></div>
   </section>
 
   <!-- ===================== 我的家园 ===================== -->
@@ -12831,6 +12839,207 @@ window.THINK = (function () {
   return { topics: topics, MUTI: MUTI };
 })();
 /* =====================================================================
+ * 烧脑数学 · 奥数专题模块
+ * 包含数论、组合数学、几何变换、逻辑推理等经典奥数内容
+ * ===================================================================== */
+window.OLYMPIAD = (function () {
+  var topics = [
+    /* ---------------- 数论专题 ---------------- */
+    {
+      id: "prime", name: "质数与因数分解", icon: "🔢", level: "高年级",
+      desc: "质数是只能被1和自身整除的大于1的自然数，是数论的基础。",
+      points: [
+        { t: "质数的定义", html: "质数（素数）是大于1的自然数，除了1和它本身外，不能被其他自然数整除。例如：2, 3, 5, 7, 11, 13..." },
+        { t: "判断质数的方法", html: "① 试除法：用小于等于√n的质数去除n，都不能整除则n是质数<br>② 2是唯一的偶数质数<br>③ 1既不是质数也不是合数" },
+        { t: "因数分解", html: "把合数分解成质数相乘的形式。例如：12 = 2×2×3 = 2²×3<br><b>短除法</b>：从小到大依次用质数去除，直到商为质数" }
+      ],
+      examples: [
+        { tag: "例题", q: "判断 97 是否为质数", steps: ["√97 ≈ 9.8，只需检验≤9的质数", "97÷2 不整除（奇数）", "97÷3 = 32...1 不整除", "97÷5 = 19...2 不整除", "97÷7 = 13...6 不整除", "所以 97 是质数"], explain: "用试除法，检验≤√97的质数（2,3,5,7），都不能整除，所以97是质数。" },
+        { tag: "例题", q: "把 60 分解质因数", steps: ["60 ÷ 2 = 30", "30 ÷ 2 = 15", "15 ÷ 3 = 5", "5 是质数，停止", "60 = 2×2×3×5 = 2²×3×5"], explain: "用短除法分解 60：60÷2=30, 30÷2=15, 15÷3=5, 5是质数。" }
+      ],
+      gen: function () {
+        var kind = R(1, 3);
+        if (kind === 1) {
+          var primes = [17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59, 61, 67, 71, 73, 79, 83, 89, 97];
+          var composites = [15, 21, 25, 27, 33, 35, 39, 45, 49, 51, 55, 57, 63, 65, 69, 75, 77, 81, 85, 87, 91, 93, 95, 99];
+          var isPrime = R(0, 1) === 1;
+          var num = isPrime ? P(primes) : P(composites);
+          return { type: "choice", q: num + " 是质数还是合数？", options: ["质数", "合数"], ans: isPrime ? "质数" : "合数",
+            explain: isPrime ? (num + " 不能被2,3,5,7等小质数整除，所以是质数。") : (num + " 能被其他数整除，所以是合数。") };
+        }
+        if (kind === 2) {
+          var nums = [12, 18, 20, 24, 28, 30, 36, 40, 42, 48, 54, 56, 60, 72, 84, 90];
+          var n = P(nums);
+          var factors = [];
+          var temp = n;
+          var primeList = [2, 3, 5, 7, 11, 13];
+          for (var i = 0; i < primeList.length; i++) {
+            while (temp % primeList[i] === 0) {
+              factors.push(primeList[i]);
+              temp = temp / primeList[i];
+            }
+            if (temp === 1) break;
+          }
+          return { type: "tiankong", q: "把 " + n + " 分解质因数，结果是（用×连接，如2×2×3）", input: "text", ans: factors.join("×"),
+            explain: "用短除法分解 " + n + "：" + factors.join(" × ") + "。" };
+        }
+        var p = P([2, 3, 5, 7, 11, 13, 17, 19, 23]);
+        var q = P([2, 3, 5, 7, 11, 13, 17, 19, 23]);
+        return { type: "tiankong", q: "两个质数 " + p + " 和 " + q + " 的最大公因数是（____）", input: "num", ans: "1",
+          explain: "两个不同的质数互质，最大公因数是 1。" };
+      }
+    },
+
+    {
+      id: "modular", name: "同余与余数", icon: "🔄", level: "高年级",
+      desc: "研究除法的余数规律，是数论的重要工具。",
+      points: [
+        { t: "同余的概念", html: "如果两个数除以同一个数，余数相同，就说这两个数关于这个除数<b>同余</b>。<br>例如：17 和 11 除以 3 都余 2，所以 17 ≡ 11 (mod 3)" },
+        { t: "余数的性质", html: "① 余数一定小于除数<br>② 被除数 = 除数×商 + 余数<br>③ 同余的数相减，差能被除数整除" },
+        { t: "周期性规律", html: "余数会按周期重复出现。例如除以3的余数：0,1,2,0,1,2...<br>利用周期性可以快速求大数的余数" }
+      ],
+      examples: [
+        { tag: "例题", q: "100 除以 7 的余数是多少？", steps: ["100 ÷ 7 = 14...2", "验证：14×7 + 2 = 98 + 2 = 100 ✓"], explain: "直接做除法：100÷7=14余2，所以余数是2。" },
+        { tag: "例题", q: "2^10 除以 3 的余数是多少？", steps: ["2^1=2, 余2", "2^2=4, 余1", "2^3=8, 余2", "2^4=16, 余1", "规律：奇数次幂余2，偶数次幂余1", "10是偶数，所以 2^10 除以 3 余 1"], explain: "观察2的幂次除以3的余数规律：2,1,2,1...周期为2，10是偶数，所以余1。" }
+      ],
+      gen: function () {
+        var kind = R(1, 3);
+        if (kind === 1) {
+          var a = R(50, 150), b = R(3, 12);
+          var r = a % b;
+          return { type: "tiankong", q: a + " 除以 " + b + " 的余数是（____）", input: "num", ans: String(r),
+            explain: a + " ÷ " + b + " = " + Math.floor(a/b) + "..." + r + "，余数是 " + r + "。" };
+        }
+        if (kind === 2) {
+          var base = R(2, 5), exp = R(5, 12), mod = R(3, 7);
+          var result = Math.pow(base, exp) % mod;
+          return { type: "tiankong", q: base + "^" + exp + " 除以 " + mod + " 的余数是（____）", input: "num", ans: String(result),
+            explain: "计算 " + base + "^" + exp + " = " + Math.pow(base, exp) + "，除以 " + mod + " 余 " + result + "。" };
+        }
+        var n = R(10, 50), d = R(3, 8);
+        var remainder = n % d;
+        return { type: "choice", q: "第 " + n + " 个数除以 " + d + " 的余数，和第几个数的余数相同？", options: [String(remainder), String(remainder + d), String(remainder + 2*d)], ans: String(remainder + d),
+          explain: "余数以 " + d + " 为周期重复，所以第 " + remainder + " 个和第 " + (remainder + d) + " 个余数相同。" };
+      }
+    },
+
+    /* ---------------- 组合数学 ---------------- */
+    {
+      id: "permutation", name: "排列组合", icon: "🎲", level: "高年级",
+      desc: "研究计数问题：有多少种不同的排列或组合方式。",
+      points: [
+        { t: "排列与组合的区别", html: "<b>排列</b>（有序）：从n个不同元素中取出m个，按顺序排列<br><b>组合</b>（无序）：从n个不同元素中取出m个，不考虑顺序<br>关键：是否考虑顺序" },
+        { t: "加法原理与乘法原理", html: "<b>加法原理</b>：完成一件事有n类方法，每类有a₁,a₂...aₙ种，共a₁+a₂+...+aₙ种<br><b>乘法原理</b>：完成一件事分n步，每步有a₁,a₂...aₙ种，共a₁×a₂×...×aₙ种" },
+        { t: "排列数与组合数", html: "排列数 P(n,m) = n!/(n-m)! = n×(n-1)×...×(n-m+1)<br>组合数 C(n,m) = n!/[m!×(n-m)!] = P(n,m)/m!<br>性质：C(n,m) = C(n,n-m)" }
+      ],
+      examples: [
+        { tag: "例题", q: "从 5 个人中选 3 个人排队，有多少种排法？", steps: ["这是排列问题（考虑顺序）", "P(5,3) = 5×4×3", "= 60"], explain: "从5人中选3人排队，考虑顺序，用排列数：P(5,3) = 5×4×3 = 60种。" },
+        { tag: "例题", q: "从 5 个人中选 3 个人组成小组，有多少种选法？", steps: ["这是组合问题（不考虑顺序）", "C(5,3) = 5!/(3!×2!)", "= (5×4×3×2×1)/(3×2×1×2×1)", "= 120/12 = 10"], explain: "从5人中选3人组队，不考虑顺序，用组合数：C(5,3) = 10种。" }
+      ],
+      gen: function () {
+        var kind = R(1, 3);
+        if (kind === 1) {
+          var n = R(4, 8), m = R(2, Math.min(4, n));
+          var p = 1;
+          for (var i = 0; i < m; i++) p *= (n - i);
+          return { type: "tiankong", q: "从 " + n + " 个人中选 " + m + " 个人排队，有多少种排法？", input: "num", ans: String(p),
+            explain: "排列问题，P(" + n + "," + m + ") = " + n + "×" + (n-1) + "×...×" + (n-m+1) + " = " + p + "。" };
+        }
+        if (kind === 2) {
+          var n = R(5, 10), m = R(2, Math.min(4, n));
+          var p = 1;
+          for (var i = 0; i < m; i++) p *= (n - i);
+          var factorial_m = 1;
+          for (var i = 2; i <= m; i++) factorial_m *= i;
+          var c = p / factorial_m;
+          return { type: "tiankong", q: "从 " + n + " 个球中选 " + m + " 个，有多少种选法？", input: "num", ans: String(c),
+            explain: "组合问题，C(" + n + "," + m + ") = " + p + "/" + factorial_m + " = " + c + "。" };
+        }
+        var a = R(2, 4), b = R(2, 4);
+        return { type: "tiankong", q: "从A地到B地有 " + a + " 条路，从B地到C地有 " + b + " 条路。从A经B到C共有多少种走法？", input: "num", ans: String(a * b),
+          explain: "乘法原理：" + a + " × " + b + " = " + (a * b) + " 种走法。" };
+      }
+    },
+
+    {
+      id: "inclusion", name: "容斥原理", icon: "⭕", level: "高年级",
+      desc: "计算集合的并集大小，避免重复计数。",
+      points: [
+        { t: "两个集合的容斥", html: "|A∪B| = |A| + |B| - |A∩B|<br>并集大小 = A的大小 + B的大小 - 交集大小<br><b>为什么减</b>：交集部分被计算了两次，要减去一次" },
+        { t: "三个集合的容斥", html: "|A∪B∪C| = |A|+|B|+|C| - |A∩B|-|A∩C|-|B∩C| + |A∩B∩C|<br>加单个，减两两交，加三个交" },
+        { t: "应用技巧", html: "① 画韦恩图（文氏图）帮助理解<br>② 确定各部分的人数<br>③ 注意全集的大小" }
+      ],
+      examples: [
+        { tag: "例题", q: "班上有40人，喜欢数学的有25人，喜欢语文的有20人，两科都喜欢的有10人。两科都不喜欢的有几人？", steps: ["喜欢数学或语文的 = 25+20-10", "= 35人", "都不喜欢 = 40-35 = 5人"], explain: "用容斥原理：|A∪B| = 25+20-10 = 35人，都不喜欢 = 40-35 = 5人。" }
+      ],
+      gen: function () {
+        var total = R(30, 50), a = R(15, 25), b = R(15, 25), both = R(5, Math.min(a, b) - 3);
+        var union = a + b - both;
+        var neither = total - union;
+        return { type: "tiankong", q: "班上有 " + total + " 人，喜欢A的有 " + a + " 人，喜欢B的有 " + b + " 人，两样都喜欢的有 " + both + " 人。两样都不喜欢的有几人？", input: "num", ans: String(neither),
+          explain: "喜欢A或B = " + a + "+" + b + "-" + both + " = " + union + "人，都不喜欢 = " + total + "-" + union + " = " + neither + "人。" };
+      }
+    },
+
+    /* ---------------- 几何变换 ---------------- */
+    {
+      id: "rotation", name: "旋转与对称", icon: "🔄", level: "中年级",
+      desc: "研究图形的旋转、对称和中心对称等变换。",
+      points: [
+        { t: "旋转的三要素", html: "① <b>旋转中心</b>：绕哪个点旋转<br>② <b>旋转角度</b>：转多少度<br>③ <b>旋转方向</b>：顺时针或逆时针" },
+        { t: "轴对称图形", html: "如果一个图形沿一条直线对折，两边能完全重合，就是<b>轴对称图形</b>。<br>这条直线叫<b>对称轴</b>。<br>例如：正方形有4条对称轴，圆有无数条" },
+        { t: "中心对称", html: "如果一个图形绕某一点旋转180°后与原图重合，就是<b>中心对称图形</b>。<br>这个点叫<b>对称中心</b>。<br>例如：平行四边形、圆都是中心对称图形" }
+      ],
+      examples: [
+        { tag: "例题", q: "正方形有几条对称轴？", steps: ["水平对折：1条", "垂直对折：1条", "对角线对折：2条", "共 4 条"], explain: "正方形有4条对称轴：2条中线（水平、垂直）和2条对角线。" }
+      ],
+      gen: function () {
+        var kind = R(1, 2);
+        if (kind === 1) {
+          var shapes = [
+            { name: "正方形", axes: 4 },
+            { name: "长方形", axes: 2 },
+            { name: "等边三角形", axes: 3 },
+            { name: "等腰三角形", axes: 1 },
+            { name: "圆", axes: -1 },
+            { name: "平行四边形", axes: 0 }
+          ];
+          var shape = P(shapes);
+          var ans = shape.axes === -1 ? "无数" : String(shape.axes);
+          return { type: "tiankong", q: shape.name + " 有几条对称轴？", input: "text", ans: ans,
+            explain: shape.name + " 有 " + ans + " 条对称轴。" };
+        }
+        var n = R(3, 8);
+        var angle = 360 / n;
+        return { type: "tiankong", q: "正 " + n + " 边形绕中心旋转多少度后与原图重合？", input: "num", ans: String(angle),
+          explain: "正 " + n + " 边形旋转 " + angle + "°（或 " + angle + "° 的倍数）后与原图重合。" };
+      }
+    },
+
+    /* ---------------- 逻辑推理 ---------------- */
+    {
+      id: "logic", name: "逻辑推理", icon: "🧠", level: "中年级",
+      desc: "通过已知条件推导出结论，训练严谨的思维。",
+      points: [
+        { t: "真假话问题", html: "几个人说话，有的说真话有的说假话，通过逻辑推理判断谁说真话。<br><b>方法</b>：假设法——假设某人说真话，看是否矛盾" },
+        { t: "抽屉原理", html: "把n+1个物品放进n个抽屉，至少有一个抽屉放了2个或更多物品。<br><b>应用</b>：证明「至少存在」的问题" },
+        { t: "逻辑推理步骤", html: "① 列出所有已知条件<br>② 找出矛盾点<br>③ 用假设法或排除法<br>④ 验证答案是否符合所有条件" }
+      ],
+      examples: [
+        { tag: "例题", q: "甲说：「乙在说谎。」乙说：「丙在说谎。」丙说：「甲和乙都在说谎。」已知三人中只有一人说真话，谁在说真话？", steps: ["假设甲说真话→乙说谎→丙说真话（矛盾）", "假设乙说真话→丙说谎→甲说真话（矛盾）", "假设丙说真话→甲和乙都说谎→甲说乙说谎（真）矛盾", "重新检验：若乙说真话，丙说谎，甲说乙说谎（假）", "符合：只有乙说真话"], explain: "用假设法逐一检验，只有「乙说真话」符合所有条件。" }
+      ],
+      gen: function () {
+        var items = R(5, 10), drawers = R(2, items - 1);
+        var min = Math.ceil(items / drawers);
+        return { type: "tiankong", q: "把 " + items + " 个球放进 " + drawers + " 个盒子，至少有一个盒子放了几个球？", input: "num", ans: String(min),
+          explain: "抽屉原理：" + items + "÷" + drawers + " = " + Math.floor(items/drawers) + "..." + (items%drawers) + "，至少有一个盒子放了 " + min + " 个球。" };
+      }
+    }
+  ];
+
+  return { topics: topics };
+})();
+/* =====================================================================
  * 烧脑数学 · 学习统计模块
  * 记录每次答题、练习会话，生成学习报告
  * ===================================================================== */
@@ -13849,8 +14058,38 @@ window.STATS = (function () {
       }
       var fb = $("#fb");
       fb.className = "feedback show " + (ok ? "ok" : "no");
-      fb.innerHTML = '<div class="fb-title">' + (ok ? "🎉 回答正确！" : "❌ 再想想～ 正确答案是：" + showAns(q) + (metaOf(q) ? "<br><span style='font-size:12px;color:#8a4b0f'>已放进错题本，之后可以举一反三巩固它 📒</span>" : "")) + '</div>' +
+      var fbHtml = '<div class="fb-title">' + (ok ? "🎉 回答正确！" : "❌ 再想想～ 正确答案是：" + showAns(q) + (metaOf(q) ? "<br><span style='font-size:12px;color:#8a4b0f'>已放进错题本，之后可以举一反三巩固它 📒</span>" : "")) + '</div>' +
         (whyWrong ? '<div class="fb-why">💡 为什么：' + whyWrong + '</div>' : (q.explain ? '<div class="fb-exp">📖 ' + q.explain + '</div>' : ''));
+      if (!ok && metaOf(q) && window.WB) {
+        var entry = WB.all().find(function(e) { return e.sig === (q.unit || "") + "|" + (q.q || "").slice(0, 120); });
+        if (entry) {
+          fbHtml += '<button class="btn-reinforce" data-entry-id="' + entry.id + '" style="margin-top:10px;padding:8px 16px;background:#ff6b6b;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">🎯 举一反三再练3题</button>';
+        }
+      }
+      fb.innerHTML = fbHtml;
+      if (!ok && metaOf(q) && window.WB) {
+        var btnReinforce = fb.querySelector('.btn-reinforce');
+        if (btnReinforce) {
+          btnReinforce.onclick = function() {
+            var entryId = btnReinforce.dataset.entryId;
+            var entry = WB.all().find(function(e) { return e.id === entryId; });
+            if (entry) {
+              var similarQs = WB.similarQuestions(entry, 3);
+              if (similarQs && similarQs.length > 0) {
+                startPracticeSession(similarQs, {
+                  title: '举一反三强化练习',
+                  showProgress: true,
+                  onComplete: function() {
+                    alert('🎉 强化练习完成！继续加油～');
+                  }
+                });
+              } else {
+                alert('暂时没有更多同类题了，试试其他题目吧～');
+              }
+            }
+          };
+        }
+      }
       $$(".opt-btn", el).forEach(function (b) {
         if (norm(b.dataset.opt) === norm(q.ans)) b.classList.add("correct");
         else if (b.classList.contains("sel") && !ok) b.classList.add("wrong");
@@ -14607,6 +14846,21 @@ window.STATS = (function () {
     });
     if (!shown) html += '<div class="card" style="text-align:center;color:var(--ink-2)">这个组合下暂时没有主题，换个筛选试试～</div>';
 
+    /* 奥数专题入口 */
+    html += '<div class="section-title" style="margin-top:20px"><span class="bar" style="background:#d63031"></span>奥数专题</div>' +
+      '<div class="card" style="font-size:13px;color:var(--ink-2)">数论、组合、几何变换、逻辑推理……挑战更高难度的数学思维！🏆</div>';
+    if (window.OLYMPIAD && OLYMPIAD.topics) {
+      html += '<div class="olympiad-grid">';
+      OLYMPIAD.topics.forEach(function (t) {
+        html += '<button class="olympiad-card" data-olympiad="' + t.id + '">' +
+          '<span class="olympiad-icon">' + t.icon + '</span>' +
+          '<span class="olympiad-name">' + esc(t.name) + '</span>' +
+          '<span class="olympiad-level" style="color:' + (levelColor[t.level] || "#3a86ff") + '">' + t.level + '</span>' +
+          '</button>';
+      });
+      html += '</div>';
+    }
+
     /* 保留旧输入框（避免手机键盘收起） */
     var oldThinkInput = document.getElementById("thinkSearchInput");
     var hadFocus = oldThinkInput && document.activeElement === oldThinkInput;
@@ -14644,6 +14898,9 @@ window.STATS = (function () {
     $$("[data-muti]", $("#thinkHome")).forEach(function (btn) {
       btn.onclick = function () { openMuti(btn.dataset.muti); };
     });
+    $$("[data-olympiad]", $("#thinkHome")).forEach(function (btn) {
+      btn.onclick = function () { openOlympiadTopic(btn.dataset.olympiad); };
+    });
   }
 
   /* 母题精讲详情 */
@@ -14673,6 +14930,184 @@ window.STATS = (function () {
       if (t) startThinkSession(t); else toast("这个母题的练习还在路上～");
     };
     window.scrollTo(0, 0);
+  }
+
+  function openOlympiadTopic(tid) {
+    var t = null;
+    if (window.OLYMPIAD && OLYMPIAD.topics) {
+      OLYMPIAD.topics.forEach(function (x) { if (x.id === tid) t = x; });
+    }
+    if (!t) return;
+    $("#thinkHome").classList.add("hidden");
+    var el = $("#olympiadDetail");
+    el.classList.remove("hidden");
+
+    var html = '<div class="back-row"><button class="back-btn" id="olympiadBack">‹</button><div class="page-title">' + t.icon + ' ' + esc(t.name) + '</div></div>';
+    html += '<div class="card" style="font-size:13px;color:var(--ink-2)">' + esc(t.desc) + '</div>';
+
+    /* 知识点 */
+    html += '<div class="section-title"><span class="bar" style="background:#d63031"></span>核心知识点</div>';
+    t.points.forEach(function (p) {
+      html += '<div class="kp-card"><div class="kp-head"><span class="kp-num" style="background:#d63031">' + (t.points.indexOf(p) + 1) + '</span>' + esc(p.t) + '</div>' +
+        '<div class="kp-body">' + p.html + '</div></div>';
+    });
+
+    /* 例题 */
+    html += '<div class="section-title"><span class="bar" style="background:#00b894"></span>经典例题</div>';
+    t.examples.forEach(function (ex) {
+      var steps = ex.steps.map(function (s) { return '<div class="step-item" style="font-size:13px">' + s + '</div>'; }).join("");
+      html += '<div class="example-card"><span class="ex-tag">' + esc(ex.tag) + '</span>' +
+        '<div class="ex-q">❓ ' + esc(ex.q) + '</div>' +
+        '<div class="step-list">' + steps + '</div>' +
+        '<div class="kbox tip"><div class="kb-title">💡 点拨</div>' + esc(ex.explain) + '</div></div>';
+    });
+
+    /* 练习按钮 */
+    html += '<div style="margin:20px 0"><button class="btn block" id="olympiadPractice" style="background:linear-gradient(135deg,#d63031,#e84393)">🏆 开始奥数挑战（5题）</button></div>';
+
+    el.innerHTML = html;
+    $("#olympiadBack").onclick = function () {
+      $("#olympiadDetail").classList.add("hidden");
+      $("#thinkHome").classList.remove("hidden");
+    };
+    $("#olympiadPractice").onclick = function () { startOlympiadSession(t); };
+    window.scrollTo(0, 0);
+  }
+
+  function startOlympiadSession(t) {
+    var qs = [];
+    for (var i = 0; i < 5; i++) qs.push(t.gen());
+    if (window.SCRATCH) SCRATCH.show();
+    var sessionTitle = t.icon + ' ' + t.name + ' · 奥数挑战';
+    var session = {
+      questions: qs,
+      idx: 0,
+      correct: 0,
+      title: sessionTitle,
+      timer: null,
+      startTs: Date.now()
+    };
+
+    function renderQuestion() {
+      if (session.idx >= qs.length) {
+        endOlympiadSession();
+        return;
+      }
+      var q = qs[session.idx];
+      var el = $("#practiceSession");
+      el.classList.remove("hidden");
+      var html = '<div class="back-row"><button class="back-btn" id="exitSess">‹</button><div class="page-title">' + sessionTitle + '</div></div>' +
+        '<div class="qcard"><div class="q-top"><span class="q-type-tag tt-xuanze">奥数题</span><span class="q-progress">' + (session.idx + 1) + ' / ' + qs.length + '</span></div>' +
+        '<div class="q-text">' + q.q + '</div>';
+
+      if (q.input === "choice") {
+        html += '<div class="opt-list">' + q.options.map(function (o) {
+          return '<button class="opt-btn" data-opt="' + esc(o) + '">' + esc(o) + '</button>';
+        }).join("") + '</div>';
+      } else if (q.input === "text") {
+        html += '<input class="answer-input" id="ansInput" placeholder="在这里写答案" autocomplete="off">';
+      } else {
+        html += '<input class="answer-input" id="ansInput" placeholder="在这里写答案" autocomplete="off" inputmode="decimal">';
+      }
+      html += '<div class="feedback" id="fb"></div>' +
+        '<div class="btn-sticky-row">' +
+        '<button class="btn block" id="btnCheck">✅ 提交答案</button>' +
+        '<button class="btn block hidden" id="btnNext">下一题 →</button></div></div>';
+      el.innerHTML = html;
+
+      $("#exitSess").onclick = function () {
+        if (window.SCRATCH) SCRATCH.hide();
+        $("#practiceSession").classList.add("hidden");
+        $("#olympiadDetail").classList.remove("hidden");
+      };
+
+      var answered = false, userAns = null;
+      $$(".opt-btn", el).forEach(function (b) {
+        b.onclick = function () {
+          if (answered) return;
+          $$(".opt-btn", el).forEach(function (x) { x.classList.remove("sel"); });
+          b.classList.add("sel");
+          userAns = b.dataset.opt;
+        };
+      });
+
+      var inp = $("#ansInput", el);
+      if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); $("#btnCheck").click(); } };
+
+      $("#btnCheck").onclick = function () {
+        if (answered) return;
+        var val = inp ? inp.value.trim() : userAns;
+        if (val === "" || val == null) { toast("先写个答案再提交哦～"); return; }
+        answered = true;
+        var ok = checkAnswer(q, val);
+        if (window.SND) ok ? SND.correct() : SND.wrong();
+        if (window.STATS) STATS.logAnswer(q, ok, "olympiad");
+        if (ok) { session.correct++; if (window.GARDEN) GARDEN.addPoints(1, "奥数答对"); }
+        else { if (window.GARDEN) GARDEN.deductPoints(0.3, "奥数答错"); }
+
+        var fb = $("#fb");
+        fb.className = "feedback show " + (ok ? "ok" : "no");
+        fb.innerHTML = '<div class="fb-title">' + (ok ? "🎉 太棒了！" : "❌ 再想想～ 正确答案是：" + q.ans) + '</div>' +
+          (q.explain ? '<div class="fb-exp">📖 ' + q.explain + '</div>' : '');
+
+        $$(".opt-btn", el).forEach(function (b) {
+          if (b.dataset.opt === q.ans) b.classList.add("correct");
+          else if (b.classList.contains("sel") && !ok) b.classList.add("wrong");
+          b.disabled = true;
+        });
+        if (inp) inp.disabled = true;
+        $("#btnCheck").classList.add("hidden");
+        $("#btnNext").classList.remove("hidden");
+      };
+
+      $("#btnNext").onclick = function () {
+        session.idx++;
+        renderQuestion();
+      };
+    }
+
+    function endOlympiadSession() {
+      if (window.SCRATCH) SCRATCH.hide();
+      $("#practiceSession").classList.add("hidden");
+      var el = $("#practiceResult");
+      el.classList.remove("hidden");
+      var acc = Math.round(session.correct / qs.length * 100);
+      var stars = acc >= 90 ? 3 : (acc >= 70 ? 2 : (acc >= 50 ? 1 : 0));
+      if (window.STATS) {
+        STATS.logSession({
+          title: sessionTitle,
+          total: qs.length,
+          correct: session.correct,
+          duration: (Date.now() - session.startTs) / 1000,
+          sessionType: "olympiad"
+        });
+      }
+      if (window.GARDEN) {
+        var bonus = acc >= 100 ? 3 : (acc >= 80 ? 2 : (acc >= 60 ? 1.5 : 1));
+        GARDEN.addPoints(bonus, "奥数挑战完成");
+      }
+
+      var html = '<div class="result-card">' +
+        '<div style="font-size:14px;font-weight:800;color:var(--ink-2)">' + sessionTitle + ' · 完成</div>' +
+        '<div class="result-stars">' + '⭐'.repeat(stars) + '☆'.repeat(3 - stars) + '</div>' +
+        '<div class="result-score">' + acc + '<span style="font-size:20px">%</span></div>' +
+        '<div style="font-size:13px;color:var(--ink-2)">答对 ' + session.correct + ' / ' + qs.length + ' 题</div>' +
+        '<div class="result-msg">' + (acc >= 90 ? "太厉害了！奥数高手！🏆" : acc >= 70 ? "不错哦，继续加油！" : "奥数确实有难度，多练练就好了～") + '</div>' +
+        '<div class="result-btns" style="margin-top:12px"><button class="btn ghost" id="rBack">返回</button><button class="btn" id="rAgain">再挑战一次</button></div></div>';
+      el.innerHTML = html;
+      $("#rBack").onclick = function () {
+        $("#practiceResult").classList.add("hidden");
+        $("#olympiadDetail").classList.remove("hidden");
+      };
+      $("#rAgain").onclick = function () {
+        $("#practiceResult").classList.add("hidden");
+        startOlympiadSession(t);
+      };
+    }
+
+    $("#practiceHome").classList.add("hidden");
+    $("#practiceSetup").classList.add("hidden");
+    renderQuestion();
   }
 
   function openThinkTopic(tid) {
