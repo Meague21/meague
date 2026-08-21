@@ -875,9 +875,16 @@ label.fld{margin:6px 0 2px}
 <div id="toastEl"></div>
 <script>
 /* ============ 小管家 · 数据层 ============ */
-const VERSION = 'v1.7.0';
+const VERSION = 'v1.8.0';
 
 const CHANGELOG = [
+  { ver: 'v1.8.0', date: '2026-08-21', items: [
+    '记账范围新增「昨日/前日」快捷按钮，一键查看前 1-2 天数据',
+    '商品成本库：大类可折叠（点击类目名切换 ▾/▸），商品按名称排序，新增搜索（支持首字/名称/类目匹配）',
+    '单品销售统计：点击单品自动跳转到该商品所在店铺的明细',
+    '修复单品累计不同步 bug：移除「保留两条」选项，同一店铺同一天只保留一条记录，编辑后累计立即刷新',
+    '专注白噪音彻底修复：AudioContext 异步 await resume，iOS/Android 手势内启动',
+  ]},
   { ver: 'v1.7.0', date: '2026-08-19', items: [
     '【关键修复】记当日销售「保存」按钮点击无反应的根因：按钮事件代码生成错误（字符串拼接语法错误），已修复并加回归测试',
     '新增全局脚本错误提示：万一再出问题会直接弹出错误内容，方便定位',
@@ -2012,14 +2019,14 @@ function renderEcom() {
   const items = DB.ecomItems.filter(i => i.date.startsWith(ecomMonth));
   const byItem = {};
   items.forEach(i => {
-    const k = byItem[i.name] = byItem[i.name] || { qty: 0, cost: 0 };
+    const k = byItem[i.name] = byItem[i.name] || { qty: 0, cost: 0, store: i.store };
     k.qty += i.qty; k.cost += i.qty * i.cost;
   });
   const itemList = Object.entries(byItem).sort((a, b) => b[1].cost - a[1].cost);
   document.getElementById('ecomItemStat').innerHTML = itemList.length === 0
     ? '<div class="empty" style="padding:14px 0">记录当日销售时添加商品明细，这里会统计各品销量与成本</div>'
     : '<table class="tbl"><tr><th>商品</th><th>销量</th><th>商品成本</th></tr>' +
-      itemList.map(([name, s]) => '<tr><td>' + esc(name) + '</td><td>' + s.qty + '</td><td>' + money(s.cost) + '</td></tr>').join('') + '</table>';
+      itemList.map(([name, s]) => '<tr onclick="jumpToItemStore(\'' + esc(s.store) + '\')" style="cursor:pointer"><td>' + esc(name) + '</td><td>' + s.qty + '</td><td>' + money(s.cost) + '</td></tr>').join('') + '</table>';
 }
 function pickEcomStore(n) { ecomStoreSel = n; renderEcom(); }
 function moveEcomMonth(d) { ecomMonth = shiftMonth(ecomMonth, d); renderEcom(); }
@@ -2221,15 +2228,6 @@ function openProductLib() {
   `);
   renderProductLibList();
 }
-function renderProductLibList() {
-  document.getElementById('plList').innerHTML = DB.products.length === 0
-    ? '<div class="empty" style="padding:12px 0">还没有商品</div>'
-    : DB.products.map((p, ix) =>
-        '<div class="sess-item"><span>' + esc(p.name) + '</span>' +
-        '<span style="display:flex;gap:6px;align-items:center"><b>¥' + money(p.cost) + '</b>' +
-        '<button class="btn sm gray" onclick="editProduct(' + ix + ')">✎</button>' +
-        '<button class="todo-del" onclick="delProduct(' + ix + ')">🗑</button></span></div>').join('');
-}
 function addProduct() {
   const name = document.getElementById('plName').value.trim();
   const cost = parseFloat(document.getElementById('plCost').value) || 0;
@@ -2351,21 +2349,42 @@ function openProductLib() {
   `);
   renderProductLibList();
 }
+window._plSearch = window._plSearch || '';
 function renderProductLibList() {
-  if (DB.products.length === 0) {
+  const q = (window._plSearch || '').trim();
+  if (DB.products.length === 0 && !q) {
     document.getElementById('plList').innerHTML = '<div class="empty" style="padding:12px 0">还没有商品</div>';
     return;
   }
+  let filtered = DB.products.map((p, ix) => [p, ix]);
+  if (q) {
+    const ql = q.toLowerCase();
+    filtered = filtered.filter(([p]) => {
+      const hay = (p.name + ' ' + (p.sub || '') + ' ' + (p.cat || '')).toLowerCase();
+      return hay.includes(ql) || (p.name && p.name[0].toLowerCase() === ql);
+    });
+  }
   const byCat = {};
-  DB.products.forEach((p, ix) => (byCat[p.cat || '其他'] = byCat[p.cat || '其他'] || []).push([p, ix]));
-  document.getElementById('plList').innerHTML = Object.entries(byCat).map(([cat, list]) =>
-    '<div style="font-size:11.5px;color:var(--sub);font-weight:700;margin:8px 0 3px">' + esc(cat) + '（' + list.length + '）</div>' +
-    list.map(([p, ix]) =>
-      '<div class="sess-item"><span style="flex:1;font-size:13px">' + esc(p.name) +
-      (p.sub ? ' <span class="tag-mini">' + esc(p.sub) + '</span>' : '') + '</span>' +
-      '<span style="display:flex;gap:6px;align-items:center"><b style="font-size:13px">¥' + money(p.cost) + '</b>' +
-      '<button class="btn sm gray" onclick="editProduct(' + ix + ')">✎</button>' +
-      '<button class="todo-del" onclick="delProduct(' + ix + ')">🗑</button></span></div>').join('')).join('');
+  filtered.forEach(([p, ix]) => {
+    const c = p.cat || '其他';
+    (byCat[c] = byCat[c] || []).push([p, ix]);
+  });
+  const cats = Object.keys(byCat).sort();
+  const catHtml = cats.map(cat => {
+    const list = byCat[cat].sort((a, b) => a[0].name.localeCompare(b[0].name, 'zh-Hans'));
+    const collapsed = window._plCollapsed && window._plCollapsed[cat] && !q;
+    return '<div style="font-size:11.5px;color:var(--sub);font-weight:700;margin:8px 0 3px;display:flex;justify-content:space-between;cursor:pointer" onclick="window._plCollapsed=window._plCollapsed||{};window._plCollapsed[\'' + esc(cat) + '\']=!window._plCollapsed[\'' + esc(cat) + '\'];renderProductLibList()">' +
+      '<span>' + (collapsed ? '▸ ' : '▾ ') + esc(cat) + '（' + list.length + '）</span></div>' +
+      (collapsed ? '' : list.map(([p, ix]) =>
+        '<div class="sess-item"><span style="flex:1;font-size:13px">' + esc(p.name) +
+        (p.sub ? ' <span class="tag-mini">' + esc(p.sub) + '</span>' : '') + '</span>' +
+        '<span style="display:flex;gap:6px;align-items:center"><b style="font-size:13px">¥' + money(p.cost) + '</b>' +
+        '<button class="btn sm gray" onclick="editProduct(' + ix + ')">✎</button>' +
+        '<button class="todo-del" onclick="delProduct(' + ix + ')">🗑</button></span></div>').join(''));
+  }).join('');
+  const searchHtml = '<div style="margin-bottom:8px"><input id="plSearch" placeholder="🔍 搜商品名/首字/类目" value="' + esc(q) + '" oninput="window._plSearch=this.value;renderProductLibList()"></div>';
+  document.getElementById('plList').innerHTML = searchHtml + catHtml +
+    (filtered.length === 0 ? '<div class="empty" style="padding:10px 0">未找到「' + esc(q) + '」</div>' : '');
 }
 function addProduct() {
   const name = document.getElementById('plName').value.trim();
@@ -2715,6 +2734,13 @@ function renderMarginTrend() {
   }).join('') + '</div>' +
   '<div style="font-size:10.5px;color:var(--sub);margin-top:3px">柱高=毛利率（绿≥15%，黄<15%，红=亏损）</div>';
 }
+
+function jumpToItemStore(store) {
+  pickEcomStore(store);
+  setEcomRange('month');
+  const tbl = document.getElementById('ecomDayTable');
+  if (tbl) tbl.scrollIntoView({ block: 'start' });
+}
 /* ============ 账户体系 / 预算 / AI 账目汇总 ============ */
 function acctBalance(a) {
   // 余额 = 手动基数 + 该账户收入 - 该账户支出
@@ -3041,9 +3067,16 @@ function renderTodos() {
 /* ---------- 环境音引擎（Web Audio 离线合成） ---------- */
 const Sound = {
   ctx: null, nodes: null, current: '',
-  ensure() {
+  async ensure() {
     if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-    if (this.ctx.state === 'suspended') this.ctx.resume();
+    if (this.ctx.state === 'suspended') {
+      try { await this.ctx.resume(); } catch (e) {}
+    }
+    // iOS/Android 有时需要多次尝试
+    if (this.ctx.state === 'suspended') {
+      await new Promise(r => setTimeout(r, 50));
+      try { await this.ctx.resume(); } catch (e) {}
+    }
     return this.ctx;
   },
   noiseBuffer() {
@@ -3052,9 +3085,9 @@ const Sound = {
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     return b;
   },
-  play(type) {
+  async play(type) {
     this.stop();
-    const ctx = this.ensure();
+    const ctx = await this.ensure();
     const src = ctx.createBufferSource();
     src.buffer = this.noiseBuffer(); src.loop = true;
     const gain = ctx.createGain();
@@ -3135,20 +3168,23 @@ const Sound = {
   },
 };
 const SOUNDS = [['white', '⚪ 白噪音'], ['rain', '🌧 雨声'], ['wave', '🌊 海浪'], ['fire', '🔥 篝火'], ['forest', '🐦 森林鸟鸣'], ['wind', '🍃 风声']];
-function toggleSound(type) {
+async function toggleSound(type) {
   if (Sound.current === type) {
     Sound.stop(); DB.settings.sound = '';
-  } else {
-    Sound.play(type); DB.settings.sound = type;
-    setTimeout(() => {
-      if (Sound.ctx && Sound.ctx.state === 'suspended') {
-        Sound.ctx.resume().then(() => {
-          if (Sound.ctx.state === 'suspended') toast('没有声音？请检查手机是否静音/媒体音量');
-        });
-      }
-    }, 300);
+    saveDB(); renderSoundRow();
+    return;
   }
-  saveDB(); renderSoundRow();
+  try {
+    await Sound.ensure();
+    if (Sound.ctx.state !== 'running') {
+      toast('⚠️ 音频无法启动，请关闭静音/调高媒体音量后重试');
+      return;
+    }
+    Sound.play(type); DB.settings.sound = type;
+    saveDB(); renderSoundRow();
+  } catch (e) {
+    toast('声音启动失败：' + e.message);
+  }
 }
 function renderSoundRow() {
   const el = document.getElementById('soundRow');
@@ -3267,8 +3303,9 @@ function focusToggle() {
   if (focus.remainSec <= 0) { focus.totalSec = focus.remainSec = (focus.selectedMin || DB.settings.focusWork) * 60; }
   focus.running = true;
   if (!focus.startedAt) focus.startedAt = Date.now();
-  Sound.ensure(); // 手势内预热音频上下文（手机端出声关键）
-  if (DB.settings.sound && !Sound.current) Sound.play(DB.settings.sound);
+  // 手势内预热音频上下文（手机端出声关键）
+  Sound.ensure().catch(() => {});
+  if (DB.settings.sound && !Sound.current) Sound.play(DB.settings.sound).catch(() => {});
   focus.timer = setInterval(() => {
     focus.remainSec--;
     if (focus.remainSec === 2 && focus.mode === 'work' && Sound.current) Sound.fadeOut(2);
