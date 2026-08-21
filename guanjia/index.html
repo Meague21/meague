@@ -890,9 +890,16 @@ label.fld{margin:6px 0 2px}
 <div id="toastEl"></div>
 <script>
 /* ============ 小管家 · 数据层 ============ */
-const VERSION = 'v1.8.3';
+const VERSION = 'v1.8.4';
 
 const CHANGELOG = [
+  { ver: 'v1.8.4', date: '2026-08-22', items: [
+    '【根因修复】删除「每日毛利走势」卡片时遗漏了 JS 写入代码，导致 renderEcom 中途报错中断——这就是昨日/前日脚本错误、看板数据消失、添加商品报错的共同根源',
+    '卡片折叠：点击标题内的按钮（如「管理」）不再误触发折叠',
+    'iOS 音频彻底重写：AudioContext 创建/恢复/解锁全部改为用户手势内同步执行（iOS 强制要求），并加空 buffer 解锁',
+    '播放后增加状态诊断提示：若仍无声会提示检查 iPhone 左侧静音键',
+    '新增构建前 ID 引用检查（tools/check_ids.py），杜绝同类问题复发',
+  ]},
   { ver: 'v1.8.3', date: '2026-08-21', items: [
     '修复点击昨日/前日时的脚本错误（null reference）',
     '卡片折叠展开功能修复：使用 closest 查找，更可靠',
@@ -1986,17 +1993,7 @@ function renderEcom() {
       '<tr><td>环比纯销售' + SMALL + '（上一周期 ¥' + money(prevPure) + '）</small></td><td class="' + (pure >= prevPure ? 'pos' : 'neg') + '">' + (d1 === null ? '-' : (pure >= prevPure ? '+' : '') + d1 + '%') + '</td></tr>' +
       '<tr><td>环比毛利' + SMALL + '（上一周期 ¥' + money(prevProfit) + '）</small></td><td class="' + (profit >= prevProfit ? 'pos' : 'neg') + '">' + (d2 === null ? '-' : (profit >= prevProfit ? '+' : '') + d2 + '%') + '</td></tr>';
   }
-  // 每日毛利走势
-  const byDate = {};
-  rows.forEach(d => byDate[d.date] = (byDate[d.date] || 0) + dayProfit(d));
-  const dates = Object.keys(byDate).sort();
-  const maxAbs = Math.max(...dates.map(dt => Math.abs(byDate[dt])), 1);
-  document.getElementById('ecomTrend').innerHTML = dates.length === 0
-    ? '<div class="empty" style="padding:12px 0">该范围内无数据</div>'
-    : '<div class="wk-chart" style="height:84px">' + dates.map(dt => {
-        const v = byDate[dt];
-        return '<div class="wk-bar" title="' + dt.slice(5) + ' 毛利' + money(v) + '"><div class="b" style="height:' + Math.max(3, Math.round(Math.abs(v) / maxAbs * 100)) + '%;' + (v < 0 ? 'background:linear-gradient(180deg,#f87171,#ef4444)' : '') + '"></div><div class="d">' + dt.slice(5) + '</div></div>';
-      }).join('') + '</div>';
+  // （每日毛利走势卡片已在 v1.8.2 移除，保留毛利率走势 renderMarginTrend）
 
   // 店铺筛选 chips
   const usedStores = [...new Set(all.map(d => d.store).filter(Boolean))];
@@ -3151,28 +3148,19 @@ function renderTodos() {
 /* ---------- 环境音引擎（Web Audio 离线合成） ---------- */
 const Sound = {
   ctx: null, nodes: null, current: '',
-  async ensure() {
-    if (!this.ctx) {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (!AC) { toast('当前浏览器不支持音频'); return null; }
-      this.ctx = new AC();
-    }
-    if (this.ctx.state === 'suspended') {
-      try { await this.ctx.resume(); } catch (e) {}
-      // iOS 需要多次尝试
-      if (this.ctx.state === 'suspended') {
-        await new Promise(r => setTimeout(r, 100));
-        try { await this.ctx.resume(); } catch (e) {}
-      }
-    }
-    if (this.ctx.state !== 'running') {
-      // 创建一个空的 buffer 来"唤醒"音频
+  unlocked: false,
+  // iOS 要求：创建/恢复/解锁必须在用户手势内【同步】完成，不能 await
+  ensureSync() {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    if (!this.ctx) this.ctx = new AC();
+    if (this.ctx.state === 'suspended') { try { this.ctx.resume(); } catch (e) {} }
+    if (!this.unlocked) {
       try {
-        const buffer = this.ctx.createBuffer(1, 1, 22050);
-        const source = this.ctx.createBufferSource();
-        source.buffer = buffer;
-        source.connect(this.ctx.destination);
-        source.start(0);
+        const b = this.ctx.createBuffer(1, 1, 22050);
+        const s = this.ctx.createBufferSource();
+        s.buffer = b; s.connect(this.ctx.destination); s.start(0);
+        this.unlocked = true;
       } catch (e) {}
     }
     return this.ctx;
@@ -3183,9 +3171,10 @@ const Sound = {
     for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
     return b;
   },
-  async play(type) {
+  play(type) {
     this.stop();
-    const ctx = await this.ensure();
+    const ctx = this.ensureSync();
+    if (!ctx) { toast('当前浏览器不支持音频播放'); return false; }
     const src = ctx.createBufferSource();
     src.buffer = this.noiseBuffer(); src.loop = true;
     const gain = ctx.createGain();
@@ -3245,6 +3234,7 @@ const Sound = {
     src.start();
     this.nodes = { src, gain, extra };
     this.current = type;
+    return true;
   },
   fadeOut(sec) {
     if (!this.nodes) return;
@@ -3266,23 +3256,27 @@ const Sound = {
   },
 };
 const SOUNDS = [['white', '⚪ 白噪音'], ['rain', '🌧 雨声'], ['wave', '🌊 海浪'], ['fire', '🔥 篝火'], ['forest', '🐦 森林鸟鸣'], ['wind', '🍃 风声']];
-async function toggleSound(type) {
+function toggleSound(type) {
   if (Sound.current === type) {
     Sound.stop(); DB.settings.sound = '';
     saveDB(); renderSoundRow();
     return;
   }
-  try {
-    await Sound.ensure();
+  // 全部同步执行（iOS 用户手势内才能启动音频）
+  const ok = Sound.play(type);
+  if (!ok) return;
+  DB.settings.sound = type;
+  saveDB(); renderSoundRow();
+  // 延迟诊断：告诉用户音频状态，便于排查静音键问题
+  setTimeout(() => {
+    if (!Sound.ctx) return;
     if (Sound.ctx.state !== 'running') {
-      toast('⚠️ 音频无法启动，请关闭静音/调高媒体音量后重试');
-      return;
+      try { Sound.ctx.resume(); } catch (e) {}
+      toast('⚠️ 音频状态 ' + Sound.ctx.state + '：请检查 iPhone 左侧静音键是否开启、音量是否调高');
+    } else {
+      toast('♪ 播放中。若仍无声：请检查 iPhone 左侧静音键（橙色=静音）');
     }
-    Sound.play(type); DB.settings.sound = type;
-    saveDB(); renderSoundRow();
-  } catch (e) {
-    toast('声音启动失败：' + e.message);
-  }
+  }, 800);
 }
 function renderSoundRow() {
   const el = document.getElementById('soundRow');
@@ -3311,7 +3305,7 @@ function playEndSound() {
   }
   try {
     if (sel === 'beep') { beep(2); return; }
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const ctx = Sound.ensureSync() || new (window.AudioContext || window.webkitAudioContext)();
     if (sel === 'chime') {
       const seq = [1046.5, 1318.5, 1568, 2093, 1568, 2093];
       seq.forEach((f, i) => synthNote(ctx, f, i * 0.15, 0.8, 'sine', 0.5));
@@ -3401,9 +3395,9 @@ function focusToggle() {
   if (focus.remainSec <= 0) { focus.totalSec = focus.remainSec = (focus.selectedMin || DB.settings.focusWork) * 60; }
   focus.running = true;
   if (!focus.startedAt) focus.startedAt = Date.now();
-  // 手势内预热音频上下文（手机端出声关键）
-  Sound.ensure().catch(() => {});
-  if (DB.settings.sound && !Sound.current) Sound.play(DB.settings.sound).catch(() => {});
+  // 手势内同步预热音频上下文（iOS 出声关键）
+  Sound.ensureSync();
+  if (DB.settings.sound && !Sound.current) Sound.play(DB.settings.sound);
   focus.timer = setInterval(() => {
     focus.remainSec--;
     if (focus.remainSec === 2 && focus.mode === 'work' && Sound.current) Sound.fadeOut(2);
@@ -4309,8 +4303,9 @@ function openChangelog() {
   });
 })();
 
-// 卡片折叠功能
+// 卡片折叠功能（点击标题折叠/展开；标题内的按钮不触发折叠）
 document.addEventListener('click', (e) => {
+  if (e.target.closest('button, input, select, a, textarea')) return;
   const h3 = e.target.closest('h3');
   if (h3 && h3.parentElement && h3.parentElement.classList.contains('collapsible')) {
     h3.parentElement.classList.toggle('collapsed');
