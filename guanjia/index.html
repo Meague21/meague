@@ -530,6 +530,23 @@ label.fld{margin:6px 0 2px}
 .dup-bar{background:var(--amber-soft);border-radius:12px;padding:10px 12px;margin-bottom:10px}
 .dup-bar .t{font-size:13px;font-weight:700;color:var(--amber);margin-bottom:7px}
 .dup-bar .row .btn{font-size:12.5px;padding:7px 4px}
+
+.card.collapsible h3 { cursor: pointer; user-select: none; }
+.card.collapsible h3::after {
+  content: '▾';
+  float: right;
+  font-size: 14px;
+  transition: transform 0.2s;
+}
+.card.collapsible.collapsed h3::after { transform: rotate(-90deg); }
+.card.collapsible.collapsed > *:not(h3) { display: none; }
+
+.sound-row button.chip {
+  -webkit-tap-highlight-color: rgba(255,255,255,0.3);
+  touch-action: manipulation;
+  min-height: 32px;
+  min-width: 60px;
+}
 </style>
 </head>
 <body>
@@ -563,7 +580,7 @@ label.fld{margin:6px 0 2px}
         <div style="font-size:13px">💾 你已经超过 7 天没有备份数据了，数据只存在本机，建议导出备份。</div>
         <button class="btn sm" style="margin-top:8px" onclick="exportData()">立即导出备份</button>
       </div>
-      <div class="card">
+      <div class="card collapsible">
         <h3>🕘 最近动态</h3>
         <div id="homeRecent"></div>
       </div>
@@ -583,7 +600,7 @@ label.fld{margin:6px 0 2px}
       </div>
 
       <div id="ledgerDaily">
-        <div class="card">
+        <div class="card collapsible">
           <div class="month-nav">
             <button onclick="moveLedgerMonth(-1)">‹</button>
             <b id="ledgerMonthLabel"></b>
@@ -591,11 +608,11 @@ label.fld{margin:6px 0 2px}
           </div>
           <div class="sum3" id="ledgerMonthSum"></div>
         </div>
-        <div class="card">
+        <div class="card collapsible">
           <h3>🥧 支出构成 <span style="font-size:12px;color:var(--sub);font-weight:400;cursor:pointer" id="ledgerChartType" onclick="toggleLedgerChartType()"></span></h3>
           <div id="ledgerCatChart"></div>
         </div>
-        <div class="card">
+        <div class="card collapsible">
           <h3>🧾 明细</h3>
           <div id="ledgerList"></div>
         </div>
@@ -603,7 +620,7 @@ label.fld{margin:6px 0 2px}
 
       <div id="ledgerEcom" style="display:none">
         <div id="packBanner"></div>
-        <div class="card">
+        <div class="card collapsible">
           <div class="month-nav">
             <button onclick="moveEcomMonth(-1)">‹</button>
             <b id="ecomMonthLabel"></b>
@@ -625,53 +642,50 @@ label.fld{margin:6px 0 2px}
           <h3 style="margin-bottom:6px">🚨 经营异常预警</h3>
           <div id="ecomAlerts"></div>
         </div>
-        <div class="card">
+        <div class="card collapsible">
           <h3>📈 毛利率走势 <span style="font-size:11px;color:var(--sub);font-weight:400">本月逐日</span></h3>
           <div id="ecomMarginTrend"></div>
         </div>
-        <div class="card">
+        <div class="card collapsible">
           <h3>🏆 店铺盈亏排行榜 <span style="font-size:11px;color:var(--sub);font-weight:400">近30天销售≤¥10 自动休眠</span></h3>
           <div id="ecomRank"></div>
         </div>
-        <div class="card">
+        <div class="card collapsible">
           <h3>🏪 店铺查看 <button class="btn sm gray" style="margin-left:auto" onclick="openStoreManage()">⚙ 店铺管理</button></h3>
           <div class="chips" id="ecomStoreChips" style="margin-bottom:10px"></div>
           <div id="ecomStoreSum"></div>
           <div class="tbl-wrap"><table class="tbl" id="ecomDayTable"></table></div>
         </div>
-        <div class="card">
+        <div class="card collapsible">
           <h3>📦 商品成本库 <button class="btn sm gray" style="margin-left:auto" onclick="openProductLib()">管理</button></h3>
           <div id="productLibPreview"></div>
         </div>
-        <div class="card">
-          <h3>📈 每日毛利走势 <span style="font-size:11px;color:var(--sub);font-weight:400">随上方范围联动</span></h3>
-          <div id="ecomTrend"></div>
-        </div>
-        <div class="card">
+
+        <div class="card collapsible">
           <h3>🧮 单品销售统计 <span style="font-size:11px;color:var(--sub);font-weight:400">来自商品明细记录</span></h3>
           <div id="ecomItemStat"></div>
         </div>
       </div>
 
       <div id="ledgerAcct" style="display:none">
-        <div class="card">
+        <div class="card collapsible">
           <h3>🏦 净资产总览</h3>
           <div class="sum3" id="acctOverview"></div>
         </div>
-        <div class="card">
+        <div class="card collapsible">
           <h3>💳 我的账户</h3>
           <div id="acctList"></div>
         </div>
-        <div class="card">
+        <div class="card collapsible">
           <h3>🎯 预算计划 <button class="btn sm ghost" style="margin-left:auto" onclick="openBudgetModal()">设置预算</button></h3>
           <div id="budgetView"></div>
         </div>
-        <div class="card">
+        <div class="card collapsible">
           <h3>📈 每日支出走势（本月）</h3>
           <div class="day-trend" id="dayTrend"></div>
           <div style="display:flex;justify-content:space-between;font-size:10.5px;color:var(--sub);margin-top:4px" id="dayTrendAxis"></div>
         </div>
-        <div class="card">
+        <div class="card collapsible">
           <h3>✨ AI 账目汇总 <span style="font-size:11px;color:var(--sub);font-weight:400">本地智能引擎</span></h3>
           <div id="aiSummaryPreview" style="font-size:13px;color:var(--sub);margin-bottom:10px">基于本月收支、预算执行与电商经营生成分析和建议</div>
           <button class="btn block" onclick="openAiSummary()">生成 AI 汇总</button>
@@ -731,24 +745,24 @@ label.fld{margin:6px 0 2px}
           <div class="focus-pet" id="focusPet" onclick="petSpeak()">🐱</div>
         </div>
         <div class="hatch-mini" id="hatchMini" onclick="switchTodo('dex')"></div>
-        <div class="card">
+        <div class="card collapsible">
           <h3>📈 今日 & 近 7 天</h3>
           <div class="focus-stat" id="focusTodayStat"></div>
           <div class="divider"></div>
           <div class="wk-chart" id="focusWeekChart"></div>
         </div>
-        <div class="card">
+        <div class="card collapsible">
           <h3>🕘 今日专注记录</h3>
           <div id="focusSessions"></div>
         </div>
-        <div class="card">
+        <div class="card collapsible">
           <h3>📊 各项目专注统计</h3>
           <div id="projStat"></div>
         </div>
       </div>
 
       <div id="todoDexPane" style="display:none">
-        <div class="card">
+        <div class="card collapsible">
           <h3>🥚 时空蛋孵化</h3>
           <div class="dex-egg">
             <div class="egg">🥚</div>
@@ -763,7 +777,7 @@ label.fld{margin:6px 0 2px}
           </div>
           <button class="btn block" style="margin-top:12px" onclick="switchTodo('focus')">🍅 前往专注计时</button>
         </div>
-        <div class="card">
+        <div class="card collapsible">
           <h3>📖 我的图鉴 <span id="dexCount" style="font-size:12.5px;color:var(--sub);font-weight:400"></span></h3>
           <div class="dex-grid" id="dexGrid"></div>
         </div>
@@ -801,7 +815,7 @@ label.fld{margin:6px 0 2px}
         <input id="noteSearch" placeholder="🔍 搜索内容或标签…" oninput="renderNotes()">
       </div>
       <div id="noteListView"></div>
-      <div id="noteMapView" style="display:none"><div class="card"><div id="noteMindmap"></div></div></div>
+      <div id="noteMapView" style="display:none"><div class="card collapsible"><div id="noteMindmap"></div></div></div>
     </section>
 
     <!-- ============ 我的 ============ -->
@@ -810,7 +824,7 @@ label.fld{margin:6px 0 2px}
         <div><h1>⚙️ 我的</h1><div class="sub">外观 · 数据 · 设置</div></div>
         <span class="ver-badge" id="meVer"></span>
       </div>
-      <div class="card">
+      <div class="card collapsible">
         <h3>🎨 外观个性化</h3>
         <label class="fld">主题色</label>
         <div class="swatches" id="themeSwatches"></div>
@@ -822,7 +836,7 @@ label.fld{margin:6px 0 2px}
         <div class="me-row" onclick="openBgPicker('todo')"><span class="l">✅ 待办页背景</span><span class="r" id="bgNameTodo">›</span></div>
         <div class="me-row" onclick="openBgPicker('notes')"><span class="l">💡 笔记页背景</span><span class="r" id="bgNameNotes">›</span></div>
       </div>
-      <div class="card">
+      <div class="card collapsible">
         <h3>🔧 专注设置</h3>
         <div class="row">
           <div><label class="fld">专注时长（分钟）</label><input type="number" id="setWork" min="5" max="120"></div>
@@ -830,7 +844,7 @@ label.fld{margin:6px 0 2px}
         </div>
         <button class="btn sm ghost" style="margin-top:10px" onclick="saveFocusSettings()">保存设置</button>
       </div>
-      <div class="card">
+      <div class="card collapsible">
         <h3>💾 数据管理</h3>
         <div class="me-row" onclick="exportData()"><span class="l">📤 导出数据（JSON 备份）</span><span class="r">›</span></div>
         <div class="me-row" onclick="document.getElementById('importFile').click()"><span class="l">📥 导入数据</span><span class="r">›</span></div>
@@ -838,7 +852,7 @@ label.fld{margin:6px 0 2px}
         <div class="me-row" onclick="toggleTodoRemind()"><span class="l">🔔 待办到期提醒音</span><span class="r" id="todoRemindState"></span></div>
         <div class="me-row" onclick="clearAllData()"><span class="l" style="color:var(--red)">🗑 清空全部数据</span><span class="r">›</span></div>
       </div>
-      <div class="card">
+      <div class="card collapsible">
         <h3>ℹ️ 关于</h3>
         <div style="font-size:13.5px;color:var(--sub);margin-bottom:8px">
           小管家 · 记账 × 待办专注 × 随手记 三合一工作台<br>
@@ -875,9 +889,17 @@ label.fld{margin:6px 0 2px}
 <div id="toastEl"></div>
 <script>
 /* ============ 小管家 · 数据层 ============ */
-const VERSION = 'v1.8.1';
+const VERSION = 'v1.8.2';
 
 const CHANGELOG = [
+  { ver: 'v1.8.2', date: '2026-08-21', items: [
+    '电商昨日/前日数据修复：getEcomRange 添加 yesterday/dayBefore 分支，正确显示对应日期数据',
+    '简化昨日/前日标签：只显示文字，不带图标和日期',
+    '删除重复的「每日毛利走势」卡片',
+    '所有卡片添加折叠/展开功能（点击标题栏）',
+    'iPhone 音频按钮触摸优化：增大触摸区域，添加 iOS 触摸反馈',
+    '数据清理：自动移除无效的商品明细记录',
+  ]},
   { ver: 'v1.8.1', date: '2026-08-21', items: [
     '电商范围新增「昨日/前日」快捷按钮，一键查看前 1-2 天数据',
     '单品销售统计：点击「查看」按钮显示该商品的全部销售历史（日期+店铺+数量+成本）',
@@ -1842,6 +1864,14 @@ function getEcomRange() {
   if (ecomRangeMode === '7d') {
     return { start: fmtDate(new Date(Date.now() - 6 * 86400000)), end: today, label: '近 7 天' };
   }
+  if (ecomRangeMode === 'yesterday') {
+    const y = fmtDate(new Date(Date.now() - 86400000));
+    return { start: y, end: y, label: '昨日' };
+  }
+  if (ecomRangeMode === 'dayBefore') {
+    const d = fmtDate(new Date(Date.now() - 2 * 86400000));
+    return { start: d, end: d, label: '前日' };
+  }
   if (ecomRangeMode === 'custom' && ecomCustomStart && ecomCustomEnd) {
     return { start: ecomCustomStart, end: ecomCustomEnd, label: ecomCustomStart.slice(5) + ' ~ ' + ecomCustomEnd.slice(5) };
   }
@@ -1877,6 +1907,7 @@ function dayPure(d) { return d.revenue - (d.refundOnly || 0); }
 function fmtY(n) { return '¥' + money(n); }
 
 function renderEcom() {
+  if (typeof cleanupEcomItems === 'function') cleanupEcomItems();
   if (typeof renderPackBanner === 'function') renderPackBanner();
   if (typeof renderAnomalies === 'function') renderAnomalies();
   if (typeof renderMarginTrend === 'function') renderMarginTrend();
@@ -1889,8 +1920,8 @@ function renderEcom() {
   const dayBefore = fmtDate(new Date(Date.now() - 2 * 86400000));
   const chipDefs = [
     ['month', '📅 本月'], ['7d', '近 7 天'], ['today', '今日'],
-    ['yesterday', '🗓 昨日 ' + yesterday.slice(5)],
-    ['dayBefore', '🗓 前日 ' + dayBefore.slice(5)],
+    ['yesterday', '昨日'],
+    ['dayBefore', '前日'],
     ['custom', '自定义'],
   ];
   let rangeHtml = '<div class="chips" style="margin-bottom:10px">' + chipDefs.map(([k, v]) =>
@@ -2773,6 +2804,18 @@ function showItemDetail(name) {
     list.map(r => '<tr><td>' + r.date + '</td><td>' + esc(r.store) + '</td><td>' + r.qty + '</td><td>' + money(r.cost) + '</td></tr>').join('') +
     '</table>';
   openModal('📦 ' + name + ' 销售明细', html);
+}
+
+// 数据清理：移除无效的 ecomItems
+function cleanupEcomItems() {
+  const validKeys = new Set(DB.ecomDay.map(d => d.store + '|' + d.date));
+  const before = DB.ecomItems.length;
+  DB.ecomItems = DB.ecomItems.filter(i => validKeys.has(i.store + '|' + i.date));
+  const removed = before - DB.ecomItems.length;
+  if (removed > 0) {
+    saveDB();
+    console.log('清理了 ' + removed + ' 条无效的商品明细');
+  }
 }
 /* ============ 账户体系 / 预算 / AI 账目汇总 ============ */
 function acctBalance(a) {
@@ -4243,5 +4286,12 @@ function openChangelog() {
     try { toast('⚠️ 脚本错误：' + (e.message || '').slice(0, 60) + '（' + VERSION + '）'); } catch (err) {}
   });
 })();
+
+// 卡片折叠功能
+document.addEventListener('click', (e) => {
+  if (e.target.tagName === 'H3' && e.target.parentElement.classList.contains('collapsible')) {
+    e.target.parentElement.classList.toggle('collapsed');
+  }
+});
 </script>
 </body></html>
