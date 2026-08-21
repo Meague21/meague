@@ -875,9 +875,14 @@ label.fld{margin:6px 0 2px}
 <div id="toastEl"></div>
 <script>
 /* ============ 小管家 · 数据层 ============ */
-const VERSION = 'v1.8.0';
+const VERSION = 'v1.8.1';
 
 const CHANGELOG = [
+  { ver: 'v1.8.1', date: '2026-08-21', items: [
+    '电商范围新增「昨日/前日」快捷按钮，一键查看前 1-2 天数据',
+    '单品销售统计：点击「查看」按钮显示该商品的全部销售历史（日期+店铺+数量+成本）',
+    '专注白噪音修复：环境音/结束音按钮改为 button 元素，提升移动端点击响应',
+  ]},
   { ver: 'v1.8.0', date: '2026-08-21', items: [
     '记账范围新增「昨日/前日」快捷按钮，一键查看前 1-2 天数据',
     '商品成本库：大类可折叠（点击类目名切换 ▾/▸），商品按名称排序，新增搜索（支持首字/名称/类目匹配）',
@@ -3218,7 +3223,7 @@ function renderSoundRow() {
   const el = document.getElementById('soundRow');
   if (!el) return;
   el.innerHTML = '<span style="font-size:12px;opacity:.85;align-self:center">冥想环境音</span>' +
-    SOUNDS.map(([k, v]) => '<span class="chip' + (Sound.current === k ? ' on' : '') + '" onclick="toggleSound(\'' + k + '\')">' + v + '</span>').join('');
+    SOUNDS.map(([k, v]) => '<button class="chip' + (Sound.current === k ? ' on' : '') + '" onclick="toggleSound(\'' + k + '\')" style="border:none;cursor:pointer">' + v + '</button>').join('');
 }
 
 /* ---------- 结束提醒音（可选 + 自定义上传 + 震动） ---------- */
@@ -3261,9 +3266,9 @@ function renderEndSoundRow() {
   if (!el) return;
   const cur = DB.settings.endSound || 'melody';
   el.innerHTML = '<span style="font-size:12px;opacity:.85;align-self:center">结束提醒</span>' +
-    END_SOUNDS.map(([k, v]) => '<span class="chip' + (cur === k ? ' on' : '') + '" onclick="pickEndSound(\'' + k + '\')">' + v + '</span>').join('') +
-    (cur.indexOf('idb:') === 0 ? '<span class="chip on">🎧 自定义音乐</span>' : '') +
-    '<span class="chip" onclick="uploadEndSound()">📤 上传音乐</span>';
+    END_SOUNDS.map(([k, v]) => '<button class="chip' + (cur === k ? ' on' : '') + '" onclick="pickEndSound(\'' + k + '\')" style="border:none;cursor:pointer">' + v + '</button>').join('') +
+    (cur.indexOf('idb:') === 0 ? '<button class="chip on" style="border:none;cursor:pointer">🎧 自定义音乐</button>' : '') +
+    '<button class="chip" onclick="uploadEndSound()" style="border:none;cursor:pointer">📤 上传音乐</button>';
 }
 function pickEndSound(k) { DB.settings.endSound = k; saveDB(); renderEndSoundRow(); playEndSound(); vibrate(); }
 function uploadEndSound() {
