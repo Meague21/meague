@@ -535,7 +535,8 @@ label.fld{margin:6px 0 2px}
 .card.collapsible h3::after {
   content: '▾';
   float: right;
-  font-size: 14px;
+  font-size: 20px;
+  margin-left: 8px;
   transition: transform 0.2s;
 }
 .card.collapsible.collapsed h3::after { transform: rotate(-90deg); }
@@ -889,9 +890,15 @@ label.fld{margin:6px 0 2px}
 <div id="toastEl"></div>
 <script>
 /* ============ 小管家 · 数据层 ============ */
-const VERSION = 'v1.8.2';
+const VERSION = 'v1.8.3';
 
 const CHANGELOG = [
+  { ver: 'v1.8.3', date: '2026-08-21', items: [
+    '修复点击昨日/前日时的脚本错误（null reference）',
+    '卡片折叠展开功能修复：使用 closest 查找，更可靠',
+    '折叠三角形图标放大（14px → 20px），更易点击',
+    'iPhone 音频支持增强：添加空 buffer 唤醒机制',
+  ]},
   { ver: 'v1.8.2', date: '2026-08-21', items: [
     '电商昨日/前日数据修复：getEcomRange 添加 yesterday/dayBefore 分支，正确显示对应日期数据',
     '简化昨日/前日标签：只显示文字，不带图标和日期',
@@ -1934,7 +1941,8 @@ function renderEcom() {
   }
   document.getElementById('ecomRangeBar').innerHTML = rangeHtml;
   document.getElementById('ecomRangeLabel').textContent = '统计范围：' + range.label;
-  document.querySelector('#ledgerEcom .month-nav').style.display = ecomRangeMode === 'month' ? '' : 'none';
+  const monthNav = document.querySelector('#ledgerEcom .month-nav');
+  if (monthNav) monthNav.style.display = ecomRangeMode === 'month' ? '' : 'none';
   const all = DB.ecomDay.filter(d => d.date >= range.start && d.date <= range.end);
   const rows = ecomStoreSel ? all.filter(d => d.store === ecomStoreSel) : all;
   const rev = rows.reduce((s, d) => s + d.revenue, 0);
@@ -3144,14 +3152,28 @@ function renderTodos() {
 const Sound = {
   ctx: null, nodes: null, current: '',
   async ensure() {
-    if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-    if (this.ctx.state === 'suspended') {
-      try { await this.ctx.resume(); } catch (e) {}
+    if (!this.ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) { toast('当前浏览器不支持音频'); return null; }
+      this.ctx = new AC();
     }
-    // iOS/Android 有时需要多次尝试
     if (this.ctx.state === 'suspended') {
-      await new Promise(r => setTimeout(r, 50));
       try { await this.ctx.resume(); } catch (e) {}
+      // iOS 需要多次尝试
+      if (this.ctx.state === 'suspended') {
+        await new Promise(r => setTimeout(r, 100));
+        try { await this.ctx.resume(); } catch (e) {}
+      }
+    }
+    if (this.ctx.state !== 'running') {
+      // 创建一个空的 buffer 来"唤醒"音频
+      try {
+        const buffer = this.ctx.createBuffer(1, 1, 22050);
+        const source = this.ctx.createBufferSource();
+        source.buffer = buffer;
+        source.connect(this.ctx.destination);
+        source.start(0);
+      } catch (e) {}
     }
     return this.ctx;
   },
@@ -4289,8 +4311,9 @@ function openChangelog() {
 
 // 卡片折叠功能
 document.addEventListener('click', (e) => {
-  if (e.target.tagName === 'H3' && e.target.parentElement.classList.contains('collapsible')) {
-    e.target.parentElement.classList.toggle('collapsed');
+  const h3 = e.target.closest('h3');
+  if (h3 && h3.parentElement && h3.parentElement.classList.contains('collapsible')) {
+    h3.parentElement.classList.toggle('collapsed');
   }
 });
 </script>
