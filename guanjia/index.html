@@ -548,6 +548,34 @@ label.fld{margin:6px 0 2px}
   min-height: 32px;
   min-width: 60px;
 }
+
+/* ---------- v1.8.5 ---------- */
+/* 弹窗：关闭按钮固定顶部、底部操作区固定 */
+#modalBox{padding:0;display:flex;flex-direction:column}
+#modalBox .m-head{position:sticky;top:0;background:var(--card);z-index:6;padding:16px 18px 10px;border-radius:24px 24px 0 0}
+#modalBody{padding:0 18px 22px}
+#modalBox .sticky-bottom{position:sticky;bottom:-22px;background:var(--card);padding:10px 0 12px;margin-top:8px;
+  border-top:1px solid var(--line);z-index:5;margin-left:-18px;margin-right:-18px;padding-left:18px;padding-right:18px}
+/* 图表横向溢出修复 */
+.wk-chart{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.wk-bar{flex:1 1 0;min-width:13px}
+.wk-bar .d{font-size:9px;white-space:nowrap}
+.day-trend{overflow-x:auto}
+/* 表格：全部左对齐 + 表头吸顶 */
+.tbl th,.tbl td{text-align:left}
+.tbl-wrap{max-height:400px;overflow:auto;-webkit-overflow-scrolling:touch}
+.tbl th{position:sticky;top:0;background:var(--card);z-index:2;box-shadow:0 1px 0 var(--line)}
+/* 数量加减步进器 */
+.qty-step{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg)}
+.qty-step button{width:40px;height:40px;border:none;background:var(--line);font-size:18px;font-weight:700;cursor:pointer;color:var(--ink)}
+.qty-step input{border:none;background:transparent;text-align:center;width:54px;padding:0;font-size:15px}
+/* 商品搜索选择列表 */
+.item-list{max-height:150px;overflow:auto;border:1px solid var(--line);border-radius:10px;margin-top:6px;background:var(--bg)}
+.item-list .it{padding:8px 10px;font-size:13px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);cursor:pointer}
+.item-list .it:last-child{border-bottom:none}
+.item-list .it.sel{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.item-list .it .c{color:var(--sub);font-size:12px}
+.item-list .it.new{color:var(--accent);font-weight:600}
 </style>
 </head>
 <body>
@@ -890,9 +918,17 @@ label.fld{margin:6px 0 2px}
 <div id="toastEl"></div>
 <script>
 /* ============ 小管家 · 数据层 ============ */
-const VERSION = 'v1.8.4';
+const VERSION = 'v1.8.5';
 
 const CHANGELOG = [
+  { ver: 'v1.8.5', date: '2026-08-22', items: [
+    '商品管理弹窗：添加商品区固定在底部、关闭按钮固定在顶部，不再需要上下拉到底',
+    '记销售商品选择升级为搜索式：输入即搜，支持在表单内一键创建新商品到商品库',
+    '数量输入增加 − / ＋ 步进按钮',
+    '修复毛利率走势撑破卡片导致页面左右错位的问题',
+    '店铺销售表格全部左对齐，表头下拉时吸顶固定',
+    '音频引擎第三版：改用 WAV + HTMLAudio 播放（兼容 iPhone/微信内置浏览器），首次触摸自动预热，微信桥解锁',
+  ]},
   { ver: 'v1.8.4', date: '2026-08-22', items: [
     '【根因修复】删除「每日毛利走势」卡片时遗漏了 JS 写入代码，导致 renderEcom 中途报错中断——这就是昨日/前日脚本错误、看板数据消失、添加商品报错的共同根源',
     '卡片折叠：点击标题内的按钮（如「管理」）不再误触发折叠',
@@ -2116,11 +2152,17 @@ function openDayForm(id) {
     <div style="font-size:11px;color:var(--sub);margin-top:3px" id="dfAutoHint"></div>
     <label class="fld">商品明细（自动汇总为当日商品成本）</label>
     <div id="dfItems"></div>
-    <div class="row" style="margin-top:8px">
-      <select id="dfItemPick" style="flex:2"><option value="">选商品…</option>${DB.products.map(p =>
-        '<option value="' + esc(p.name) + '">' + esc(p.name) + (p.sub ? '·' + esc(p.sub) : '') + '（¥' + money(p.cost) + '）</option>').join('')}</select>
-      <input type="number" id="dfItemQty" min="1" placeholder="数量" value="1" style="max-width:74px">
-      <button class="btn sm" onclick="dfAddItem()">添加</button>
+    <div style="margin-top:8px">
+      <input id="dfItemSearch" placeholder="🔍 搜索商品，或输入新商品名直接创建" autocomplete="off" oninput="dfRenderItemList()" onfocus="dfRenderItemList()">
+      <div id="dfItemList"></div>
+      <div class="row" style="margin-top:8px">
+        <div class="qty-step">
+          <button type="button" onclick="dfQtyAdj(-1)">−</button>
+          <input type="number" id="dfItemQty" min="1" value="1">
+          <button type="button" onclick="dfQtyAdj(1)">＋</button>
+        </div>
+        <button class="btn sm" style="flex:1" onclick="dfAddItem()">＋ 添加明细</button>
+      </div>
     </div>
     <div style="background:var(--accent-soft);border-radius:12px;padding:10px 14px;margin-top:12px">
       <table class="kv-tbl" id="dfPreview"></table>
@@ -2133,8 +2175,10 @@ function openDayForm(id) {
     </div></div>
   `);
   window._dfStore = rec ? rec.store : (stores[0] || '');
+  window._dfPickName = '';
+  window._dfList = [];
   dfDupShown = false;
-  dfRenderItems(); dfCalc();
+  dfRenderItems(); dfCalc(); dfRenderItemList();
 }
 function dfShowErr(msg) {
   const box = document.getElementById('modalBody');
@@ -2190,16 +2234,70 @@ function dfRenderItems() {
         '<span style="display:flex;gap:8px;align-items:center"><b>¥' + money(i.qty * i.cost) + '</b>' +
         '<button class="todo-del" onclick="dayFormItems.splice(' + ix + ',1);dfRenderItems();dfCalc()">✕</button></span></div>').join('');
 }
+function dfRenderItemList() {
+  const el = document.getElementById('dfItemList');
+  if (!el) return;
+  const q = (document.getElementById('dfItemSearch').value || '').trim();
+  const ql = q.toLowerCase();
+  const list = DB.products.filter(p => !q || ((p.name || '') + (p.sub || '') + (p.cat || '')).toLowerCase().indexOf(ql) >= 0).slice(0, 30);
+  window._dfList = list;
+  let html = list.map((p, i) =>
+    '<div class="it' + (window._dfPickName === p.name ? ' sel' : '') + '" onclick="dfPickIdx(' + i + ')">' +
+    '<span>' + esc(p.name) + (p.sub ? ' · ' + esc(p.sub) : '') + '</span><span class="c">成本 ¥' + money(p.cost) + '</span></div>').join('');
+  if (q && !DB.products.some(p => p.name === q)) {
+    html += '<div class="it new" onclick="dfNewProduct()">＋ 创建新商品「' + esc(q) + '」到商品库</div>';
+  }
+  el.innerHTML = html ? '<div class="item-list">' + html + '</div>' : '';
+}
+function dfPickIdx(i) {
+  const p = window._dfList[i];
+  if (!p) return;
+  window._dfPickName = p.name;
+  document.getElementById('dfItemSearch').value = p.name;
+  dfRenderItemList();
+}
+function dfNewProduct() {
+  const q = (document.getElementById('dfItemSearch').value || '').trim();
+  if (!q) return;
+  document.getElementById('dfItemList').innerHTML =
+    '<div class="item-list" style="padding:10px">' +
+    '<div style="font-size:12.5px;font-weight:700;margin-bottom:6px">创建新商品「' + esc(q) + '」</div>' +
+    '<div class="row"><select id="npCat">' + PRODUCT_CATS.map(c => '<option>' + c + '</option>').join('') + '</select>' +
+    '<input id="npSub" placeholder="子项/规格（选填）"></div>' +
+    '<div class="row" style="margin-top:6px"><input type="number" id="npCost" step="0.01" placeholder="成本单价">' +
+    '<button class="btn sm" onclick="saveNewProduct()">保存并选中</button>' +
+    '<button class="btn sm gray" onclick="dfRenderItemList()">取消</button></div></div>';
+}
+function saveNewProduct() {
+  const name = (document.getElementById('dfItemSearch').value || '').trim();
+  if (!name) return;
+  if (!DB.products.some(p => p.name === name)) {
+    DB.products.push({ id: uid(), name, sub: document.getElementById('npSub').value.trim(),
+      cat: document.getElementById('npCat').value, cost: parseFloat(document.getElementById('npCost').value) || 0 });
+    saveDB(); toast('已添加到商品库');
+  }
+  window._dfPickName = name;
+  dfRenderItemList();
+}
+function dfQtyAdj(d) {
+  const el = document.getElementById('dfItemQty');
+  if (!el) return;
+  el.value = Math.max(1, (parseInt(el.value) || 1) + d);
+}
 function dfAddItem() {
-  const name = document.getElementById('dfItemPick').value;
-  const qty = Math.max(1, parseInt(document.getElementById('dfItemQty').value) || 1);
-  if (!name) { toast('请先选择商品（商品库在下方「管理」里录入）'); return; }
+  const input = document.getElementById('dfItemSearch');
+  if (!input) return;
+  const name = input.value.trim();
+  if (!name) { toast('请先搜索或输入商品'); return; }
   const p = DB.products.find(x => x.name === name);
+  if (!p) { toast('商品「' + name + '」不在商品库，请在列表点「创建新商品」'); return; }
+  const qty = Math.max(1, parseInt(document.getElementById('dfItemQty').value) || 1);
   const hit = dayFormItems.find(i => i.name === name);
   if (hit) hit.qty += qty;
-  else dayFormItems.push({ name, qty, cost: p ? p.cost : 0 });
+  else dayFormItems.push({ name, qty, cost: p.cost });
   document.getElementById('dfItemQty').value = 1;
-  dfRenderItems(); dfCalc();
+  input.value = ''; window._dfPickName = '';
+  dfRenderItems(); dfCalc(); dfRenderItemList();
 }
 function saveDay(id) {
   const errEl = document.getElementById('dfErr');
@@ -2386,15 +2484,17 @@ function openProductLib() {
     <div style="font-size:12px;color:var(--sub);margin-bottom:8px">按大类管理商品与成本单价，记销售明细时勾选自动带价</div>
     <div id="plList"></div>
     <div class="divider"></div>
-    <label class="fld">添加商品</label>
-    <div class="row">
-      <select id="plCat">${PRODUCT_CATS.map(c => '<option>' + c + '</option>').join('')}</select>
-      <input id="plName" placeholder="商品名称" style="flex:2">
-    </div>
-    <div class="row" style="margin-top:8px">
-      <input id="plSub" placeholder="子项/规格（选填）">
-      <input type="number" id="plCost" step="0.01" placeholder="成本单价">
-      <button class="btn sm" onclick="addProduct()">添加</button>
+    <div class="sticky-bottom">
+      <label class="fld" style="margin-top:0">添加商品</label>
+      <div class="row">
+        <select id="plCat">${PRODUCT_CATS.map(c => '<option>' + c + '</option>').join('')}</select>
+        <input id="plName" placeholder="商品名称" style="flex:2">
+      </div>
+      <div class="row" style="margin-top:8px">
+        <input id="plSub" placeholder="子项/规格（选填）">
+        <input type="number" id="plCost" step="0.01" placeholder="成本单价">
+        <button class="btn sm" onclick="addProduct()">添加</button>
+      </div>
     </div>
   `);
   renderProductLibList();
@@ -3145,144 +3245,171 @@ function renderTodos() {
       }).join('');
 }
 
-/* ---------- 环境音引擎（Web Audio 离线合成） ---------- */
-const Sound = {
-  ctx: null, nodes: null, current: '',
-  unlocked: false,
-  // iOS 要求：创建/恢复/解锁必须在用户手势内【同步】完成，不能 await
-  ensureSync() {
-    const AC = window.AudioContext || window.webkitAudioContext;
-    if (!AC) return null;
-    if (!this.ctx) this.ctx = new AC();
-    if (this.ctx.state === 'suspended') { try { this.ctx.resume(); } catch (e) {} }
-    if (!this.unlocked) {
-      try {
-        const b = this.ctx.createBuffer(1, 1, 22050);
-        const s = this.ctx.createBufferSource();
-        s.buffer = b; s.connect(this.ctx.destination); s.start(0);
-        this.unlocked = true;
-      } catch (e) {}
+/* ---------- 环境音引擎 v3：WAV + HTMLAudio（兼容 iOS/微信） ---------- */
+const SOUNDS = [['white', '⚪ 白噪音'], ['rain', '🌧 雨声'], ['wave', '🌊 海浪'], ['fire', '🔥 篝火'], ['forest', '🐦 森林鸟鸣'], ['wind', '🍃 风声']];
+
+function audioBufferToWav(buffer) {
+  const numCh = buffer.numberOfChannels, sr = buffer.sampleRate;
+  const len = buffer.length * numCh * 2 + 44;
+  const ab = new ArrayBuffer(len), view = new DataView(ab);
+  const ws = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+  ws(0, 'RIFF'); view.setUint32(4, len - 8, true); ws(8, 'WAVE'); ws(12, 'fmt ');
+  view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, numCh, true);
+  view.setUint32(24, sr, true); view.setUint32(28, sr * numCh * 2, true);
+  view.setUint16(32, numCh * 2, true); view.setUint16(34, 16, true);
+  ws(36, 'data'); view.setUint32(40, len - 44, true);
+  let off = 44;
+  const chans = [];
+  for (let c = 0; c < numCh; c++) chans.push(buffer.getChannelData(c));
+  for (let i = 0; i < buffer.length; i++) {
+    for (let c = 0; c < numCh; c++) {
+      const v = Math.max(-1, Math.min(1, chans[c][i]));
+      view.setInt16(off, v < 0 ? v * 0x8000 : v * 0x7FFF, true);
+      off += 2;
     }
-    return this.ctx;
-  },
-  noiseBuffer() {
-    const ctx = this.ctx, b = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
-    const d = b.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-    return b;
-  },
-  play(type) {
-    this.stop();
-    const ctx = this.ensureSync();
-    if (!ctx) { toast('当前浏览器不支持音频播放'); return false; }
-    const src = ctx.createBufferSource();
-    src.buffer = this.noiseBuffer(); src.loop = true;
-    const gain = ctx.createGain();
-    let extra = [];
-    if (type === 'white') { gain.gain.value = 0.25; src.connect(gain); }
+  }
+  return ab;
+}
+function offCtx(secs) {
+  const sr = 22050, OC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+  return { oc: new OC(1, Math.floor(sr * secs), sr), sr };
+}
+function wavNote(oc, f, at, dur, vol) {
+  const o = oc.createOscillator(), g = oc.createGain();
+  o.type = 'triangle'; o.frequency.value = f;
+  g.gain.setValueAtTime(0.0001, at);
+  g.gain.exponentialRampToValueAtTime(vol, at + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, at + dur);
+  o.connect(g); g.connect(oc.destination);
+  o.start(at); o.stop(at + dur + 0.05);
+}
+const WavSound = {
+  cache: {}, audio: null, current: '', melodyUrl: '', chimeUrl: '',
+  async buildUrl(type) {
+    if (this.cache[type]) return this.cache[type];
+    const { oc } = offCtx(2.5);
+    const len = Math.floor(22050 * 2.5);
+    const buf = oc.createBuffer(1, len, 22050);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    const noise = oc.createBufferSource(); noise.buffer = buf; noise.loop = true;
+    const gain = oc.createGain();
+    let head = noise;
+    if (type === 'white') { gain.gain.value = 0.5; }
     else if (type === 'rain') {
-      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
-      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 250;
-      gain.gain.value = 0.42;
-      src.connect(lp); lp.connect(hp); hp.connect(gain);
+      const lp = oc.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
+      const hp = oc.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 250;
+      gain.gain.value = 0.85;
+      noise.connect(lp); lp.connect(hp); head = hp;
     } else if (type === 'wave') {
-      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 480;
-      gain.gain.value = 0.32;
-      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.13;
-      const lfoG = ctx.createGain(); lfoG.gain.value = 0.13;
-      lfo.connect(lfoG); lfoG.connect(gain.gain); lfo.start();
-      src.connect(lp); lp.connect(gain); extra.push(lfo);
-    } else if (type === 'forest') {
-      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1400;
-      gain.gain.value = 0.2;
-      src.connect(lp); lp.connect(gain);
-      // 随机鸟鸣
-      const chirpTimer = setInterval(() => {
-        if (!this.nodes) { clearInterval(chirpTimer); return; }
-        const o = ctx.createOscillator(), g2 = ctx.createGain();
-        o.type = 'sine';
-        const f0 = 2200 + Math.random() * 1600;
-        o.frequency.setValueAtTime(f0, ctx.currentTime);
-        o.frequency.exponentialRampToValueAtTime(f0 * (1.2 + Math.random() * 0.4), ctx.currentTime + 0.12);
-        g2.gain.setValueAtTime(0.001, ctx.currentTime);
-        g2.gain.exponentialRampToValueAtTime(0.05 + Math.random() * 0.04, ctx.currentTime + 0.03);
-        g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.16);
-        o.connect(g2); g2.connect(ctx.destination);
-        o.start(); o.stop(ctx.currentTime + 0.18);
-      }, 1400 + Math.random() * 1200);
-      this._chirp = chirpTimer;
-    } else if (type === 'wind') {
-      const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 350; bp.Q.value = 0.6;
-      gain.gain.value = 0.38;
-      const lfo = ctx.createOscillator(); lfo.frequency.value = 0.18;
-      const lfoG = ctx.createGain(); lfoG.gain.value = 180;
-      lfo.connect(lfoG); lfoG.connect(bp.frequency); lfo.start();
-      src.connect(bp); bp.connect(gain); extra.push(lfo);
+      const lp = oc.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 500;
+      gain.gain.value = 0.5;
+      const lfo = oc.createOscillator(); lfo.frequency.value = 0.13;
+      const lg = oc.createGain(); lg.gain.value = 0.3;
+      lfo.connect(lg); lg.connect(gain.gain); lfo.start();
+      noise.connect(lp); head = lp;
     } else if (type === 'fire') {
-      const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420;
-      gain.gain.value = 0.42;
-      const lfo = ctx.createOscillator(); lfo.frequency.value = 7;
-      const lfoG = ctx.createGain(); lfoG.gain.value = 0.06;
-      lfo.connect(lfoG); lfoG.connect(gain.gain); lfo.start();
-      src.connect(lp); lp.connect(gain); extra.push(lfo);
+      const lp = oc.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420;
+      gain.gain.value = 0.85;
+      noise.connect(lp); head = lp;
+    } else if (type === 'forest') {
+      const lp = oc.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1400;
+      gain.gain.value = 0.4;
+      noise.connect(lp); head = lp;
+      [[0.3, 2400], [0.9, 2900], [1.5, 2100], [2.1, 2600]].forEach(([t, f0]) => {
+        const o = oc.createOscillator(), g2 = oc.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(f0, t);
+        o.frequency.exponentialRampToValueAtTime(f0 * 1.3, t + 0.12);
+        g2.gain.setValueAtTime(0.0001, t);
+        g2.gain.exponentialRampToValueAtTime(0.3, t + 0.03);
+        g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+        o.connect(g2); g2.connect(oc.destination);
+        o.start(t); o.stop(t + 0.2);
+      });
+    } else if (type === 'wind') {
+      const bp = oc.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 350; bp.Q.value = 0.6;
+      gain.gain.value = 0.75;
+      noise.connect(bp); head = bp;
     }
-    gain.connect(ctx.destination);
-    // 淡入
-    const target = gain.gain.value;
-    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(target, ctx.currentTime + 1.2);
-    src.start();
-    this.nodes = { src, gain, extra };
-    this.current = type;
-    return true;
+    head.connect(gain); gain.connect(oc.destination); noise.start();
+    const rendered = await oc.startRendering();
+    const url = URL.createObjectURL(new Blob([audioBufferToWav(rendered)], { type: 'audio/wav' }));
+    this.cache[type] = url;
+    return url;
   },
-  fadeOut(sec) {
-    if (!this.nodes) return;
-    try {
-      const g = this.nodes.gain, ctx = this.ctx;
-      g.gain.cancelScheduledValues(ctx.currentTime);
-      g.gain.setValueAtTime(g.gain.value, ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (sec || 1.5));
-    } catch (e) {}
-    setTimeout(() => this.stop(), (sec || 1.5) * 1000 + 100);
+  async play(type) {
+    const url = await this.buildUrl(type);
+    this.stop();
+    this.audio = new Audio(url);
+    this.audio.loop = true;
+    this.audio.volume = 1;
+    await this.audio.play(); // 若被系统拦截会抛 NotAllowedError
+    this.current = type;
   },
   stop() {
-    if (!this.nodes) return;
-    if (this._chirp) { clearInterval(this._chirp); this._chirp = null; }
-    try { this.nodes.src.stop(); } catch (e) {}
-    this.nodes.extra.forEach(n => { try { n.stop(); } catch (e) {} });
-    try { this.nodes.gain.disconnect(); } catch (e) {}
-    this.nodes = null; this.current = '';
+    if (this.audio) { try { this.audio.pause(); } catch (e) {} this.audio = null; }
+    this.current = '';
+  },
+  fadeTo(v) { if (this.audio) { try { this.audio.volume = v; } catch (e) {} } },
+  fadeStop(sec) {
+    if (!this.audio) return;
+    const a = this.audio, v0 = a.volume || 1;
+    let t = 0;
+    const iv = setInterval(() => {
+      t += 0.1;
+      try { a.volume = Math.max(0, v0 * (1 - t / sec)); } catch (e) {}
+      if (t >= sec) {
+        clearInterval(iv);
+        try { a.pause(); } catch (e) {}
+        if (this.audio === a) { this.audio = null; this.current = ''; renderSoundRow(); }
+      }
+    }, 100);
+  },
+  async buildMelody(kind) {
+    if (kind === 'chime' && this.chimeUrl) return this.chimeUrl;
+    if (kind === 'melody' && this.melodyUrl) return this.melodyUrl;
+    const { oc } = offCtx(kind === 'chime' ? 1.2 : 4);
+    if (kind === 'chime') {
+      [1046.5, 1318.5, 1568, 2093, 1568, 2093].forEach((f, i) => wavNote(oc, f, i * 0.15, 0.6, 0.5));
+    } else {
+      const m = [523.25, 587.33, 659.25, 783.99, 880, 783.99, 880, 1046.5];
+      m.forEach((f, i) => wavNote(oc, f, i * 0.18, 0.5, 0.5));
+      m.forEach((f, i) => wavNote(oc, f, 1.6 + i * 0.18, 0.5, 0.5));
+      wavNote(oc, 1046.5, 3.2, 0.8, 0.5);
+    }
+    const rendered = await oc.startRendering();
+    const url = URL.createObjectURL(new Blob([audioBufferToWav(rendered)], { type: 'audio/wav' }));
+    if (kind === 'chime') this.chimeUrl = url; else this.melodyUrl = url;
+    return url;
+  },
+  prewarm() {
+    // 无需手势，提前渲染 WAV（第一次触摸时调用）
+    SOUNDS.slice(0, 3).forEach(([k]) => this.buildUrl(k).catch(() => {}));
+    this.buildMelody('melody').catch(() => {});
+    this.buildMelody('chime').catch(() => {});
   },
 };
-const SOUNDS = [['white', '⚪ 白噪音'], ['rain', '🌧 雨声'], ['wave', '🌊 海浪'], ['fire', '🔥 篝火'], ['forest', '🐦 森林鸟鸣'], ['wind', '🍃 风声']];
 function toggleSound(type) {
-  if (Sound.current === type) {
-    Sound.stop(); DB.settings.sound = '';
+  if (WavSound.current === type) {
+    WavSound.stop(); DB.settings.sound = '';
     saveDB(); renderSoundRow();
     return;
   }
-  // 全部同步执行（iOS 用户手势内才能启动音频）
-  const ok = Sound.play(type);
-  if (!ok) return;
-  DB.settings.sound = type;
-  saveDB(); renderSoundRow();
-  // 延迟诊断：告诉用户音频状态，便于排查静音键问题
-  setTimeout(() => {
-    if (!Sound.ctx) return;
-    if (Sound.ctx.state !== 'running') {
-      try { Sound.ctx.resume(); } catch (e) {}
-      toast('⚠️ 音频状态 ' + Sound.ctx.state + '：请检查 iPhone 左侧静音键是否开启、音量是否调高');
-    } else {
-      toast('♪ 播放中。若仍无声：请检查 iPhone 左侧静音键（橙色=静音）');
-    }
-  }, 800);
+  WavSound.play(type).then(() => {
+    DB.settings.sound = type;
+    saveDB(); renderSoundRow();
+    toast('♪ 播放中。若无声：请检查 iPhone 左侧静音键和音量');
+  }).catch(e => {
+    renderSoundRow();
+    toast('⚠️ 播放被拦截：' + (e && e.name === 'NotAllowedError' ? '请再点一次按钮' : e.message));
+  });
 }
 function renderSoundRow() {
   const el = document.getElementById('soundRow');
   if (!el) return;
   el.innerHTML = '<span style="font-size:12px;opacity:.85;align-self:center">冥想环境音</span>' +
-    SOUNDS.map(([k, v]) => '<button class="chip' + (Sound.current === k ? ' on' : '') + '" onclick="toggleSound(\'' + k + '\')" style="border:none;cursor:pointer">' + v + '</button>').join('');
+    SOUNDS.map(([k, v]) => '<button class="chip' + (WavSound.current === k ? ' on' : '') + '" onclick="toggleSound(\'' + k + '\')" style="border:none;cursor:pointer">' + v + '</button>').join('');
 }
 
 /* ---------- 结束提醒音（可选 + 自定义上传 + 震动） ---------- */
@@ -3303,21 +3430,11 @@ function playEndSound() {
     IDB.get(sel.slice(4)).then(url => { if (url) { const a = new Audio(url); a.play().catch(() => {}); } });
     return;
   }
-  try {
-    if (sel === 'beep') { beep(2); return; }
-    const ctx = Sound.ensureSync() || new (window.AudioContext || window.webkitAudioContext)();
-    if (sel === 'chime') {
-      const seq = [1046.5, 1318.5, 1568, 2093, 1568, 2093];
-      seq.forEach((f, i) => synthNote(ctx, f, i * 0.15, 0.8, 'sine', 0.5));
-    } else {
-      // 悠扬明亮的旋律，重复两遍确保听到
-      const melody = [523.25, 587.33, 659.25, 783.99, 880, 783.99, 880, 1046.5];
-      for (let r = 0; r < 2; r++) {
-        melody.forEach((f, i) => synthNote(ctx, f, r * 1.6 + i * 0.18, 0.5, 'triangle', 0.45));
-      }
-      synthNote(ctx, 1046.5, 3.3, 1.0, 'triangle', 0.5);
-    }
-  } catch (e) {}
+  if (sel === 'beep') { beep(3); return; }
+  WavSound.buildMelody(sel === 'chime' ? 'chime' : 'melody').then(url => {
+    const a = new Audio(url);
+    a.play().catch(() => beep(3));
+  }).catch(() => beep(3));
 }
 function vibrate(pattern) { try { if (navigator.vibrate) navigator.vibrate(pattern || [300, 150, 300, 150, 600]); } catch (e) {} }
 function renderEndSoundRow() {
@@ -3395,12 +3512,13 @@ function focusToggle() {
   if (focus.remainSec <= 0) { focus.totalSec = focus.remainSec = (focus.selectedMin || DB.settings.focusWork) * 60; }
   focus.running = true;
   if (!focus.startedAt) focus.startedAt = Date.now();
-  // 手势内同步预热音频上下文（iOS 出声关键）
-  Sound.ensureSync();
-  if (DB.settings.sound && !Sound.current) Sound.play(DB.settings.sound);
+  // 手势内启动环境音（iOS 出声关键：必须在点击手势内 play）
+  if (DB.settings.sound && WavSound.current !== DB.settings.sound) {
+    WavSound.play(DB.settings.sound).catch(() => {});
+  }
   focus.timer = setInterval(() => {
     focus.remainSec--;
-    if (focus.remainSec === 2 && focus.mode === 'work' && Sound.current) Sound.fadeOut(2);
+    if (focus.remainSec === 2 && focus.mode === 'work' && WavSound.current) WavSound.fadeTo(0.25);
     if (focus.remainSec <= 0) {
       clearInterval(focus.timer); focus.running = false;
       if (focus.mode === 'work') focusComplete(); else focusBreakDone();
@@ -3434,7 +3552,7 @@ function focusFinish() {
   if (focus.mode === 'break') { clearInterval(focus.timer); focus.running = false; focusResetToWork(); renderFocus(); return; }
   if (focus.remainSec === focus.totalSec) { toast('还没有开始专注哦'); return; }
   clearInterval(focus.timer); focus.running = false;
-  if (Sound.current) Sound.fadeOut(1.2);
+  if (WavSound.current) WavSound.fadeStop(1.2);
   const elapsed = Math.round((focus.totalSec - focus.remainSec) / 60);
   if (elapsed >= 1) { saveFocusSession(elapsed); toast('已记录 ' + elapsed + ' 分钟专注'); }
   else toast('专注不足 1 分钟，未记录');
@@ -4298,6 +4416,15 @@ function openChangelog() {
   renderHome();
   checkTodoReminders();
   setInterval(checkTodoReminders, 30000);
+  // 音频预热：首次触摸时后台渲染 WAV（无需手势）
+  document.addEventListener('touchstart', function prewarmAudio() {
+    document.removeEventListener('touchstart', prewarmAudio);
+    if (typeof WavSound !== 'undefined') WavSound.prewarm();
+  }, { once: true, passive: true });
+  // 微信内置浏览器音频解锁
+  document.addEventListener('WeixinJSBridgeReady', () => {
+    try { WavSound.prewarm(); } catch (e) {}
+  }, false);
   window.addEventListener('error', e => {
     try { toast('⚠️ 脚本错误：' + (e.message || '').slice(0, 60) + '（' + VERSION + '）'); } catch (err) {}
   });
