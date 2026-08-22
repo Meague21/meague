@@ -797,8 +797,8 @@ label.fld{margin:6px 0 2px}
           </div>
           <div class="focus-durs" id="focusDurs"></div>
           <div class="focus-ctrl">
-            <button class="btn main" id="focusStartBtn" onclick="focusToggle()">▶ 开始</button>
-            <button class="btn" onclick="focusFinish()">⏹ 结束</button>
+            <button class="btn" onclick="focusFinish()" title="结束">⏹</button>
+            <button class="btn main" id="focusStartBtn" onclick="focusToggle()" title="开始">▶</button>
           </div>
           <div class="sound-row" id="soundRow"></div>
           <div class="sound-row" id="endSoundRow"></div>
@@ -3589,7 +3589,7 @@ function drawFocus() {
     focus.mode === 'break' ? '☕ 休息中' :
     focus.running ? '专注中，加油！' :
     focus.remainSec < focus.totalSec ? '已暂停' : '点击开始专注';
-  document.getElementById('focusStartBtn').innerHTML = focus.running ? '⏸ 暂停' : (focus.remainSec < focus.totalSec && focus.remainSec > 0 ? '▶ 继续' : '▶ 开始');
+  document.getElementById('focusStartBtn').innerHTML = focus.running ? '⏸' : '▶';
   if (focus.running) document.title = mm + ':' + ss + ' · 专注中 - 小管家';
 }
 let wakeLockObj = null;
