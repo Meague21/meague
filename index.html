@@ -816,11 +816,21 @@ main{padding:14px 14px 92px}
  * 烧脑数学 · 教材内容数据（北师大版 2024 新课标版 三年级上册）
  * ===================================================================== */
 window.MD = {
-  version: "4.1.1",
+  version: "4.2.0",
   textbook: { grade: "三年级", term: "上册", edition: "北师大版（新课标）" },
 
   /* ---------------- 版本日志（应用内展示） ---------------- */
   changelog: [
+    { ver: "v4.2.0", date: "2026-08-22", items: [
+      "紧急修复：有思维/奥数习题无法提交的 bug（按钮 ID 冲突，事件绑错位置）",
+      "口算速练自动提交：答对自动跳下一题，答错提示重做",
+      "闯关游戏题量递增：第1关10题→第2关15题→第3关20题…封顶50题",
+      "真题挑战扩容：每年级 50 道（历年真题+动态模拟变式）",
+      "练一练瘦身：图解/课外延伸/学会讲题/生活数学合并为「应用拓展」；综合测试并入真题挑战",
+      "有思维三板块重排：①母题精讲·学方法 ②思维训练营·广练习 ③奥数专题·高难度，可折叠",
+      "母题精讲支持选题量：10/20/50 题，题库动态生成不重复",
+      "课本单元题库扩容：数字范围扩大 37 处，出题更多变"
+    ]},
     { ver: "v4.1.0", date: "2026-08-22", items: [
       "题库大扩容+强力去重:思维/奥数出题会话内不重复,且避开近期做过的题,不再连出相同题",
       "思维题数字范围扩大 194 处,出题空间翻倍;逻辑推理重写,从 6 道扩到上百道",
@@ -7138,7 +7148,7 @@ window.QE = (function () {
   /* 口算速练 */
   /* ---------- 口算速练「三件套」：口算 / 竖式 / 脱式，偶尔出验算 ---------- */
   function _genKousuan() {
-    var kind = rnd(1, 4);
+    var kind = rnd(1, 6);
     if (kind === 1) { var a = rnd(2, 9), b = rnd(2, 9);
       return { type: "kousuan", q: "<span class='expr'>" + a + " × " + b + " = ?</span>", input: "num", ans: String(a * b), explain: "口诀：" + Math.min(a, b) + "×" + Math.max(a, b) + "=" + (a * b) + "。", kp: "表内乘法" };
     }
@@ -7160,14 +7170,14 @@ window.QE = (function () {
     return { type: "shushi", q: "用竖式计算：<br><span class='expr'>" + x + " − " + y + " = ?</span>", input: "num", ans: String(x - y), explain: "个位不够减向十位退一当十。" + x + "−" + y + "=" + (x - y) + "。", kp: "竖式减法" };
   }
   function _genTuoshi() {
-    var kind = rnd(1, 3);
-    if (kind === 1) { var a = rnd(2, 9), b = rnd(2, 9), c = rnd(2, 20);
+    var kind = rnd(1, 5);
+    if (kind === 1) { var a = rnd(2, 9), b = rnd(2, 9), c = rnd(2, 40);
       return { type: "tuoshi", q: "脱式计算：<br><span class='expr'>" + a + " × " + b + " + " + c + " = ?</span>", input: "num", ans: String(a * b + c), explain: "先算乘法：" + a + "×" + b + "=" + (a * b) + "，再+" + c + "=" + (a * b + c) + "。", kp: "先乘后加" };
     }
     if (kind === 2) { var a2 = rnd(2, 9), b2 = rnd(2, 9), c2 = rnd(2, a2 * b2 - 2);
       return { type: "tuoshi", q: "脱式计算：<br><span class='expr'>" + a2 + " × " + b2 + " − " + c2 + " = ?</span>", input: "num", ans: String(a2 * b2 - c2), explain: "先算乘法再减。" + (a2 * b2) + "−" + c2 + "=" + (a2 * b2 - c2) + "。", kp: "先乘后减" };
     }
-    var p = rnd(2, 8), q2 = rnd(2, 8), c3 = rnd(2, 6);
+    var p = rnd(2, 14), q2 = rnd(2, 14), c3 = rnd(2, 12);
     return { type: "tuoshi", q: "脱式计算：<br><span class='expr'>(" + p + " + " + q2 + ") × " + c3 + " = ?</span>", input: "num", ans: String((p + q2) * c3), explain: "先算括号：" + p + "+" + q2 + "=" + (p + q2) + "，再×" + c3 + "=" + ((p + q2) * c3) + "。", kp: "带括号" };
   }
   function _genYansuan() {
@@ -7183,7 +7193,7 @@ window.QE = (function () {
   function quickKousuan() {
     var r = Math.random();
     if (r < 0.08) return _genYansuan();   /* 偶尔验算 */
-    var kind = rnd(1, 3);
+    var kind = rnd(1, 5);
     if (kind === 1) return _genKousuan();
     if (kind === 2) return _genShushi();
     return _genTuoshi();
@@ -7212,15 +7222,15 @@ window.QE = (function () {
     }
     if (type === "lian") {
       var cap = digits === 2 ? 60 : (digits === 3 ? 300 : 1500);
-      var kind = rnd(1, 3), x, y, z;
+      var kind = rnd(1, 5), x, y, z;
       if (kind === 1) { x = rnd(2, cap); y = rnd(2, cap); z = rnd(2, cap); return mkq(x + " + " + y + " + " + z, x + y + z, "连加", "从左往右依次算。"); }
       if (kind === 2) { x = rnd(cap, cap * 2); y = rnd(2, Math.floor(x / 3)); z = rnd(2, Math.floor((x - y) / 2)); return mkq(x + " − " + y + " − " + z, x - y - z, "连减", "从左往右依次减。"); }
       x = rnd(2, cap); y = rnd(2, cap); z = rnd(2, x + y - 1); return mkq(x + " + " + y + " − " + z, x + y - z, "加减混合", "从左往右依次算。");
     }
     /* mix 混合运算（含运算顺序） */
-    var kk = rnd(1, 3);
+    var kk = rnd(1, 5);
     if (kk === 1) { var p = rnd(2, digits === 2 ? 9 : 12), qq = rnd(2, 9), c = rnd(2, 30); return mkq(p + " × " + qq + " + " + c, p * qq + c, "先乘后加", "先算乘法再算加法。"); }
-    if (kk === 2) { var p2 = rnd(2, 8), q3 = rnd(2, 8), c2 = rnd(2, 9); return mkq("(" + p2 + " + " + q3 + ") × " + c2, (p2 + q3) * c2, "带括号", "先算括号里的。"); }
+    if (kk === 2) { var p2 = rnd(2, 14), q3 = rnd(2, 14), c2 = rnd(2, 9); return mkq("(" + p2 + " + " + q3 + ") × " + c2, (p2 + q3) * c2, "带括号", "先算括号里的。"); }
     var p3 = rnd(2, digits === 2 ? 9 : 12), q4 = rnd(2, 9), c3 = rnd(2, p3 * q4 - 2); return mkq(p3 + " × " + q4 + " − " + c3, p3 * q4 - c3, "先乘后减", "先算乘法再算减法。");
   }
 
@@ -7230,12 +7240,12 @@ window.QE = (function () {
 
   /* ---- u1 混合运算 ---- */
   regVariant("u1", "kousuan", "先乘后加", function () {
-    var a = rnd(2, 9), b = rnd(2, 9), c = rnd(2, 20);
+    var a = rnd(2, 9), b = rnd(2, 9), c = rnd(2, 40);
     return { type: "kousuan", q: "<span class='expr'>" + a + " × " + b + " + " + c + " = ?</span>", input: "num", ans: String(a * b + c),
       explain: "先算乘法：" + a + "×" + b + "=" + (a * b) + "，再算 " + (a * b) + "+" + c + "=" + (a * b + c) + "。" };
   });
   regVariant("u1", "kousuan", "先乘后减", function () {
-    var b = rnd(2, 9), c = rnd(2, 9), extra = rnd(1, 20), A = b * c + extra;
+    var b = rnd(2, 9), c = rnd(2, 9), extra = rnd(1, 40), A = b * c + extra;
     return { type: "kousuan", q: "<span class='expr'>" + A + " − " + b + " × " + c + " = ?</span>", input: "num", ans: String(extra),
       explain: "先算乘法：" + b + "×" + c + "=" + (b * c) + "，再算 " + A + "−" + (b * c) + "=" + extra + "。" };
   });
@@ -7250,12 +7260,12 @@ window.QE = (function () {
       explain: "先算括号里：" + a + "+" + b + "=" + (a + b) + "，再算 " + (a + b) + "×" + c + "=" + ((a + b) * c) + "。" };
   });
   regVariant("u1", "tuoshi", "乘加脱式", function () {
-    var a = rnd(2, 9), b = rnd(2, 9), c = rnd(1, 20), val = a * b + c;
+    var a = rnd(2, 9), b = rnd(2, 9), c = rnd(1, 40), val = a * b + c;
     return { type: "tuoshi", q: "用脱式计算：<br><span class='expr'>" + a + " × " + b + " + " + c + "</span><br>最终得数是多少？", input: "num", ans: String(val),
       explain: "先算乘法：" + a + "×" + b + "=" + (a * b) + "；再算加法：" + (a * b) + "+" + c + "=" + val + "。" };
   });
   regVariant("u1", "tuoshi", "乘减脱式", function () {
-    var a = rnd(3, 9), b = rnd(2, 9), c = rnd(1, 15), val = a * b - c;
+    var a = rnd(3, 15), b = rnd(2, 9), c = rnd(1, 15), val = a * b - c;
     return { type: "tuoshi", q: "用脱式计算：<br><span class='expr'>" + a + " × " + b + " − " + c + "</span><br>最终得数是多少？", input: "num", ans: String(val),
       explain: "先算乘法：" + a + "×" + b + "=" + (a * b) + "；再算减法：" + (a * b) + "−" + c + "=" + val + "。" };
   });
@@ -7270,8 +7280,8 @@ window.QE = (function () {
       explain: "先算括号里：" + a + "+" + b + "=" + (a + b) + "；再算乘法：" + (a + b) + "×" + c + "=" + val + "。" };
   });
   regVariant("u1", "tuoshi", "带括号减法脱式", function () {
-    var a = rnd(30, 80), b = rnd(5, 20), c = rnd(2, 6), val = (a - b) / c;
-    if ((a - b) % c !== 0) { a = b + c * rnd(4, 12); val = (a - b) / c; }
+    var a = rnd(30, 80), b = rnd(5, 40), c = rnd(2, 12), val = (a - b) / c;
+    if ((a - b) % c !== 0) { a = b + c * rnd(4, 20); val = (a - b) / c; }
     return { type: "tuoshi", q: "用脱式计算：<br><span class='expr'>(" + a + " − " + b + ") ÷ " + c + "</span><br>最终得数是多少？", input: "num", ans: String(val),
       explain: "先算括号里：" + a + "−" + b + "=" + (a - b) + "；再算除法：" + (a - b) + "÷" + c + "=" + val + "。" };
   });
@@ -7373,7 +7383,7 @@ window.QE = (function () {
       return { type: "kousuan", q: "<span class='expr'>" + a + " + " + b + " = ?</span>", input: "num", ans: String(a + b),
         explain: (a / 100) + " 个百加 " + (b / 100) + " 个百 = " + ((a + b) / 100) + " 个百，就是 " + (a + b) + "。" };
     }
-    var a2 = rnd(3, 9) * 100, b2 = rnd(1, a2 / 100 - 1) * 100;
+    var a2 = rnd(3, 15) * 100, b2 = rnd(1, a2 / 100 - 1) * 100;
     return { type: "kousuan", q: "<span class='expr'>" + a2 + " − " + b2 + " = ?</span>", input: "num", ans: String(a2 - b2),
       explain: (a2 / 100) + " 个百减 " + (b2 / 100) + " 个百 = " + ((a2 - b2) / 100) + " 个百，就是 " + (a2 - b2) + "。" };
   });
@@ -7392,7 +7402,7 @@ window.QE = (function () {
   regVariant("u3", "yingyong", "里程表求当天", function () {
     var y0 = rnd(100, 300), day = [0, 0, 0];
     day[0] = y0 + rnd(60, 150); day[1] = day[0] + rnd(60, 150); day[2] = day[1] + rnd(60, 150);
-    var ask = rnd(1, 3);
+    var ask = rnd(1, 5);
     var ans = ask === 1 ? day[0] - y0 : (ask === 2 ? day[1] - day[0] : day[2] - day[1]);
     var names = ["星期一", "星期二", "星期三"];
     var subExpr = ask === 1 ? day[0] + " − " + y0 : day[ask - 1] + " − " + day[ask - 2];
@@ -7466,7 +7476,7 @@ window.QE = (function () {
       explain: "先算 0 前面的数相乘，再在末尾添上相应个数的 0：" + a + "×" + b + "=" + (a * b) + "。" };
   });
   regVariant("u6", "kousuan", "两位数乘一位数", function () {
-    var t = rnd(2, 4) * 10, o = rnd(1, 9), c = rnd(2, 5), v = (t + o) * c;
+    var t = rnd(2, 14) * 10, o = rnd(1, 9), c = rnd(2, 5), v = (t + o) * c;
     return { type: "kousuan", q: "<span class='expr'>" + (t + o) + " × " + c + " = ?</span>", input: "num", ans: String(v),
       explain: "拆分法：" + t + "×" + c + "=" + (t * c) + "，" + o + "×" + c + "=" + (o * c) + "，" + (t * c) + "+" + (o * c) + "=" + v + "。" };
   });
@@ -7477,19 +7487,19 @@ window.QE = (function () {
       explain: "先用表内除法算出商，再在末尾添 0：" + d + "÷" + e + "=" + (d / e) + "。" };
   });
   regVariant("u6", "kousuan", "两位数除一位数", function () {
-    var t = rnd(2, 8) * 10, o = pick([2, 4, 6, 8]), e = pick([2, 4]);
+    var t = rnd(2, 14) * 10, o = pick([2, 4, 6, 8]), e = pick([2, 4]);
     while ((t + o) % e !== 0) o = pick([2, 4, 6, 8]);
     var v = (t + o) / e;
     return { type: "kousuan", q: "<span class='expr'>" + (t + o) + " ÷ " + e + " = ?</span>", input: "num", ans: String(v),
       explain: "拆分法：" + t + "÷" + e + "=" + (t / e) + "，" + o + "÷" + e + "=" + (o / e) + "，" + (t / e) + "+" + (o / e) + "=" + v + "。" };
   });
   regVariant("u6", "tuoshi", "连乘", function () {
-    var a = rnd(2, 6), b = rnd(2, 6), c = rnd(2, 6);
+    var a = rnd(2, 12), b = rnd(2, 12), c = rnd(2, 12);
     return { type: "tuoshi", q: "连乘，从左往右算：<br><span class='expr'>" + a + " × " + b + " × " + c + " = ?</span>", input: "num", ans: String(a * b * c),
       explain: "先算 " + a + "×" + b + "=" + (a * b) + "，再算 " + (a * b) + "×" + c + "=" + (a * b * c) + "。" };
   });
   regVariant("u6", "tuoshi", "乘除混合", function () {
-    var p = rnd(2, 4), q = rnd(2, 4), m = p * q * rnd(2, 4);
+    var p = rnd(2, 14), q = rnd(2, 14), m = p * q * rnd(2, 14);
     return { type: "tuoshi", q: "乘除混合，从左往右算：<br><span class='expr'>" + m + " ÷ " + p + " × " + q + " = ?</span>", input: "num", ans: String(m / p * q),
       explain: "同级运算从左往右：先算 " + m + "÷" + p + "=" + (m / p) + "，再算 " + (m / p) + "×" + q + "=" + (m / p * q) + "。" };
   });
@@ -7547,7 +7557,7 @@ window.QE = (function () {
       explain: y + "." + j + " 元 = " + y + " 元 " + j + " 角，十分位上的 " + j + " 表示 " + j + " 角。" };
   });
   regVariant("u7", "tiankong", "米分米化小数", function () {
-    var m = rnd(1, 3), d = rnd(1, 9);
+    var m = rnd(1, 5), d = rnd(1, 9);
     return { type: "tiankong", q: "小明的身高是 " + m + " 米 " + d + " 分米，用小数表示是（____）米", input: "text", ans: m + "." + d,
       explain: "米作整数部分，分米作十分位：" + m + "." + d + " 米。", accept: [m + "." + d] };
   });
@@ -7560,7 +7570,7 @@ window.QE = (function () {
       accept: [String(r), r.toFixed(1)] };
   });
   regVariant("u7", "shushi", "小数减法", function () {
-    var a = Math.round((rnd(3, 9) + rnd(1, 9) / 10) * 10) / 10;
+    var a = Math.round((rnd(3, 15) + rnd(1, 9) / 10) * 10) / 10;
     var b = Math.round((rnd(1, 9) / 10) * 10) / 10;
     var r = Math.round((a - b) * 10) / 10;
     return { type: "shushi", q: "小数竖式计算（注意小数点对齐）：<div class='vcalc'>   " + a.toFixed(1) + "\n−  " + b.toFixed(1) + "\n──────</div>", input: "text", ans: String(r),
@@ -7590,7 +7600,7 @@ window.QE = (function () {
 
   /* ---- u8 调查与记录 ---- */
   regVariant("u8", "tiankong", "正字计数", function () {
-    var n = rnd(1, 4), k = rnd(1, 4);
+    var n = rnd(1, 6), k = rnd(1, 6);
     return { type: "tiankong", q: "用画“正”字的方法统计，画了 " + n + " 个完整的“正”字又多 " + k + " 笔，一共统计了（____）个。", input: "num", ans: String(n * 5 + k),
       explain: "一个“正”字 5 笔：" + n + "×5+" + k + "=" + (n * 5 + k) + "（个）。" };
   });
@@ -7599,7 +7609,7 @@ window.QE = (function () {
   regVariant("u8", "dubiao", "统计表求相差", function () { return duBiaoQ(3); });
   function duBiaoQ(kind) {
     var cats = shuffle(["苹果", "香蕉", "橘子", "葡萄"]).slice(0, 3 + rnd(0, 1));
-    var vals = cats.map(function () { return rnd(4, 15); });
+    var vals = cats.map(function () { return rnd(4, 24); });
     var total = vals.reduce(function (s, v) { return s + v; }, 0);
     var rows = "<tr><th>水果</th>" + cats.map(function (c) { return "<td>" + c + "</td>"; }).join("") + "</tr>" +
       "<tr><th>人数</th>" + vals.map(function (v) { return "<td>" + v + "</td>"; }).join("") + "</tr>";
@@ -8185,7 +8195,8 @@ window.GAMES = (function () {
     });
 
     function run(mode) {
-      var QN = 8, lvl = 1, hearts = 3, qi = 0, score = 0, cur = null, locked = false;
+      var lvl = 1, hearts = 3, qi = 0, score = 0, cur = null, locked = false;
+      function QN() { return Math.min(50, 5 + lvl * 5); } /* 第1关10题，每关+5，封顶50 */
       function hiF() { return Math.min(9, 3 + lvl); }
       function genQ() {
         var useDiv = mode === "div" || (mode === "mix" && Math.random() < 0.5);
@@ -8200,7 +8211,7 @@ window.GAMES = (function () {
         return '<div class="game-hud">' +
           '<span class="hud-item">🏅 第 <b>' + lvl + '</b> 关</span>' +
           '<span class="hud-item">❤️ ' + "❤".repeat(hearts) + "♡".repeat(3 - hearts) + '</span>' +
-          '<span class="hud-item">📋 ' + qi + '/' + QN + '</span>' +
+          '<span class="hud-item">📋 ' + qi + '/' + QN() + '</span>' +
           '<span class="hud-item">⭐ ' + score + '</span></div>';
       }
       function nextQ() {
@@ -8228,7 +8239,7 @@ window.GAMES = (function () {
               score++; if (window.SND) SND.correct();
               btn.classList.add("correct");
               qi++;
-              setTimeout(function () { if (qi >= QN) stageClear(); else nextQ(); }, 450);
+              setTimeout(function () { if (qi >= QN()) stageClear(); else nextQ(); }, 450);
             } else {
               if (window.SND) SND.wrong();
               hearts--;
@@ -8285,7 +8296,8 @@ window.GAMES = (function () {
     });
 
     function run(mode) {
-      var QN = 8, lvl = 1, hearts = 3, qi = 0, score = 0, ans = 0, locked = false;
+      var lvl = 1, hearts = 3, qi = 0, score = 0, ans = 0, locked = false;
+      function QN() { return Math.min(50, 5 + lvl * 5); } /* 第1关10题，每关+5，封顶50 */
       function hiRange() {
         if (mode === "20") return Math.min(20, 8 + lvl * 3);
         if (mode === "100") return Math.min(99, 30 + lvl * 15);
@@ -8310,7 +8322,7 @@ window.GAMES = (function () {
         return '<div class="game-hud">' +
           '<span class="hud-item">🏅 第 <b>' + lvl + '</b> 关</span>' +
           '<span class="hud-item">❤️ ' + "❤".repeat(hearts) + "♡".repeat(3 - hearts) + '</span>' +
-          '<span class="hud-item">📋 ' + qi + '/' + QN + '</span>' +
+          '<span class="hud-item">📋 ' + qi + '/' + QN() + '</span>' +
           '<span class="hud-item">⭐ ' + score + '</span></div>';
       }
       function nextQ() {
@@ -8332,7 +8344,7 @@ window.GAMES = (function () {
             score++; if (window.SND) SND.correct();
             stage.querySelector(".game-q").style.color = "#06c190";
             qi++;
-            setTimeout(function () { if (qi >= QN) stageClear(); else nextQ(); }, 400);
+            setTimeout(function () { if (qi >= QN()) stageClear(); else nextQ(); }, 400);
           } else {
             if (window.SND) SND.wrong();
             hearts--;
@@ -11021,6 +11033,94 @@ window.REALBANK = {
     { type: "真题", q: "甲数是乙数的 3/4，甲数比乙数少百分之几？", input: "choice", options: ["20%", "25%", "75%"], ans: "25%", explain: "甲比乙少 1/4，即 25%。" }
   ]
 };
+
+/* =====================================================================
+ * 真题动态扩充生成器：按年级生成多变的模拟真题，配合固定真题凑足题量
+ * ===================================================================== */
+window.REALGEN = (function () {
+  function R(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+  function P(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  var gens = {
+    /* 一年级：20以内加减、认识数、比较 */
+    "1": function () {
+      var kind = R(1, 6);
+      if (kind === 1) { var a = R(2, 9), b = R(1, 10 - a); return { type: "真题", q: a + " + " + b + " = （____）", input: "num", ans: String(a + b), explain: a + "+" + b + "=" + (a + b) + "。" }; }
+      if (kind === 2) { var a = R(11, 18), b = R(2, 9); if (b > a - 2) b = a - 2; return { type: "真题", q: a + " − " + b + " = （____）", input: "num", ans: String(a - b), explain: a + "−" + b + "=" + (a - b) + "。" }; }
+      if (kind === 3) { var n = R(11, 19); return { type: "真题", q: n + " 后面的一个数是（____）。", input: "num", ans: String(n + 1), explain: "按顺序数，" + n + " 后面是 " + (n + 1) + "。" }; }
+      if (kind === 4) { var a = R(3, 9), b = R(3, 9); return { type: "真题", q: a + " 和 " + b + " 比，" + (a > b ? "大" : "小") + "的是几？", input: "num", ans: String(a > b ? a : b), explain: "比较大小，" + Math.max(a, b) + " 更大。" }; }
+      if (kind === 5) { var t = R(1, 8), f = R(1, 9); return { type: "真题", q: "树上有 " + t + " 只鸟，又飞来 " + f + " 只。现在一共有多少只？", input: "num", ans: String(t + f), explain: t + "+" + f + "=" + (t + f) + "（只）。" }; }
+      var a = R(5, 15), b = R(1, a - 1); return { type: "真题", q: "有 " + a + " 个苹果，吃了 " + b + " 个。还剩多少个？", input: "num", ans: String(a - b), explain: a + "−" + b + "=" + (a - b) + "（个）。" };
+    },
+    /* 二年级：100以内加减、表内乘除、长度单位 */
+    "2": function () {
+      var kind = R(1, 6);
+      if (kind === 1) { var a = R(20, 60), b = R(15, 39); return { type: "真题", q: a + " + " + b + " = （____）", input: "num", ans: String(a + b), explain: a + "+" + b + "=" + (a + b) + "。" }; }
+      if (kind === 2) { var a = R(50, 99), b = R(15, 45); return { type: "真题", q: a + " − " + b + " = （____）", input: "num", ans: String(a - b), explain: a + "−" + b + "=" + (a - b) + "。" }; }
+      if (kind === 3) { var a = R(2, 9), b = R(2, 9); return { type: "真题", q: a + " × " + b + " = （____）", input: "num", ans: String(a * b), explain: a + "×" + b + "=" + (a * b) + "。" }; }
+      if (kind === 4) { var b = R(2, 9), q = R(2, 9); return { type: "真题", q: (b * q) + " ÷ " + b + " = （____）", input: "num", ans: String(q), explain: "想乘法算除法：" + b + "×" + q + "=" + (b * q) + "。" }; }
+      if (kind === 5) { var m = R(1, 5); return { type: "真题", q: m + " 米 = （____）厘米", input: "num", ans: String(m * 100), explain: "1 米=100 厘米，" + m + " 米=" + (m * 100) + " 厘米。" }; }
+      var n = R(2, 6), per = R(2, 8); return { type: "真题", q: "每盒有 " + per + " 支笔，" + n + " 盒一共有多少支？", input: "num", ans: String(n * per), explain: n + "×" + per + "=" + (n * per) + "（支）。" };
+    },
+    /* 三年级：多位数乘除、周长、分数初步 */
+    "3": function () {
+      var kind = R(1, 6);
+      if (kind === 1) { var a = R(12, 45), b = R(3, 9); return { type: "真题", q: a + " × " + b + " = （____）", input: "num", ans: String(a * b), explain: a + "×" + b + "=" + (a * b) + "。" }; }
+      if (kind === 2) { var b = R(3, 9), q = R(12, 40); return { type: "真题", q: (b * q) + " ÷ " + b + " = （____）", input: "num", ans: String(q), explain: (b * q) + "÷" + b + "=" + q + "。" }; }
+      if (kind === 3) { var l = R(5, 15), w = R(3, 10); return { type: "真题", q: "长方形长 " + l + " 厘米、宽 " + w + " 厘米，周长是多少厘米？", input: "num", ans: String((l + w) * 2), explain: "（" + l + "+" + w + "）×2=" + ((l + w) * 2) + "（厘米）。" }; }
+      if (kind === 4) { var s = R(4, 12); return { type: "真题", q: "正方形边长 " + s + " 厘米，周长是多少厘米？", input: "num", ans: String(s * 4), explain: s + "×4=" + (s * 4) + "（厘米）。" }; }
+      if (kind === 5) { var a = R(120, 450), b = R(150, 500); return { type: "真题", q: a + " + " + b + " = （____）", input: "num", ans: String(a + b), explain: a + "+" + b + "=" + (a + b) + "。" }; }
+      var total = R(3, 8) * R(2, 6), n = R(2, 6); var per = Math.floor(total / n); return { type: "真题", q: "把 " + (per * n) + " 个桃子平均分给 " + n + " 只小猴，每只分几个？", input: "num", ans: String(per), explain: (per * n) + "÷" + n + "=" + per + "（个）。" };
+    },
+    /* 四年级：大数、三位数乘除、面积、运算律 */
+    "4": function () {
+      var kind = R(1, 6);
+      if (kind === 1) { var a = R(120, 450), b = R(12, 35); return { type: "真题", q: a + " × " + b + " = （____）", input: "num", ans: String(a * b), explain: a + "×" + b + "=" + (a * b) + "。" }; }
+      if (kind === 2) { var b = R(12, 25), q = R(15, 40); return { type: "真题", q: (b * q) + " ÷ " + b + " = （____）", input: "num", ans: String(q), explain: (b * q) + "÷" + b + "=" + q + "。" }; }
+      if (kind === 3) { var l = R(8, 20), w = R(5, 15); return { type: "真题", q: "长方形长 " + l + " 米、宽 " + w + " 米，面积是多少平方米？", input: "num", ans: String(l * w), explain: l + "×" + w + "=" + (l * w) + "（平方米）。" }; }
+      if (kind === 4) { var a = R(25, 125); return { type: "真题", q: "用简便方法计算 " + a + " × 4，结果是（____）", input: "num", ans: String(a * 4), explain: a + "×4=" + (a * 4) + "。" }; }
+      if (kind === 5) { var a = R(10000, 99999); return { type: "真题", q: a + " 读作多少？它最高位是（____）位", input: "choice", options: ["万位", "千位", "百位"], ans: a >= 10000 ? "万位" : "千位", explain: a + " 最高位是万位。" }; }
+      var speed = R(40, 80), t = R(2, 6); return { type: "真题", q: "一辆汽车每小时行 " + speed + " 千米，" + t + " 小时行多少千米？", input: "num", ans: String(speed * t), explain: speed + "×" + t + "=" + (speed * t) + "（千米）。" };
+    },
+    /* 五年级：小数乘除、分数、多边形面积、方程 */
+    "5": function () {
+      var kind = R(1, 6);
+      if (kind === 1) { var a = R(12, 45) / 10, b = R(2, 9); var ans = Math.round(a * b * 10) / 10; return { type: "真题", q: a + " × " + b + " = （____）", input: "num", ans: String(ans), explain: a + "×" + b + "=" + ans + "。" }; }
+      if (kind === 2) { var b = R(2, 6), q = R(12, 40); var a = b * q; return { type: "真题", q: a + " ÷ " + b + " = （____）", input: "num", ans: String(q), explain: a + "÷" + b + "=" + q + "。" }; }
+      if (kind === 3) { var base = R(6, 16), h = R(4, 12); return { type: "真题", q: "三角形底 " + base + " 厘米、高 " + h + " 厘米，面积是多少平方厘米？", input: "num", ans: String(base * h / 2), explain: base + "×" + h + "÷2=" + (base * h / 2) + "（平方厘米）。" }; }
+      if (kind === 4) { var a = R(2, 8), b = R(2, 8); var num = a * b, den = 9 * b; return { type: "真题", q: "一个平行四边形底 " + a + " 米、高 " + b + " 米，面积是多少平方米？", input: "num", ans: String(a * b), explain: a + "×" + b + "=" + (a * b) + "（平方米）。" }; }
+      if (kind === 5) { var x = R(3, 12), add = R(5, 20); return { type: "真题", q: "一个数加上 " + add + " 等于 " + (x + add) + "，这个数是多少？", input: "num", ans: String(x), explain: (x + add) + "−" + add + "=" + x + "。" }; }
+      var total = R(40, 90), frac = P([[1, 2], [1, 4], [3, 4], [2, 5]]); var part = total * frac[0] / frac[1]; return { type: "真题", q: total + " 的 " + frac[0] + "/" + frac[1] + " 是多少？", input: "num", ans: String(part), explain: total + "×" + frac[0] + "/" + frac[1] + "=" + part + "。" };
+    },
+    /* 六年级：分数乘除、百分数、圆、比和比例 */
+    "6": function () {
+      var kind = R(1, 6);
+      if (kind === 1) { var a = R(2, 9), b = R(2, 9), c = R(2, 9), d = R(2, 9); var num = a * c, den = b * d; var g = gcd(num, den); return { type: "真题", q: a + "/" + b + " × " + c + "/" + d + " = （____）", input: "text", ans: (num / g) + "/" + (den / g), accept: [String(Math.round(num / den * 100) / 100)], explain: "分子相乘、分母相乘再约分。" }; }
+      if (kind === 2) { var base = R(40, 200), pct = P([10, 20, 25, 50, 75]); return { type: "真题", q: base + " 的 " + pct + "% 是多少？", input: "num", ans: String(base * pct / 100), explain: base + "×" + pct + "%=" + (base * pct / 100) + "。" }; }
+      if (kind === 3) { var r = R(2, 8); var area = Math.round(3.14 * r * r * 100) / 100; return { type: "真题", q: "圆的半径 " + r + " 厘米，面积是多少平方厘米？（π取3.14）", input: "num", ans: String(area), explain: "S=πr²=3.14×" + r + "²=" + area + "。" }; }
+      if (kind === 4) { var total = R(2, 8) * R(2, 6), ra = R(1, 3), rb = R(2, 5); var sum = ra + rb; var partA = total * ra / sum; return { type: "真题", q: "把 " + total + " 按 " + ra + ":" + rb + " 分配，较小的一份是多少？", input: "num", ans: String(Math.min(total * ra / sum, total * rb / sum)), explain: total + "÷" + sum + "×" + Math.min(ra, rb) + "=" + Math.min(total * ra / sum, total * rb / sum) + "。" }; }
+      if (kind === 5) { var price = R(50, 200), disc = P([80, 75, 90]); var now = price * disc / 100; return { type: "真题", q: "一件商品 " + price + " 元，打 " + (disc / 10) + " 折，现价多少元？", input: "num", ans: String(now), explain: price + "×" + disc + "%=" + now + "（元）。" }; }
+      var r = R(3, 9); var circ = Math.round(3.14 * 2 * r * 100) / 100; return { type: "真题", q: "圆的半径 " + r + " 分米，周长是多少分米？（π取3.14）", input: "num", ans: String(circ), explain: "C=2πr=2×3.14×" + r + "=" + circ + "。" };
+    }
+  };
+  function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+
+  /* 生成 n 道某年级的模拟真题（自动去重） */
+  function gen(grade, n) {
+    var g = gens[String(grade)];
+    if (!g) return [];
+    var out = [], seen = {};
+    var tries = 0;
+    while (out.length < n && tries < n * 15) {
+      tries++;
+      var q = g();
+      var sig = q.q.replace(/\s+/g, "");
+      if (!seen[sig]) { seen[sig] = 1; out.push(q); }
+    }
+    return out;
+  }
+  return { gen: gen };
+})();
 /* =====================================================================
  * 烧脑数学 · 生活场景数学
  * 把数学放进真实生活情境：填单位、超市购物、时间安排、估算判断、生活常识。
@@ -14051,13 +14151,9 @@ window.STATS = (function () {
     var wbCount = WB.count();
     var html = '<div class="section-title"><span class="bar"></span>练习模式</div>' +
       '<button class="mode-card" id="modeUnit"><span class="m-icon">🎯</span><span style="flex:1"><span class="m-title">单元专项练</span><br><span class="m-sub">选单元和题型，按知识点随机出题</span></span><span class="unit-arrow">›</span></button>' +
-      '<button class="mode-card" id="modePicword"><span class="m-icon">🖼️</span><span style="flex:1"><span class="m-title">图解应用题</span><br><span class="m-sub">线段图/图示剖析，看懂数量关系再列式</span></span><span class="unit-arrow">›</span></button>' +
-      '<button class="mode-card" id="modeLife"><span class="m-icon">🛒</span><span style="flex:1"><span class="m-title">生活数学</span><br><span class="m-sub">填单位/超市购物/时间安排…生活里的数学</span></span><span class="unit-arrow">›</span></button>' +
-      '<button class="mode-card" id="modeQuick"><span class="m-icon">⏱️</span><span style="flex:1"><span class="m-title">口算速练 60 秒</span><br><span class="m-sub">口算/竖式/脱式三件套，偶尔出验算，限时挑战</span></span><span class="unit-arrow">›</span></button>' +
-      '<button class="mode-card" id="modeTest"><span class="m-icon">📝</span><span style="flex:1"><span class="m-title">' + esc(currentBook().label) + '综合测试</span><br><span class="m-sub">全册抽 20 题（混入本年级真题）</span></span><span class="unit-arrow">›</span></button>' +
-      '<button class="mode-card" id="modeReal"><span class="m-icon">🏆</span><span style="flex:1"><span class="m-title">真题挑战</span><br><span class="m-sub">按年级精选真题，12 道测真实水平</span></span><span class="unit-arrow">›</span></button>' +
-      '<button class="mode-card" id="modeExtend"><span class="m-icon">🌟</span><span style="flex:1"><span class="m-title">课外延伸</span><br><span class="m-sub">和差/和倍/相遇/鸡兔同笼…常考应用题</span></span><span class="unit-arrow">›</span></button>' +
-      '<button class="mode-card" id="modeExplain"><span class="m-icon">🎤</span><span style="flex:1"><span class="m-title">学会讲题</span><br><span class="m-sub">讲清第一步/核心考点/易错点，学会审题</span></span><span class="unit-arrow">›</span></button>' +
+      '<button class="mode-card" id="modeQuick"><span class="m-icon">⏱️</span><span style="flex:1"><span class="m-title">口算速练 60 秒</span><br><span class="m-sub">口算/竖式/脱式三件套，答对自动跳下一题</span></span><span class="unit-arrow">›</span></button>' +
+      '<button class="mode-card" id="modeReal"><span class="m-icon">🏆</span><span style="flex:1"><span class="m-title">真题挑战</span><br><span class="m-sub">按年级精选真题 + 综合挑战，测真实水平</span></span><span class="unit-arrow">›</span></button>' +
+      '<button class="mode-card" id="modeApp"><span class="m-icon">🌟</span><span style="flex:1"><span class="m-title">应用拓展</span><br><span class="m-sub">图解应用题 / 课外延伸 / 学会讲题 / 生活数学</span></span><span class="unit-arrow">›</span></button>' +
       '<button class="mode-card" id="modeWrong"' + (wbCount ? '' : ' style="opacity:.75"') + '>' +
       '<span class="m-icon">📒</span><span style="flex:1"><span class="m-title">错题本' + (wbCount ? '（' + wbCount + ' 题待巩固）' : '') + '</span><br>' +
       '<span class="m-sub">做错的题自动收录，举一反三消灭它</span></span><span class="unit-arrow">›</span></button>';
@@ -14086,13 +14182,25 @@ window.STATS = (function () {
       $$("[data-u]", el).forEach(function (btn) { btn.onclick = function () { openPracticeSetup(btn.dataset.u); }; });
     };
     $("#modeQuick").onclick = startQuickSession;
-    $("#modeTest").onclick = startTestSession;
     $("#modeReal").onclick = renderRealSetup;
-    $("#modeExtend").onclick = startExtensionSession;
-    $("#modeExplain").onclick = startExplainSession;
     $("#modeWrong").onclick = renderWrongBook;
-    $("#modePicword").onclick = renderPicwordHome;
-    $("#modeLife").onclick = startLifeSession;
+    /* 应用拓展：合并 图解应用题/课外延伸/学会讲题/生活数学 */
+    $("#modeApp").onclick = function () {
+      var el = $("#practiceSetup");
+      ["practiceHome", "practiceSession", "practiceResult"].forEach(function (id) { $("#" + id).classList.add("hidden"); });
+      el.classList.remove("hidden");
+      el.innerHTML = '<div class="back-row"><button class="back-btn" id="backApp">‹</button><div class="page-title">🌟 应用拓展</div></div>' +
+        '<div class="card" style="font-size:13px;color:var(--ink-2)">应用题专项训练，看懂题意、学会审题～</div>' +
+        '<button class="mode-card" id="appPicword"><span class="m-icon">🖼️</span><span style="flex:1"><span class="m-title">图解应用题</span><br><span class="m-sub">线段图/图示剖析，看懂数量关系再列式</span></span><span class="unit-arrow">›</span></button>' +
+        '<button class="mode-card" id="appExtend"><span class="m-icon">🌟</span><span style="flex:1"><span class="m-title">课外延伸</span><br><span class="m-sub">和差/和倍/相遇/鸡兔同笼…常考应用题</span></span><span class="unit-arrow">›</span></button>' +
+        '<button class="mode-card" id="appExplain"><span class="m-icon">🎤</span><span style="flex:1"><span class="m-title">学会讲题</span><br><span class="m-sub">讲清第一步/核心考点/易错点，学会审题</span></span><span class="unit-arrow">›</span></button>' +
+        '<button class="mode-card" id="appLife"><span class="m-icon">🛒</span><span style="flex:1"><span class="m-title">生活数学</span><br><span class="m-sub">填单位/超市购物/时间安排…生活里的数学</span></span><span class="unit-arrow">›</span></button>';
+      $("#backApp").onclick = renderPracticeHome;
+      $("#appPicword").onclick = renderPicwordHome;
+      $("#appExtend").onclick = startExtensionSession;
+      $("#appExplain").onclick = startExplainSession;
+      $("#appLife").onclick = startLifeSession;
+    };
   }
 
   var session = null;
@@ -14171,7 +14279,7 @@ window.STATS = (function () {
         var qs = [];
         for (var i = 0; i < 30; i++) qs.push(QE.quickGen(quickDigits, quickType));
         var typeName = { addsub: "加减", muldiv: "乘除", lian: "连加减", mix: "混合运算" }[quickType];
-        startSession({ title: "口算速练 · " + (quickDigits === 2 ? "两位数" : quickDigits === 3 ? "三位数" : "多位数") + typeName, unit: null, questions: qs, timed: 60 });
+        startSession({ title: "口算速练 · " + (quickDigits === 2 ? "两位数" : quickDigits === 3 ? "三位数" : "多位数") + typeName, unit: null, questions: qs, timed: 60, autoSubmit: true });
       };
     }
     draw();
@@ -14291,23 +14399,35 @@ window.STATS = (function () {
     ["practiceHome", "practiceSession", "practiceResult"].forEach(function (id) { $("#" + id).classList.add("hidden"); });
     el.classList.remove("hidden");
     var gradeName = { "1": "一年级", "2": "二年级", "3": "三年级", "4": "四年级", "5": "五年级", "6": "六年级" };
-    var html = '<div class="back-row"><button class="back-btn" id="backReal">‹</button><div class="page-title">📝 真题挑战 · 选年级</div></div>' +
-      '<div class="card" style="font-size:13px;color:var(--ink-2)">精选各年级期末/单元真题题型，每个年级 12 道，测一测真实水平！</div>';
+    var html = '<div class="back-row"><button class="back-btn" id="backReal">‹</button><div class="page-title">🏆 真题挑战 · 选年级</div></div>' +
+      '<div class="card" style="font-size:13px;color:var(--ink-2)">精选各年级期末/单元真题题型，测一测真实水平！</div>' +
+      '<button class="unit-card" id="realMixed" style="border:2px solid #ffb703">' +
+        '<div class="unit-badge" style="background:#ffb703">🎲</div>' +
+        '<div class="unit-info"><div class="u-name">' + esc(currentBook().label) + ' · 综合挑战</div>' +
+        '<div class="u-lessons">20 题 · 全册知识点 + 本年级真题混合</div></div>' +
+        '<div class="unit-arrow">›</div></button>';
     Object.keys(REALBANK).sort().forEach(function (g) {
       html += '<button class="unit-card" data-rg="' + g + '">' +
         '<div class="unit-badge" style="background:#e63999">📝</div>' +
         '<div class="unit-info"><div class="u-name">' + gradeName[g] + '真题</div>' +
-        '<div class="u-lessons">' + REALBANK[g].length + ' 道 · 计算/填空/选择/判断/应用</div></div>' +
+        '<div class="u-lessons">50 道 · 历年真题 + 模拟变式</div></div>' +
         '<div class="unit-arrow">›</div></button>';
     });
     el.innerHTML = html;
     $("#backReal").onclick = renderPracticeHome;
+    /* 综合挑战：原"综合测试"并入此处 */
+    $("#realMixed").onclick = function () { startTestSession(); };
     $$("[data-rg]", el).forEach(function (btn) {
       btn.onclick = function () {
         var g = btn.dataset.rg;
         var qs = REALBANK[g].slice();
+        /* 用生成器补足到 50 道（真题+模拟混合） */
+        if (window.REALGEN && qs.length < 50) {
+          var extra = REALGEN.gen(g, 50 - qs.length);
+          qs = qs.concat(extra);
+        }
         if (QE.shuffle) qs = QE.shuffle(qs);
-        startSession({ title: gradeName[g] + "真题挑战", unit: null, questions: qs });
+        startSession({ title: gradeName[g] + "真题挑战（50 道）", unit: null, questions: qs });
       };
     });
   }
@@ -14408,11 +14528,39 @@ window.STATS = (function () {
       if (q.input === "choice" || q.input === "judge" || q.input === "choiceHtml") val = userAns;
       else val = inp ? inp.value.trim() : "";
       if (val === "" || val == null) { toast("先写个答案再提交哦～"); return; }
-      answered = true;
       cfg.done = (cfg.done || 0) + 1;
 
       var ok = checkAnswer(q, val);
       if (window.SND) ok ? SND.correct() : SND.wrong();
+
+      /* ===== 自动提交模式（口算/挑战）：答错提示重做，答对自动下一题 ===== */
+      if (cfg.autoSubmit) {
+        var fbA = $("#fb", el);
+        if (!ok) {
+          fbA.className = "feedback show no";
+          fbA.innerHTML = '<div class="fb-title">❌ 不对哦，再试一次！</div>';
+          if (inp) { inp.value = ""; inp.focus(); }
+          userAns = null;
+          $$(".opt-btn", el).forEach(function (b) { b.classList.remove("sel"); });
+          return; /* 不锁定、不前进，让用户重答 */
+        }
+        /* 答对 */
+        answered = true;
+        if (window.STATS) STATS.logAnswer(q, ok, cfg.sessionType || "practice");
+        cfg.correct++; if (window.GARDEN) GARDEN.addPoints(0.5, "答对一题");
+        fbA.className = "feedback show ok";
+        fbA.innerHTML = '<div class="fb-title">🎉 正确！</div>';
+        if (inp) inp.disabled = true;
+        setTimeout(function () {
+          cfg.idx++;
+          if (cfg.idx >= cfg.total) endSession();
+          else renderQuestion();
+        }, 650);
+        return;
+      }
+
+      /* ===== 常规模式 ===== */
+      answered = true;
       if (window.STATS) STATS.logAnswer(q, ok, cfg.sessionType || "practice");
       if (ok) { cfg.correct++; if (window.GARDEN) GARDEN.addPoints(0.5, "答对一题"); }
       else {
@@ -15193,10 +15341,11 @@ window.STATS = (function () {
     var html = "";
 
     /* ===== 区块一：母题精讲 ===== */
-    html += '<button class="collapse-head" data-collapse="muti" style="background:#fff7ec">' + arrow(!thinkCollapse.muti) + '<span class="bar" style="background:#e8930a"></span>母题精讲 <span class="collapse-count">' + (THINK.MUTI ? THINK.MUTI.length : 0) + ' 道</span></button>';
+    html += '<div class="card" style="font-size:12px;color:var(--ink-2);padding:8px 12px">🧭 三步进阶：<b>母题精讲</b>学方法 → <b>思维训练营</b>广练习 → <b>奥数专题</b>高难度挑战</div>';
+    html += '<button class="collapse-head" data-collapse="muti" style="background:#fff7ec">' + arrow(!thinkCollapse.muti) + '<span class="bar" style="background:#e8930a"></span>① 母题精讲 · 学方法 <span class="collapse-count">' + (THINK.MUTI ? THINK.MUTI.length : 0) + ' 道</span></button>';
     if (!thinkCollapse.muti) {
       html += '<div class="collapse-body">' +
-        '<div class="card" style="font-size:12.5px;color:var(--ink-2)">母题 = 一类题的"根"。学透一道母题，举一反三会做一整类！🎯</div>' +
+        '<div class="card" style="font-size:12.5px;color:var(--ink-2)">母题 = 一类题的"根"。每道母题配「解题思路+关键+口诀」，学透方法再举一反三！🎯</div>' +
         '<div class="muti-row">';
       if (window.THINK && THINK.MUTI) {
         THINK.MUTI.forEach(function (m) {
@@ -15207,7 +15356,7 @@ window.STATS = (function () {
     }
 
     /* ===== 区块二：思维训练营 ===== */
-    html += '<button class="collapse-head" data-collapse="train" style="background:#f3ecff">' + arrow(!thinkCollapse.train) + '<span class="bar" style="background:#8338ec"></span>思维训练营 <span class="collapse-count">' + THINK.topics.length + ' 个主题</span></button>';
+    html += '<button class="collapse-head" data-collapse="train" style="background:#f3ecff">' + arrow(!thinkCollapse.train) + '<span class="bar" style="background:#8338ec"></span>② 思维训练营 · 广练习 <span class="collapse-count">' + THINK.topics.length + ' 个主题</span></button>';
     if (!thinkCollapse.train) {
       html += '<div class="collapse-body">' +
         '<input class="answer-input" id="thinkSearchInput" placeholder="🔍 搜索思维主题（如：鸡兔、规律、和差）" value="' + esc(thinkSearch) + '" style="margin-bottom:10px">' +
@@ -15238,7 +15387,7 @@ window.STATS = (function () {
     }
 
     /* ===== 区块三：奥数专题 ===== */
-    html += '<button class="collapse-head" data-collapse="olympiad" style="background:#ffecec">' + arrow(!thinkCollapse.olympiad) + '<span class="bar" style="background:#d63031"></span>奥数专题 <span class="collapse-count">' + (window.OLYMPIAD ? OLYMPIAD.topics.length : 0) + ' 个专题</span></button>';
+    html += '<button class="collapse-head" data-collapse="olympiad" style="background:#ffecec">' + arrow(!thinkCollapse.olympiad) + '<span class="bar" style="background:#d63031"></span>③ 奥数专题 · 高难度 <span class="collapse-count">' + (window.OLYMPIAD ? OLYMPIAD.topics.length : 0) + ' 个专题</span></button>';
     if (!thinkCollapse.olympiad) {
       html += '<div class="collapse-body">' +
         '<div class="card" style="font-size:13px;color:var(--ink-2)">数论、组合、几何变换、逻辑推理……挑战更高难度的数学思维！🏆</div>';
@@ -15323,14 +15472,27 @@ window.STATS = (function () {
       '<div class="step-list">' + stepsHtml + '</div>' +
       '<div class="muti-tip"><div class="muti-tip-title">🔑 关键</div><div>' + esc(m.key) + '</div></div>' +
       '<div class="muti-tip blue" style="margin-top:6px"><div class="muti-tip-title">📝 口诀</div><div>' + esc(m.tip) + '</div></div>' +
-      '<div style="margin:16px 0"><button class="btn block" id="mutiPractice">🎯 举一反三练一练</button></div>';
+      '<div class="muti-section-title">🎯 举一反三 · 选择题量</div>' +
+      '<div style="display:flex;gap:8px;margin:8px 0 16px">' +
+      '<button class="btn block muti-cnt" data-cnt="10" style="flex:1">10 题</button>' +
+      '<button class="btn block muti-cnt" data-cnt="20" style="flex:1">20 题</button>' +
+      '<button class="btn block muti-cnt" data-cnt="50" style="flex:1">50 题</button>' +
+      '</div>' +
+      '<div class="card" style="font-size:11.5px;color:var(--ink-2)">题库动态生成，条件多变不重复，反复练都是新题～</div>';
     el.innerHTML = html;
     $("#thinkBack").onclick = renderThinkHome;
-    $("#mutiPractice").onclick = function () {
-      var t = null;
-      THINK.topics.forEach(function (x) { if (x.id === m.id) t = x; });
-      if (t) startThinkSession(t); else toast("这个母题的练习还在路上～");
-    };
+    /* 母题→训练营主题映射兜底（部分母题无同名主题，映射到最接近的主题） */
+    var MUTI_MAP = { dengbi: "dengcha", jishu: "jishu2", rongji2: "fangzhen", guilv2: "guilv", yidong: "xingcheng" };
+    $$(".muti-cnt", el).forEach(function (btn) {
+      btn.onclick = function () {
+        var cnt = parseInt(btn.dataset.cnt, 10);
+        var tid = m.id;
+        var t = null;
+        THINK.topics.forEach(function (x) { if (x.id === tid) t = x; });
+        if (!t && MUTI_MAP[tid]) THINK.topics.forEach(function (x) { if (x.id === MUTI_MAP[tid]) t = x; });
+        if (t) startThinkSession(t, cnt); else toast("这个母题的练习还在路上～");
+      };
+    });
     window.scrollTo(0, 0);
   }
 
@@ -15603,8 +15765,9 @@ window.STATS = (function () {
     return out;
   }
 
-  function startThinkSession(t) {
-    var qs = genUniqueQuestions(function () { return t.gen(); }, 5);
+  function startThinkSession(t, qCount) {
+    var n = qCount || 5;
+    var qs = genUniqueQuestions(function () { return t.gen(); }, n);
     var thinkStartTs = Date.now();
     if (window.SCRATCH) SCRATCH.show();
     if (window.GARDEN) GARDEN.startActivity("think", t.name);
