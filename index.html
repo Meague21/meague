@@ -816,7 +816,7 @@ main{padding:14px 14px 92px}
  * 烧脑数学 · 教材内容数据（北师大版 2024 新课标版 三年级上册）
  * ===================================================================== */
 window.MD = {
-  version: "4.1.0",
+  version: "4.1.1",
   textbook: { grade: "三年级", term: "上册", edition: "北师大版（新课标）" },
 
   /* ---------------- 版本日志（应用内展示） ---------------- */
@@ -14256,7 +14256,7 @@ window.STATS = (function () {
           if (ok) { score++; if (window.SND) SND.correct(); } else { if (window.SND) SND.wrong(); }
           b.classList.add(ok ? "correct" : "wrong");
           $$(".opt-btn", el).forEach(function (x) { if (x.dataset.opt === sd.ans) x.classList.add("correct"); x.disabled = true; });
-          var fb = $("#fb");
+          var fb = $("#fb", el);
           fb.className = "feedback show " + (ok ? "ok" : "no");
           fb.innerHTML = '<div class="fb-title">' + (ok ? "🎉 讲得对！" : "❌ 再想想") + '</div><div class="fb-exp">💡 ' + esc(sd.why) + '</div>' +
             '<button class="btn block" id="expNext" style="margin-top:10px">' + (stageIdx < 2 ? "下一问 →" : (pi < pool.length - 1 ? "下一题 →" : "看结果")) + '</button>';
@@ -14400,9 +14400,9 @@ window.STATS = (function () {
       };
     });
     var inp = $("#ansInput", el);
-    if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); $("#btnCheck").click(); } };
+    if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); $("#btnCheck", el).click(); } };
 
-    $("#btnCheck").onclick = function () {
+    $("#btnCheck", el).onclick = function () {
       if (answered) return;
       var val;
       if (q.input === "choice" || q.input === "judge" || q.input === "choiceHtml") val = userAns;
@@ -14432,7 +14432,7 @@ window.STATS = (function () {
       if (!ok) {
         whyWrong = q.explain ? q.explain : ("正确答案是 " + showAns(q) + "，再想想这类题的方法～");
       }
-      var fb = $("#fb");
+      var fb = $("#fb", el);
       fb.className = "feedback show " + (ok ? "ok" : "no");
       var fbHtml = '<div class="fb-title">' + (ok ? "🎉 回答正确！" : "❌ 再想想～ 正确答案是：" + showAns(q) + (metaOf(q) ? "<br><span style='font-size:12px;color:#8a4b0f'>已放进错题本，之后可以举一反三巩固它 📒</span>" : "")) + '</div>' +
         (whyWrong ? '<div class="fb-why">💡 为什么：' + whyWrong + '</div>' : (q.explain ? '<div class="fb-exp">📖 ' + q.explain + '</div>' : ''));
@@ -14482,11 +14482,11 @@ window.STATS = (function () {
         b.disabled = true;
       });
       if (inp) inp.disabled = true;
-      $("#btnCheck").classList.add("hidden");
-      $("#btnNext").classList.remove("hidden");
+      $("#btnCheck", el).classList.add("hidden");
+      $("#btnNext", el).classList.remove("hidden");
     };
 
-    $("#btnNext").onclick = function () {
+    $("#btnNext", el).onclick = function () {
       cfg.idx++;
       if (cfg.idx >= cfg.total) endSession();
       else renderQuestion();
@@ -15064,19 +15064,19 @@ window.STATS = (function () {
       '<div class="btn-sticky-row">' +
       '<button class="btn block" id="btnCheck">✅ 提交答案</button>' +
       '<button class="btn block hidden" id="btnNext">' + (state.idx + 1 < state.qs.length ? '下一题 →' : '完成 🎉') + '</button></div></div>';
-    $("#pwSessBack").onclick = renderPicwordHome;
+    $("#pwSessBack", el).onclick = renderPicwordHome;
     var answered = false, userAns = null;
     $$(".opt-btn", el).forEach(function (b) { b.onclick = function () { if (answered) return; $$(".opt-btn", el).forEach(function (x) { x.classList.remove("sel"); }); b.classList.add("sel"); userAns = b.dataset.opt; }; });
     var inp = $("#ansInput", el);
-    if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); $("#btnCheck").click(); } };
-    $("#btnCheck").onclick = function () {
+    if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); $("#btnCheck", el).click(); } };
+    $("#btnCheck", el).onclick = function () {
       if (answered) return;
       var val = (it.input === "choice") ? userAns : (inp ? inp.value.trim() : "");
       if (val === "" || val == null) { toast("先写个答案再提交哦～"); return; }
       answered = true;
       var ok = checkAnswer(it, val);
       if (ok) state.correct++;
-      var fb = $("#fb");
+      var fb = $("#fb", el);
       fb.className = "feedback show " + (ok ? "ok" : "no");
       fb.innerHTML = '<div class="fb-title">' + (ok ? "🎉 回答正确！" : "❌ 再想想～ 正确答案是：" + esc(it.ans)) + '</div>' +
         '<div class="pw-steps step-list" style="margin-top:8px">' + stepsHtml + '</div>' +
@@ -15090,10 +15090,10 @@ window.STATS = (function () {
       }
       $$(".opt-btn", el).forEach(function (b) { if (norm(b.dataset.opt) === norm(it.ans)) b.classList.add("correct"); b.disabled = true; });
       if (inp) inp.disabled = true;
-      $("#btnCheck").classList.add("hidden");
-      $("#btnNext").classList.remove("hidden");
+      $("#btnCheck", el).classList.add("hidden");
+      $("#btnNext", el).classList.remove("hidden");
     };
-    $("#btnNext").onclick = function () {
+    $("#btnNext", el).onclick = function () {
       state.idx++;
       if (state.idx >= state.qs.length) {
         var pct = Math.round(state.correct / state.qs.length * 100);
@@ -15130,20 +15130,20 @@ window.STATS = (function () {
       '<div class="btn-sticky-row">' +
       '<button class="btn block" id="btnCheck">✅ 提交答案</button>' +
       '<button class="btn block hidden" id="btnNext">返回图解列表</button></div></div>';
-    $("#pwSessBack").onclick = renderPicwordHome;
+    $("#pwSessBack", el).onclick = renderPicwordHome;
     var answered = false, userAns = null;
     $$(".opt-btn", el).forEach(function (b) { b.onclick = function () { if (answered) return; $$(".opt-btn", el).forEach(function (x) { x.classList.remove("sel"); }); b.classList.add("sel"); userAns = b.dataset.opt; }; });
     $$(".judge-btn", el).forEach(function (b) { b.onclick = function () { if (answered) return; $$(".judge-btn", el).forEach(function (x) { x.classList.remove("sel"); }); b.classList.add("sel"); userAns = b.dataset.j; }; });
     var inp = $("#ansInput", el);
-    if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); $("#btnCheck").click(); } };
-    $("#btnCheck").onclick = function () {
+    if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); $("#btnCheck", el).click(); } };
+    $("#btnCheck", el).onclick = function () {
       if (answered) return;
       var val = (it.input === "choice" || it.input === "judge") ? userAns : (inp ? inp.value.trim() : "");
       if (val === "" || val == null) { toast("先写个答案再提交哦～"); return; }
       answered = true;
       var accepts = [it.ans].concat(it.accept || []);
       var ok = accepts.some(function (a) { return norm(a) === norm(val); });
-      var fb = $("#fb");
+      var fb = $("#fb", el);
       fb.className = "feedback show " + (ok ? "ok" : "no");
       fb.innerHTML = '<div class="fb-title">' + (ok ? "🎉 回答正确！" : "❌ 再想想～ 正确答案是：" + esc(it.ans)) + '</div>' +
         '<div class="pw-steps step-list" style="margin-top:8px">' + stepsHtml + '</div>' +
@@ -15151,10 +15151,10 @@ window.STATS = (function () {
       $$(".opt-btn", el).forEach(function (b) { if (norm(b.dataset.opt) === norm(it.ans)) b.classList.add("correct"); b.disabled = true; });
       $$(".judge-btn", el).forEach(function (b) { if (b.dataset.j === it.ans) b.classList.add("correct"); b.disabled = true; });
       if (inp) inp.disabled = true;
-      $("#btnCheck").classList.add("hidden");
-      $("#btnNext").classList.remove("hidden");
+      $("#btnCheck", el).classList.add("hidden");
+      $("#btnNext", el).classList.remove("hidden");
     };
-    $("#btnNext").onclick = renderPicwordHome;
+    $("#btnNext", el).onclick = renderPicwordHome;
   }
 
   /* =====================================================
@@ -15449,7 +15449,7 @@ window.STATS = (function () {
         '<button class="btn block hidden" id="btnNext">下一题 →</button></div></div>';
       el.innerHTML = html;
 
-      $("#exitSess").onclick = function () {
+      $("#exitSess", el).onclick = function () {
         if (window.SCRATCH) SCRATCH.hide();
         $("#practiceSession").classList.add("hidden");
         $("#olympiadDetail").classList.remove("hidden");
@@ -15466,9 +15466,9 @@ window.STATS = (function () {
       });
 
       var inp = $("#ansInput", el);
-      if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); $("#btnCheck").click(); } };
+      if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); $("#btnCheck", el).click(); } };
 
-      $("#btnCheck").onclick = function () {
+      $("#btnCheck", el).onclick = function () {
         if (answered) return;
         var val = inp ? inp.value.trim() : userAns;
         if (val === "" || val == null) { toast("先写个答案再提交哦～"); return; }
@@ -15479,7 +15479,7 @@ window.STATS = (function () {
         if (ok) { session.correct++; if (window.GARDEN) GARDEN.addPoints(1, "奥数答对"); }
         else { if (window.GARDEN) GARDEN.deductPoints(0.3, "奥数答错"); }
 
-        var fb = $("#fb");
+        var fb = $("#fb", el);
         fb.className = "feedback show " + (ok ? "ok" : "no");
         fb.innerHTML = '<div class="fb-title">' + (ok ? "🎉 太棒了！" : "❌ 再想想～ 正确答案是：" + q.ans) + '</div>' +
           (q.explain ? '<div class="fb-exp">📖 ' + q.explain + '</div>' : '');
@@ -15490,11 +15490,11 @@ window.STATS = (function () {
           b.disabled = true;
         });
         if (inp) inp.disabled = true;
-        $("#btnCheck").classList.add("hidden");
-        $("#btnNext").classList.remove("hidden");
+        $("#btnCheck", el).classList.add("hidden");
+        $("#btnNext", el).classList.remove("hidden");
       };
 
-      $("#btnNext").onclick = function () {
+      $("#btnNext", el).onclick = function () {
         session.idx++;
         renderQuestion();
       };
@@ -15632,12 +15632,12 @@ window.STATS = (function () {
         '<div class="btn-sticky-row">' +
         '<button class="btn block" id="btnCheck">✅ 提交答案</button>' +
         '<button class="btn block hidden" id="btnNext">下一题 →</button></div></div>';
-      $("#thinkSessBack").onclick = function () { if (window.SCRATCH) SCRATCH.hide(); openThinkTopic(t.id); };
+      $("#thinkSessBack", el).onclick = function () { if (window.SCRATCH) SCRATCH.hide(); openThinkTopic(t.id); };
       var answered = false, userAns = null;
       $$(".opt-btn", el).forEach(function (b) { b.onclick = function () { if (answered) return; $$(".opt-btn", el).forEach(function (x) { x.classList.remove("sel"); }); b.classList.add("sel"); userAns = b.dataset.opt; }; });
       var inp = $("#ansInput", el);
-      if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); $("#btnCheck").click(); } };
-      $("#btnCheck").onclick = function () {
+      if (inp) inp.onkeydown = function (e) { if (e.key === "Enter") { e.preventDefault(); inp.blur(); $("#btnCheck", el).click(); } };
+      $("#btnCheck", el).onclick = function () {
         if (answered) return;
         var val = q.input === "choice" ? userAns : (inp ? inp.value.trim() : "");
         if (val === "" || val == null) { toast("先写个答案再提交哦～"); return; }
@@ -15647,16 +15647,16 @@ window.STATS = (function () {
         if (window.SND) ok ? SND.correct() : SND.wrong();
         if (ok) { correct++; if (window.GARDEN) GARDEN.addPoints(0.5, "思维答对"); }
         else if (window.GARDEN) { GARDEN.deductPoints(0.3, "思维答错"); }
-        var fb = $("#fb");
+        var fb = $("#fb", el);
         fb.className = "feedback show " + (ok ? "ok" : "no");
         fb.innerHTML = '<div class="fb-title">' + (ok ? "🎉 回答正确！" : "❌ 再想想～ 正确答案是：" + esc(q.ans)) + '</div>' +
           (q.explain ? '<div class="fb-exp">💡 ' + esc(q.explain) + '</div>' : '');
         $$(".opt-btn", el).forEach(function (b) { if (norm(b.dataset.opt) === norm(q.ans)) b.classList.add("correct"); b.disabled = true; });
         if (inp) inp.disabled = true;
-        $("#btnCheck").classList.add("hidden");
-        $("#btnNext").classList.remove("hidden");
+        $("#btnCheck", el).classList.add("hidden");
+        $("#btnNext", el).classList.remove("hidden");
       };
-      $("#btnNext").onclick = function () {
+      $("#btnNext", el).onclick = function () {
         idx++;
         if (idx >= qs.length) showResult();
         else showQ();
