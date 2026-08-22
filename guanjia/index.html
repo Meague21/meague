@@ -576,6 +576,38 @@ label.fld{margin:6px 0 2px}
 .item-list .it.sel{background:var(--accent-soft);color:var(--accent);font-weight:600}
 .item-list .it .c{color:var(--sub);font-size:12px}
 .item-list .it.new{color:var(--accent);font-weight:600}
+
+/* ---------- v1.9.0 ---------- */
+/* 标题栏与内容间距 */
+.page-head{padding:6px 2px 14px}
+/* 记账页悬浮记录键 */
+.ledger-fab{position:fixed;right:calc(50% - 280px + 16px);bottom:calc(var(--nav-h) + env(safe-area-inset-bottom) + 18px);
+  z-index:40;display:flex;flex-direction:column;gap:9px;align-items:flex-end}
+@media (max-width:560px){.ledger-fab{right:16px}}
+.ledger-fab button{border:none;cursor:pointer;border-radius:26px;padding:12px 18px;font-size:14px;font-weight:700;
+  color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent2));
+  box-shadow:0 6px 18px color-mix(in srgb,var(--accent) 40%,transparent)}
+.ledger-fab button.alt{background:var(--card);color:var(--accent);border:1.5px solid var(--accent);
+  box-shadow:0 4px 12px rgba(15,20,40,.14);padding:10px 16px;font-size:13px}
+/* 专注页紧凑化 */
+.focus-scene{min-height:0;padding:12px 12px 14px}
+.proj-row{margin-top:0;margin-bottom:8px;gap:5px}
+.proj-row .proj-chip{padding:4px 9px;font-size:11px;border-radius:14px}
+.focus-ring{width:150px;height:150px;margin:0 auto}
+.focus-ring .t b{font-size:30px}
+.focus-ring .t span{font-size:11px}
+.focus-durs{justify-content:center;margin-top:8px;gap:5px}
+.focus-durs .chip{padding:4px 9px;font-size:11px;border-radius:14px}
+.focus-durs select{font-size:11px;padding:4px 7px;border-radius:14px}
+/* 圆形小按钮（豆丸） */
+.focus-ctrl{margin-top:10px;gap:14px;align-items:center}
+.focus-ctrl .btn{border-radius:50%;padding:0;width:46px;height:46px;font-size:15px;flex:none}
+.focus-ctrl .btn.main{width:58px;height:58px;font-size:17px}
+/* 环境音/结束音单行横滑 */
+.sound-row{flex-wrap:nowrap;overflow-x:auto;gap:5px;margin-top:9px;padding-bottom:2px;scrollbar-width:none}
+.sound-row::-webkit-scrollbar{display:none}
+.sound-row>span.lbl{flex-shrink:0;font-size:10.5px !important}
+.sound-row .chip{flex-shrink:0;padding:4px 9px;font-size:11px;border-radius:14px}
 </style>
 </head>
 <body>
@@ -620,7 +652,6 @@ label.fld{margin:6px 0 2px}
     <section id="tab-ledger" class="tab">
       <div class="page-head">
         <div><h1>💰 记账</h1><div class="sub">日常收支 · 电商经营 · 账户分析 <span class="ver-badge" id="ledgerVer"></span></div></div>
-        <button class="btn sm" id="ledgerAddBtn" onclick="openLedgerForm()">＋ 记一笔</button>
       </div>
       <div class="seg">
         <button id="segLedgerDaily" class="on" onclick="switchLedger('daily')">日常账本</button>
@@ -720,6 +751,9 @@ label.fld{margin:6px 0 2px}
           <button class="btn block" onclick="openAiSummary()">生成 AI 汇总</button>
         </div>
       </div>
+      <div class="ledger-fab">
+        <button id="ledgerFabBtn" onclick="fabRecord()">＋ 记一笔</button>
+      </div>
     </section>
 
     <!-- ============ 待办 & 专注 ============ -->
@@ -752,14 +786,12 @@ label.fld{margin:6px 0 2px}
       <div id="todoFocusPane" style="display:none">
         <div class="focus-scene">
           <div class="bg" id="focusBg"></div>
-          <button class="bg-btn" onclick="openBgPicker('focus')">🖼 背景</button>
           <div class="proj-row" id="projRow"></div>
-          <input class="fl" id="focusLabel" placeholder="这次专注做什么？（可不填）">
           <div class="focus-ring">
-            <svg width="172" height="172">
-              <circle cx="86" cy="86" r="76" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="10"/>
-              <circle id="focusArc" cx="86" cy="86" r="76" fill="none" stroke="#ffffff" stroke-width="10"
-                stroke-linecap="round" stroke-dasharray="477.5" stroke-dashoffset="0"/>
+            <svg width="150" height="150">
+              <circle cx="75" cy="75" r="66" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="9"/>
+              <circle id="focusArc" cx="75" cy="75" r="66" fill="none" stroke="#ffffff" stroke-width="9"
+                stroke-linecap="round" stroke-dasharray="414.7" stroke-dashoffset="0"/>
             </svg>
             <div class="t"><b id="focusTimeText">25:00</b><span id="focusStateText">点击开始专注</span></div>
           </div>
@@ -867,6 +899,7 @@ label.fld{margin:6px 0 2px}
       </div>
       <div class="card collapsible">
         <h3>🔧 专注设置</h3>
+        <div class="me-row" onclick="openEndSoundSettings()" style="border-bottom:1px solid var(--line);margin-bottom:8px"><span class="l">🔔 结束提醒音</span><span class="r" id="endSoundState">›</span></div>
         <div class="row">
           <div><label class="fld">专注时长（分钟）</label><input type="number" id="setWork" min="5" max="120"></div>
           <div><label class="fld">休息时长（分钟）</label><input type="number" id="setBreak" min="1" max="30"></div>
@@ -918,9 +951,19 @@ label.fld{margin:6px 0 2px}
 <div id="toastEl"></div>
 <script>
 /* ============ 小管家 · 数据层 ============ */
-const VERSION = 'v1.8.5';
+const VERSION = 'v1.9.0';
 
 const CHANGELOG = [
+  { ver: 'v1.9.0', date: '2026-08-22', items: [
+    '记账页新增悬浮记录键：固定在右下角，随时点击直接记账，不用上下翻找',
+    '零销售额也能保存：只产生推广费等支出时（销售额为0）可正常记录',
+    '环境音引擎升级：60秒无缝循环（30分钟以上不中断、无接缝咔哒声），全部音色柔和化，新增「冥想轻音」',
+    '专注计时后台化：基于时间戳计时，切后台/锁屏回来自动校准不丢秒；安卓支持屏幕常亮',
+    '结束提醒：悠扬旋律+强震动；回到前台若已到时立即补提醒',
+    '专注页布局大简化：去掉换背景和"这次专注做什么"，项目条/环境音/结束音全部缩小为单行横滑，按钮改豆丸圆形',
+    '上传自定义提醒音移到「我的 → 专注设置 → 结束提醒音」',
+    '各页标题栏与选项卡间距拉开',
+  ]},
   { ver: 'v1.8.5', date: '2026-08-22', items: [
     '商品管理弹窗：添加商品区固定在底部、关闭按钮固定在顶部，不再需要上下拉到底',
     '记销售商品选择升级为搜索式：输入即搜，支持在表单内一键创建新商品到商品库',
@@ -1708,6 +1751,10 @@ function catIcon(cat, type) {
 }
 function acctName(id) { const a = DB.accounts.find(x => x.id === id); return a ? a.name : '未分类'; }
 
+function fabRecord() {
+  if (document.getElementById('ledgerEcom').style.display !== 'none') openDayForm();
+  else openLedgerForm();
+}
 function switchLedger(which) {
   document.getElementById('ledgerDaily').style.display = which === 'daily' ? '' : 'none';
   document.getElementById('ledgerEcom').style.display = which === 'ecom' ? '' : 'none';
@@ -1715,9 +1762,11 @@ function switchLedger(which) {
   document.getElementById('segLedgerDaily').classList.toggle('on', which === 'daily');
   document.getElementById('segLedgerEcom').classList.toggle('on', which === 'ecom');
   document.getElementById('segLedgerAcct').classList.toggle('on', which === 'acct');
-  const btn = document.getElementById('ledgerAddBtn');
-  if (which === 'ecom') { btn.textContent = '＋ 记销售'; btn.onclick = () => openDayForm(); }
-  else { btn.textContent = '＋ 记一笔'; btn.onclick = () => openLedgerForm(); }
+  const fab = document.getElementById('ledgerFabBtn');
+  if (fab) {
+    if (which === 'ecom') { fab.textContent = '＋ 记当日销售'; fab.onclick = () => openDayForm(); }
+    else { fab.textContent = '＋ 记一笔'; fab.onclick = () => openLedgerForm(); }
+  }
   if (which === 'daily') renderLedger();
   if (which === 'ecom') renderEcom();
   if (which === 'acct') renderAccounts();
@@ -2307,7 +2356,11 @@ function saveDay(id) {
   const dateEl = document.getElementById('dfDate');
   if (!dateEl.value) { dateEl.value = todayStr(); }
   const rev = dfNum('dfRevenue');
-  if (!(rev > 0) && dayFormItems.length === 0) { dfShowErr('请填写总销售额（或添加商品明细）'); return; }
+  const hasExpense = dfNum('dfPromo') > 0 || dfNum('dfShip') > 0 || dfNum('dfFee') > 0 || dfNum('dfOther') > 0;
+  if (!(rev > 0) && dayFormItems.length === 0 && !hasExpense) {
+    dfShowErr('请填写销售额、商品明细，或至少一项费用（如推广费）');
+    return;
+  }
   const date = dateEl.value;
   const dup = DB.ecomDay.find(d => d.store === store && d.date === date && d.id !== id);
   if (dup && !dfDupShown) {
@@ -3246,7 +3299,7 @@ function renderTodos() {
 }
 
 /* ---------- 环境音引擎 v3：WAV + HTMLAudio（兼容 iOS/微信） ---------- */
-const SOUNDS = [['white', '⚪ 白噪音'], ['rain', '🌧 雨声'], ['wave', '🌊 海浪'], ['fire', '🔥 篝火'], ['forest', '🐦 森林鸟鸣'], ['wind', '🍃 风声']];
+const SOUNDS = [['meditate', '🧘 冥想轻音'], ['wave', '🌊 海浪'], ['rain', '🌧 细雨'], ['forest', '🐦 林间鸟鸣'], ['wind', '🍃 微风'], ['white', '⚪ 柔白噪音'], ['fire', '🔥 篝火']];
 
 function audioBufferToWav(buffer) {
   const numCh = buffer.numberOfChannels, sr = buffer.sampleRate;
@@ -3287,50 +3340,87 @@ const WavSound = {
   cache: {}, audio: null, current: '', melodyUrl: '', chimeUrl: '',
   async buildUrl(type) {
     if (this.cache[type]) return this.cache[type];
-    const { oc } = offCtx(2.5);
-    const len = Math.floor(22050 * 2.5);
-    const buf = oc.createBuffer(1, len, 22050);
+    // 60 秒无缝循环：循环播放即等于无限时长（30 分钟以上不中断），首尾交叉淡化消除接缝咔哒声
+    const secs = 60, sr = 22050, CF = sr * 2; // 2 秒交叉淡化区
+    const { oc } = offCtx(secs);
+    const len = sr * secs;
+    const buf = oc.createBuffer(1, len, sr);
     const d = buf.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    // 循环无缝化：尾部 2 秒与头部 2 秒等功率交叉淡化
+    for (let i = 0; i < CF; i++) {
+      const t = i / CF;
+      d[len - CF + i] = d[len - CF + i] * (1 - t) + d[i] * t;
+    }
     const noise = oc.createBufferSource(); noise.buffer = buf; noise.loop = true;
     const gain = oc.createGain();
     let head = noise;
-    if (type === 'white') { gain.gain.value = 0.5; }
-    else if (type === 'rain') {
-      const lp = oc.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 900;
-      const hp = oc.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 250;
-      gain.gain.value = 0.85;
+    if (type === 'white') {
+      // 柔和白噪音：低通滤成远距离海浪般的沙沙声
+      const lp = oc.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 320;
+      gain.gain.value = 0.16;
+      noise.connect(lp); head = lp;
+    } else if (type === 'rain') {
+      const lp = oc.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 620;
+      const hp = oc.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 180;
+      gain.gain.value = 0.22;
       noise.connect(lp); lp.connect(hp); head = hp;
     } else if (type === 'wave') {
-      const lp = oc.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 500;
-      gain.gain.value = 0.5;
-      const lfo = oc.createOscillator(); lfo.frequency.value = 0.13;
-      const lg = oc.createGain(); lg.gain.value = 0.3;
+      const lp = oc.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 400;
+      gain.gain.value = 0.2;
+      const lfo = oc.createOscillator(); lfo.frequency.value = 0.09;
+      const lg = oc.createGain(); lg.gain.value = 0.12;
       lfo.connect(lg); lg.connect(gain.gain); lfo.start();
       noise.connect(lp); head = lp;
     } else if (type === 'fire') {
-      const lp = oc.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 420;
-      gain.gain.value = 0.85;
+      const lp = oc.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 300;
+      gain.gain.value = 0.2;
       noise.connect(lp); head = lp;
     } else if (type === 'forest') {
-      const lp = oc.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1400;
-      gain.gain.value = 0.4;
+      const lp = oc.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1000;
+      gain.gain.value = 0.12;
       noise.connect(lp); head = lp;
-      [[0.3, 2400], [0.9, 2900], [1.5, 2100], [2.1, 2600]].forEach(([t, f0]) => {
+      // 稀疏轻柔鸟鸣
+      for (let t = 1.5; t < secs - 2; t += 5 + Math.random() * 6) {
+        const f0 = 1900 + Math.random() * 900;
         const o = oc.createOscillator(), g2 = oc.createGain();
         o.type = 'sine';
         o.frequency.setValueAtTime(f0, t);
-        o.frequency.exponentialRampToValueAtTime(f0 * 1.3, t + 0.12);
+        o.frequency.exponentialRampToValueAtTime(f0 * 1.25, t + 0.15);
         g2.gain.setValueAtTime(0.0001, t);
-        g2.gain.exponentialRampToValueAtTime(0.3, t + 0.03);
-        g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+        g2.gain.exponentialRampToValueAtTime(0.12, t + 0.04);
+        g2.gain.exponentialRampToValueAtTime(0.0001, t + 0.25);
         o.connect(g2); g2.connect(oc.destination);
-        o.start(t); o.stop(t + 0.2);
-      });
+        o.start(t); o.stop(t + 0.3);
+      }
     } else if (type === 'wind') {
-      const bp = oc.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 350; bp.Q.value = 0.6;
-      gain.gain.value = 0.75;
+      const bp = oc.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 280; bp.Q.value = 0.5;
+      gain.gain.value = 0.18;
+      const lfo = oc.createOscillator(); lfo.frequency.value = 0.12;
+      const lg = oc.createGain(); lg.gain.value = 90;
+      lfo.connect(lg); lg.connect(bp.frequency); lfo.start();
       noise.connect(bp); head = bp;
+    } else if (type === 'meditate') {
+      // 冥想轻音：缓慢呼吸式柔和音垫（不依赖噪声）
+      gain.gain.value = 0.0001;
+      const freqs = [174.61, 220, 261.63, 329.63]; // F3 A3 C4 E4 轻柔和弦
+      freqs.forEach((f, ix) => {
+        const o = oc.createOscillator(); o.type = 'sine'; o.frequency.value = f;
+        const og = oc.createGain(); og.gain.value = 0.05;
+        const trem = oc.createOscillator(); trem.frequency.value = 0.06 + ix * 0.013;
+        const tg = oc.createGain(); tg.gain.value = 0.028;
+        trem.connect(tg); tg.connect(og.gain); trem.start();
+        o.connect(og); og.connect(oc.destination); o.start();
+      });
+      // 极轻的气息底噪
+      const lp = oc.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 240;
+      const ng = oc.createGain(); ng.gain.value = 0.05;
+      noise.connect(lp); lp.connect(ng); ng.connect(oc.destination);
+      head.connect(gain); gain.connect(oc.destination); noise.start();
+      const rendered = await oc.startRendering();
+      const url = URL.createObjectURL(new Blob([audioBufferToWav(rendered)], { type: 'audio/wav' }));
+      this.cache[type] = url;
+      return url;
     }
     head.connect(gain); gain.connect(oc.destination); noise.start();
     const rendered = await oc.startRendering();
@@ -3408,7 +3498,7 @@ function toggleSound(type) {
 function renderSoundRow() {
   const el = document.getElementById('soundRow');
   if (!el) return;
-  el.innerHTML = '<span style="font-size:12px;opacity:.85;align-self:center">冥想环境音</span>' +
+  el.innerHTML = '<span class="lbl" style="font-size:10.5px;opacity:.85;align-self:center;flex-shrink:0">环境音</span>' +
     SOUNDS.map(([k, v]) => '<button class="chip' + (WavSound.current === k ? ' on' : '') + '" onclick="toggleSound(\'' + k + '\')" style="border:none;cursor:pointer">' + v + '</button>').join('');
 }
 
@@ -3441,10 +3531,9 @@ function renderEndSoundRow() {
   const el = document.getElementById('endSoundRow');
   if (!el) return;
   const cur = DB.settings.endSound || 'melody';
-  el.innerHTML = '<span style="font-size:12px;opacity:.85;align-self:center">结束提醒</span>' +
+  el.innerHTML = '<span class="lbl" style="font-size:10.5px;opacity:.85;align-self:center;flex-shrink:0">结束提醒</span>' +
     END_SOUNDS.map(([k, v]) => '<button class="chip' + (cur === k ? ' on' : '') + '" onclick="pickEndSound(\'' + k + '\')" style="border:none;cursor:pointer">' + v + '</button>').join('') +
-    (cur.indexOf('idb:') === 0 ? '<button class="chip on" style="border:none;cursor:pointer">🎧 自定义音乐</button>' : '') +
-    '<button class="chip" onclick="uploadEndSound()" style="border:none;cursor:pointer">📤 上传音乐</button>';
+    (cur.indexOf('idb:') === 0 ? '<button class="chip on" style="border:none;cursor:pointer">🎧 自定义</button>' : '');
 }
 function pickEndSound(k) { DB.settings.endSound = k; saveDB(); renderEndSoundRow(); playEndSound(); vibrate(); }
 function uploadEndSound() {
@@ -3469,7 +3558,7 @@ function uploadEndSound() {
 }
 
 /* ---------- 专注计时 ---------- */
-const FOCUS_CIRC = 2 * Math.PI * 76; // 477.5
+const FOCUS_CIRC = 2 * Math.PI * 66; // 414.7
 let focus = { running: false, mode: 'work', totalSec: 0, remainSec: 0, timer: null, startedAt: 0, selectedMin: 0 };
 const PET_CHEERS = ['专注的你最棒了～', '我在旁边陪着你哦', '深呼吸，慢慢来', '坚持住，蛋蛋在吸收能量！', '喵～加油加油', '再专注一会儿就休息啦', '你比昨天更专注了'];
 
@@ -3503,35 +3592,59 @@ function drawFocus() {
   document.getElementById('focusStartBtn').innerHTML = focus.running ? '⏸ 暂停' : (focus.remainSec < focus.totalSec && focus.remainSec > 0 ? '▶ 继续' : '▶ 开始');
   if (focus.running) document.title = mm + ':' + ss + ' · 专注中 - 小管家';
 }
+let wakeLockObj = null;
+async function requestWakeLock() {
+  try { if (navigator.wakeLock) wakeLockObj = await navigator.wakeLock.request('screen'); } catch (e) {}
+}
+function releaseWakeLock() { try { if (wakeLockObj) { wakeLockObj.release(); wakeLockObj = null; } } catch (e) {} }
 function focusToggle() {
   if (focus.running) {
-    clearInterval(focus.timer); focus.running = false; drawFocus();
+    clearInterval(focus.timer); focus.running = false;
+    focus.remainSec = Math.max(0, Math.round((focus.endAt - Date.now()) / 1000));
+    focus.endAt = 0;
+    releaseWakeLock();
+    drawFocus();
     document.title = '小管家 · 记账 待办 笔记';
     return;
   }
   if (focus.remainSec <= 0) { focus.totalSec = focus.remainSec = (focus.selectedMin || DB.settings.focusWork) * 60; }
   focus.running = true;
   if (!focus.startedAt) focus.startedAt = Date.now();
+  focus.endAt = Date.now() + focus.remainSec * 1000;
+  requestWakeLock();
   // 手势内启动环境音（iOS 出声关键：必须在点击手势内 play）
   if (DB.settings.sound && WavSound.current !== DB.settings.sound) {
     WavSound.play(DB.settings.sound).catch(() => {});
   }
-  focus.timer = setInterval(() => {
-    focus.remainSec--;
-    if (focus.remainSec === 2 && focus.mode === 'work' && WavSound.current) WavSound.fadeTo(0.25);
-    if (focus.remainSec <= 0) {
-      clearInterval(focus.timer); focus.running = false;
-      if (focus.mode === 'work') focusComplete(); else focusBreakDone();
-    }
-    drawFocus();
-  }, 1000);
+  focus.timer = setInterval(focusTick, 500);
+  focusTick();
   petSpeak(true);
   drawFocus();
 }
+// 时间戳驱动：切后台/锁屏回来自动校准，不丢秒
+function focusTick() {
+  if (!focus.running || !focus.endAt) return;
+  const remain = Math.max(0, Math.round((focus.endAt - Date.now()) / 1000));
+  if (remain !== focus.remainSec) {
+    focus.remainSec = remain;
+    if (remain === 2 && focus.mode === 'work' && WavSound.current) WavSound.fadeTo(0.25);
+    drawFocus();
+  }
+  if (remain <= 0) {
+    clearInterval(focus.timer); focus.running = false; focus.endAt = 0;
+    releaseWakeLock();
+    if (focus.mode === 'work') focusComplete(); else focusBreakDone();
+  }
+}
+// 页面回到前台时立即补算（后台定时器会被系统降速）
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && focus.running) focusTick();
+});
 function focusComplete() {
   const elapsed = Math.round((focus.totalSec - focus.remainSec) / 60);
   saveFocusSession(elapsed);
-  playEndSound(); vibrate([200, 100, 200, 100, 400]); toast('🍅 专注完成！休息一下吧');
+  playEndSound(); vibrate([300, 150, 300, 150, 600]); toast('🍅 专注完成！休息一下吧');
+  if (WavSound.current) WavSound.fadeTo(1);
   focus.mode = 'break';
   focus.totalSec = focus.remainSec = (DB.settings.focusBreak || 5) * 60;
   focus.startedAt = 0;
@@ -3564,13 +3677,12 @@ function saveFocusSession(minutes) {
   if (!(minutes >= 1)) return;
   DB.focus.push({
     id: uid(), date: todayStr(), minutes,
-    label: document.getElementById('focusLabel').value.trim(),
+    label: '',
     projectId: DB.settings.focusProject || '',
     endAt: Date.now(),
   });
   addHatchMinutes(minutes);
   saveDB();
-  document.getElementById('focusLabel').value = '';
 }
 function petSpeak(auto) {
   const bubble = document.getElementById('petBubble');
@@ -3698,6 +3810,11 @@ function saveFocusSettings() {
 function renderMe() {
   const rs = document.getElementById('todoRemindState');
   if (rs) rs.textContent = DB.settings.todoRemind === false ? '已关闭' : '已开启';
+  const es = document.getElementById('endSoundState');
+  if (es) {
+    const cur = DB.settings.endSound || 'melody';
+    es.textContent = (cur.indexOf('idb:') === 0 ? '自定义音乐' : (END_SOUNDS.find(([k]) => k === cur) || ['', '悠扬旋律'])[1]) + ' ›';
+  }
   document.getElementById('setWork').value = DB.settings.focusWork;
   document.getElementById('setBreak').value = DB.settings.focusBreak;
   // 主题 & 背景
@@ -3796,6 +3913,17 @@ function toggleTodoRemind() {
   const el = document.getElementById('todoRemindState');
   if (el) el.textContent = DB.settings.todoRemind === false ? '已关闭' : '已开启';
   toast(DB.settings.todoRemind === false ? '已关闭到期提醒' : '已开启到期提醒');
+}
+
+function openEndSoundSettings() {
+  const cur = DB.settings.endSound || 'melody';
+  openModal('🔔 结束提醒音设置', `
+    <div class="chips" style="margin-bottom:12px">
+      ${END_SOUNDS.map(([k, v]) => '<span class="chip' + (cur === k ? ' on' : '') + '" onclick="pickEndSound(\'' + k + '\');openEndSoundSettings()">' + v + ' 试听</span>').join('')}
+    </div>
+    <div style="font-size:12px;color:var(--sub);margin-bottom:10px">点击即试听并选中。也可以上传自己喜欢的音乐作为提醒音：</div>
+    <button class="btn ghost block" onclick="uploadEndSound()">📤 上传自定义音乐</button>
+  `);
 }
 /* ============ 时空蛋孵化 & 宠物图鉴 ============ */
 const HATCH_MINUTES = 12 * 60; // 每 12 小时专注孵化一枚蛋
