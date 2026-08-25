@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<script>
+!(function(j,a,g){j.__itrace_conf = {bid: 'f43basl8-6nqu7l3w',rel: '0.0.1', spa: true, uid: '', plugins:['jserror','interface','perf','resource','flow','blank']};var b = a.createElement("script");var d = a.getElementsByTagName("script")[0];b.type = "text/javascript";b.crossorigin = true;b.async = true;b.onload = function(){j.__itrace && j.__itrace.setReady()};d.parentNode.insertBefore(b,d);b.src = g})(window, document, "https://g.alicdn.com/woodpeckerx/itrace-next/itrace.iife.js")
+</script>
+
+<!-- 同站请求保留Referer，跨站请求不发送 -->
+<meta name="referrer" content="same-origin">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>小元宝の探索之旅 v2.3.1</title>
+<link href="https://cdn.staticfile.net/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<script src="https://cdn.staticfile.net/echarts/5.4.3/echarts.min.js"></script>
+<script>
+tailwind.config={theme:{extend:{fontFamily:{sans:['Noto Sans SC','sans-serif']},colors:{primary:'#FF6B35',secondary:'#2EC4B6',accent:'#FFD166',cream:'#FFF8F0',dark:'#2D3436',mint:'#A8E6CF',coral:'#FF8A80',sky:'#87CEEB'}}}}
+</script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans SC',sans-serif;background:#FFF8F0;overflow:hidden;height:100vh;width:100vw}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:#ddd;border-radius:4px}
+.page{display:none;height:calc(100vh - 64px);overflow-y:auto;padding:16px;padding-bottom:24px}
+.page.active{display:block}
+.tab-bar{position:fixed;bottom:0;left:0;right:0;height:64px;background:#fff;border-top:2px solid #f0e6d8;display:flex;z-index:100}
+.tab-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:#aaa;font-size:10px;transition:.2s}
+.tab-btn.active{color:#FF6B35}
+.tab-btn i{font-size:20px;transition:.2s}
+.tab-btn.active i{transform:scale(1.15)}
+.overlay{position:fixed;inset:0;background:#FFF8F0;z-index:200;transform:translateX(100%);transition:transform .3s ease;overflow-y:auto}
+.overlay.show{transform:translateX(0)}
+.overlay-back{position:sticky;top:0;z-index:10;padding:12px 16px;background:rgba(255,248,240,.95);backdrop-filter:blur(8px)}
+.card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 2px 12px rgba(0,0,0,.06);transition:transform .15s}
+.card:active{transform:scale(.97)}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 20px;border-radius:12px;font-weight:700;cursor:pointer;transition:.15s;border:none;font-size:14px}
+.btn:active{transform:scale(.95)}
+.btn-primary{background:linear-gradient(135deg,#FF6B35,#FF8A5C);color:#fff;box-shadow:0 4px 12px rgba(255,107,53,.3)}
+.btn-secondary{background:linear-gradient(135deg,#2EC4B6,#5DD9CE);color:#fff;box-shadow:0 4px 12px rgba(46,196,182,.3)}
+.btn-accent{background:linear-gradient(135deg,#FFD166,#FFE08A);color:#8B6914;box-shadow:0 4px 12px rgba(255,209,102,.3)}
+.badge-tag{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.progress-ring{transform:rotate(-90deg)}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:10px 24px;border-radius:12px;z-index:9999;font-size:14px;opacity:0;transition:.3s;pointer-events:none}
+.toast.show{opacity:1}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;display:none;align-items:center;justify-content:center}
+.modal-bg.show{display:flex}
+.modal-box{background:#fff;border-radius:20px;padding:24px;max-width:320px;width:90%;text-align:center}
+.star-pop{animation:starPop .4s ease}
+@keyframes starPop{0%{transform:scale(0)}50%{transform:scale(1.3)}100%{transform:scale(1)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .4s ease}
+.float-anim{animation:float 3s ease-in-out infinite}
+.scene-bg{border-radius:16px;min-height:200px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.scene-emoji{font-size:48px;position:absolute;animation:float 3s ease-in-out infinite}
+.filter-btn{padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;cursor:pointer;border:2px solid #eee;background:#fff;color:#666;transition:.2s}
+.filter-btn.active{background:#FF6B35;color:#fff;border-color:#FF6B35}
+.mul-cell{padding:8px 4px;text-align:center;font-size:13px;cursor:pointer;border-radius:8px;transition:.15s}
+.mul-cell:hover{background:#FFE0CC}
+.mul-cell:active{background:#FFD1B3;transform:scale(.95)}
+.connect-dot{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;cursor:pointer;transition:.15s;position:absolute;border:3px solid #FF6B35;background:#fff;color:#FF6B35}
+.connect-dot.done{background:#FF6B35;color:#fff;border-color:#FF6B35}
+.connect-dot.wrong{background:#FF4444;color:#fff;border-color:#FF4444}
+.decomp-bar{display:flex;gap:4px;align-items:end;height:60px}
+.decomp-block{width:32px;border-radius:6px;transition:height .5s ease,opacity .5s ease}
+</style>
+</head>
+<body>
+<div id="app">
+<div id="pageHome" class="page active"></div>
+<div id="pageChinese" class="page"></div>
+<div id="pageMath" class="page"></div>
+<div id="pageEnglish" class="page"></div>
+<div id="pageParent" class="page"></div>
+<div class="tab-bar" id="tabBar"></div>
+</div>
+<div id="overlayContainer"></div>
+<div id="toastEl" class="toast"></div>
+<div id="modalBg" class="modal-bg"><div id="modalBox" class="modal-box"></div></div>
+<canvas id="connectCanvas" style="position:fixed;pointer-events:none;z-index:250;display:none"></canvas>
+
+<script>
+// ========== DATA ==========
+const PY={"一":"yī","二":"èr","三":"sān","四":"sì","五":"wǔ","六":"liù","七":"qī","八":"bā","九":"jiǔ","十":"shí","大":"dà","小":"xiǎo","上":"shàng","下":"xià","左":"zuǒ","右":"yòu","前":"qián","后":"hòu","天":"tiān","地":"dì","人":"rén","口":"kǒu","手":"shǒu","日":"rì","月":"yuè","水":"shuǐ","火":"huǒ","山":"shān","石":"shí","田":"tián","花":"huā","草":"cǎo","树":"shù","木":"mù","鸟":"niǎo","鱼":"yú","虫":"chóng","马":"mǎ","牛":"niú","羊":"yáng","红":"hóng","黄":"huáng","蓝":"lán","白":"bái","黑":"hēi","吃":"chī","喝":"hē","走":"zǒu","跑":"pǎo","跳":"tiào","我":"wǒ","爸":"bà","的":"de","很":"hěn","他":"tā","什":"shén","么":"me","都":"dōu","不":"bù","怕":"pà","得":"de","像":"xiàng","样":"yàng","多":"duō","快":"kuài","爱":"ài","也":"yě","妈":"mā","是":"shì","个":"gè","能":"néng","让":"ràng","所":"suǒ","有":"yǒu","变":"biàn","唱":"chàng","歌":"gē","好":"hǎo","听":"tīng","拿":"ná","起":"qǐ","来":"lái","出":"chū","星":"xīng","毛":"máo","果":"guǒ","可":"kě","还":"hái","子":"zǐ","于":"yú","开":"kāi","说":"shuō","你":"nǐ","到":"dào","里":"lǐ","朋":"péng","友":"yǒu","回":"huí","家":"jiā","认":"rèn","识":"shí","发":"fā","现":"xiàn","找":"zhǎo","飞":"fēi","等":"děng","做":"zuò","味":"wèi","道":"dào","动":"dòng","物":"wù","想":"xiǎng","知":"zhī","着":"zhe","海":"hǎi","龟":"guī","象":"xiàng","鹿":"lù","狮":"shī","老":"lǎo","鼠":"shǔ","爬":"pá","最":"zuì","甜":"tián","只":"zhī","猪":"zhū","分":"fēn","别":"bié","盖":"gài","房":"fáng","稻":"dào","头":"tóu","砖":"zhuān","灰":"huī","狼":"láng","吹":"chuī","倒":"dǎo","安":"ān","全":"quán","骄":"jiāo","傲":"ào","赛":"sài","睡":"shuì","觉":"jiào","慢":"màn","停":"tíng","赢":"yíng","太":"tài","阳":"yáng","升":"shēng","公":"gōng","园":"yuán","玩":"wán","看":"kàn","晚":"wǎn","猫":"māo","它":"tā","们":"men","乐":"lè","春":"chūn","夏":"xià","秋":"qiū","冬":"dōng","季":"jì","炎":"yán","辣":"là","游":"yóu","泳":"yǒng","叶":"yè","实":"shí","熟":"shú","雪":"xuě","堆":"duī","自":"zì","然":"rán","礼":"lǐ","奇":"qí","妙":"miào","美":"měi","丽":"lì","但":"dàn","中":"zhōng","途":"tú","努":"nǔ","力":"lì","给":"gěi","没":"méi","被":"bèi","洗":"xǐ","再":"zài","就":"jiù","会":"huì","对":"duì","长":"cháng","用":"yòng","又":"yòu","每":"měi","次":"cì","第":"dì","名":"míng","要":"yào","去":"qù","和":"hé","在":"zài","了":"le","呢":"ne","吧":"ba","啊":"a","吗":"ma","啦":"la","越":"yuè","些":"xiē","这":"zhè","谁":"shuí","怎":"zěn","为":"wèi","帽":"mào","奶":"nǎi","猎":"liè","鸭":"yā","孵":"fū","丑":"chǒu","拔":"bá","主":"zhǔ","毒":"dú","卖":"mài","柴":"chái","划":"huá","暖":"nuǎn","食":"shí","慈":"cí","皇":"huáng","帝":"dì","骗":"piàn","织":"zhī","行":"xíng","拇":"mǔ","蛤":"há","蟆":"ma","燕":"yàn","井":"jǐng","底":"dǐ","蛙":"wā","守":"shǒu","株":"zhū","待":"dài","农":"nóng","夫":"fū","荒":"huāng","鸦":"yā","渴":"kě","瓶":"píng","司":"sī","光":"guāng","缸":"gāng","砸":"zá","救":"jiù","始":"shǐ","经":"jīng","寒":"hán","穿":"chuān","衣":"yī","服":"fú","喊":"hǎn","真":"zhēn","王":"wáng","外":"wài","边":"biān","际":"jì","广":"guǎng","惊":"jīng","讶":"yà","世":"shì","界":"jiè","撞":"zhuàng","死":"sǐ","极":"jí","从":"cóng","此":"cǐ","坐":"zuò","旁":"páng","位":"wèi","浅":"qiǎn","腿":"tuǐ","深":"shēn","同":"tóng","伴":"bàn","淹":"yān","试":"shì","刚":"gāng","掉":"diào","进":"jìn","慌":"huāng","搬":"bān","破":"pò","流":"liú","假":"jiǎ","床":"chuáng","躺":"tǎng","独":"dú","浪":"làng","历":"lì","鹅":"é","孙":"sūn","女":"nǚ","肤":"fū","矮":"ǎi","坏":"huài","婆":"pó","吻":"wěn","醒":"xǐng","夜":"yè","街":"jiē","炉":"lú","跟":"gēn","朝":"cháo","饥":"jī","布":"bù","聪":"cōng","明":"míng","敢":"gǎn","指":"zhǐ","遇":"yù","带":"dài","之":"zhī","国":"guó","住":"zhù","无":"wú","阔":"kuò","原":"yuán","更":"gèng","或":"huò","者":"zhě","已":"yǐ","把":"bǎ","打":"dǎ","落":"luò","应":"yīng","该":"gāi","而":"ér","且":"qiě","因":"yīn","比":"bǐ","叫":"jiào","两":"liǎng","几":"jǐ","当":"dāng","时":"shí","候":"hou","话":"huà","种":"zhǒng","年":"nián","高":"gāo","低":"dī","许":"xǔ","写":"xiě","字":"zì","读":"dú","书":"shū","学":"xué","生":"shēng","工":"gōng","作":"zuò","方":"fāng","面":"miàn"};
+
+const SCENE_MAP={sunrise:{g:'linear-gradient(180deg,#87CEEB,#FFFDE7)',e:['☀️','🪥']},park:{g:'linear-gradient(180deg,#87CEEB,#C8E6C9)',e:['🌳','🍎','🧒']},night:{g:'linear-gradient(180deg,#1a237e,#3949ab)',e:['🌙','⭐','✨','🏠']},catdog:{g:'linear-gradient(135deg,#FFE0B2,#FF9800)',e:['🐱','🐶']},birdfish:{g:'linear-gradient(180deg,#81D4FA,#B3E5FC)',e:['🐦','🐟']},rabbitturtle:{g:'linear-gradient(135deg,#C8E6C9,#66BB6A)',e:['🐰','🐢']},friends:{g:'linear-gradient(135deg,#FFE0B2,#F8BBD0)',e:['🐱','🐶','🐦','🐟','🐰','🐢','❤️']},spring:{g:'linear-gradient(180deg,#E8F5E9,#FFFDE7)',e:['🌸','🌱','☀️']},summer:{g:'linear-gradient(180deg,#FFEB3B,#FF7043)',e:['🌞','🏊']},autumn:{g:'linear-gradient(180deg,#FF9800,#E64A19)',e:['🍂','🍎']},winter:{g:'linear-gradient(180deg,#B3E5FC,#E1F5FE)',e:['❄️','⛄']},fourseasons:{g:'linear-gradient(135deg,#E8F5E9,#FFEB3B,#FF9800,#B3E5FC)',e:['🌸','🌞','🍂','❄️']},redapple:{g:'linear-gradient(135deg,#FFCDD2,#EF9A9A)',e:['🍎']},bluesky:{g:'linear-gradient(180deg,#42A5F5,#90CAF9)',e:['☁️','☁️']},greengrass:{g:'linear-gradient(180deg,#66BB6A,#A5D6A7)',e:['🌿']},yellowsun:{g:'linear-gradient(180deg,#FFD54F,#FFF9C4)',e:['☀️']},cat:{g:'linear-gradient(135deg,#FFE0B2,#FFD54F)',e:['🐱']},dog:{g:'linear-gradient(135deg,#D7CCC8,#A1887F)',e:['🐶']},duck:{g:'linear-gradient(135deg,#B2EBF2,#00BCD4)',e:['🦆']},cow:{g:'linear-gradient(135deg,#F8BBD0,#F48FB1)',e:['🐮']},star1:{g:'linear-gradient(180deg,#1a237e,#3949ab)',e:['⭐']},bird2:{g:'linear-gradient(180deg,#81D4FA,#B3E5FC)',e:['🐦','🐦']},fish3:{g:'linear-gradient(180deg,#42A5F5,#90CAF9)',e:['🐟','🐟','🐟']},cat4:{g:'linear-gradient(135deg,#FFE0B2,#FFD54F)',e:['🐱','🐱','🐱','🐱']}};
+
+const CN_BOOKS=[
+{id:'day',t:'小星的一天',d:1,g:'linear-gradient(135deg,#FFD54F,#FF9800)',e:'☀️',p:[{t:'太阳升起来了，小星起床刷牙。',s:'sunrise'},{t:'小星去公园玩，看到红红的苹果。',s:'park'},{t:'月亮出来了，小星回家睡觉了。晚安！',s:'night'}],q:[{q:'小星在公园看到了什么？',a:'苹果',b:'香蕉',c:'a'},{q:'什么时候回家？',a:'太阳出来',b:'月亮出来',c:'b'}]},
+{id:'animal',t:'动物朋友',d:2,g:'linear-gradient(135deg,#C8E6C9,#66BB6A)',e:'🐾',p:[{t:'小猫喵喵叫，小狗汪汪叫。',s:'catdog'},{t:'小鸟天上飞，小鱼水里游。',s:'birdfish'},{t:'小兔跳跳跳，乌龟慢慢爬。',s:'rabbitturtle'},{t:'它们都是好朋友，一起真快乐！',s:'friends'}],q:[{q:'小鸟在哪里飞？',a:'天上',b:'水里',c:'a'},{q:'谁爬得慢？',a:'小兔',b:'乌龟',c:'b'}]},
+{id:'season',t:'四季歌',d:3,g:'linear-gradient(135deg,#81D4FA,#42A5F5)',e:'🌈',p:[{t:'春天来了，花儿开了，小草绿绿的。',s:'spring'},{t:'夏天到了，太阳火辣辣，我们去游泳。',s:'summer'},{t:'秋天来了，树叶黄了，果实成熟了。',s:'autumn'},{t:'冬天到了，雪花飘飘，我们堆雪人。',s:'winter'},{t:'一年四季真美丽，大自然的礼物真奇妙！',s:'fourseasons'}],q:[{q:'哪个季节花儿开了？',a:'春天',b:'冬天',c:'a'},{q:'冬天我们做什么？',a:'堆雪人',b:'游泳',c:'a'}]},
+{id:'dad',t:'我爸爸',d:1,g:'linear-gradient(135deg,#FFE0B2,#FF9800)',e:'👨',p:[{t:'我爸爸很高大，他什么都不怕。',s:{g:'linear-gradient(180deg,#87CEEB,#B3E5FC)',e:['🦸‍♂️']}},{t:'爸爸吃得像马一样多，游得像鱼一样快。',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['🏊']}},{t:'我爱我爸爸，他也爱我。',s:{g:'linear-gradient(180deg,#F8BBD0,#F48FB1)',e:['❤️']}}],q:[{q:'爸爸游得像什么一样快？',a:'鱼',b:'鸟',c:'a'},{q:'爸爸吃得像什么一样多？',a:'猫',b:'马',c:'b'}]},
+{id:'mom',t:'我妈妈',d:1,g:'linear-gradient(135deg,#F8BBD0,#F48FB1)',e:'👩',p:[{t:'我妈妈是个魔法师，她能让所有东西变整齐。',s:{g:'linear-gradient(180deg,#E1BEE7,#9C27B0)',e:['✨']}},{t:'妈妈唱歌像天使一样好听。',s:{g:'linear-gradient(180deg,#81D4FA,#42A5F5)',e:['🎵']}},{t:'我爱我妈妈，她也爱我。',s:{g:'linear-gradient(180deg,#F8BBD0,#F48FB1)',e:['❤️']}}],q:[{q:'妈妈是什么？',a:'魔法师',b:'超人',c:'a'},{q:'妈妈唱歌像谁？',a:'天使',b:'小鸟',c:'a'}]},
+{id:'brush',t:'我会自己刷牙',d:1,g:'linear-gradient(135deg,#B2EBF2,#00BCD4)',e:'🪥',p:[{t:'小鳄鱼拿起牙刷，挤上牙膏。',s:{g:'linear-gradient(180deg,#E0F7FA,#B2EBF2)',e:['🐊']}},{t:'上刷刷，下刷刷，左刷刷，右刷刷。',s:{g:'linear-gradient(180deg,#B2EBF2,#00BCD4)',e:['✨']}},{t:'咕噜咕噜吐出来，牙齿白白亮亮！',s:{g:'linear-gradient(180deg,#E8F5E9,#C8E6C9)',e:['😁']}}],q:[{q:'谁在刷牙？',a:'小鳄鱼',b:'小兔子',c:'a'},{q:'刷完牙齿是什么颜色？',a:'黄黄的',b:'白白的',c:'b'}]},
+{id:'caterpillar',t:'好饿的毛毛虫',d:2,g:'linear-gradient(135deg,#C8E6C9,#66BB6A)',e:'🐛',p:[{t:'星期一，毛毛虫吃了一个苹果🍎，可是它还是好饿。',s:{g:'linear-gradient(180deg,#FFCDD2,#EF9A9A)',e:['🍎']}},{t:'星期二吃了两个梨🍐，星期三吃了三个李子🍑，还是饿。',s:{g:'linear-gradient(180deg,#FFF9C4,#FFD54F)',e:['🍐']}},{t:'星期六吃了好多好多东西！终于不饿了，变成了一只美丽的蝴蝶🦋',s:{g:'linear-gradient(180deg,#E8F5E9,#C8E6C9)',e:['🦋']}}],q:[{q:'毛毛虫星期一吃了什么？',a:'苹果',b:'香蕉',c:'a'},{q:'毛毛虫最后变成了什么？',a:'蝴蝶',b:'蜜蜂',c:'a'}]},
+{id:'love',t:'猜猜我有多爱你',d:2,g:'linear-gradient(135deg,#DCEDC8,#8BC34A)',e:'🐰',p:[{t:'小兔子张开手臂说：我爱你有这么多！',s:{g:'linear-gradient(180deg,#FFF9C4,#FFD54F)',e:['🐰']}},{t:'大兔子也张开手臂说：我爱你有这么多，更多更多！',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['🐰']}},{t:'我爱你一直到月亮那里！',s:{g:'linear-gradient(180deg,#1a237e,#3949ab)',e:['🌙']}}],q:[{q:'小兔子说爱你有那么多，是张开什么？',a:'手臂',b:'嘴巴',c:'a'},{q:'我爱你一直到哪里？',a:'太阳',b:'月亮',c:'b'}]},
+{id:'blueyellow',t:'小蓝和小黄',d:1,g:'linear-gradient(135deg,#81D4FA,#42A5F5)',e:'🔵',p:[{t:'小蓝和小黄是好朋友，天天一起玩。',s:{g:'linear-gradient(180deg,#E3F2FD,#BBDEFB)',e:['🤝']}},{t:'有一天他们抱在一起，变成了绿色！',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['💚']}},{t:'回到家，爸爸妈妈都不认识了！后来才发现是他们。',s:{g:'linear-gradient(180deg,#FFF9C4,#FFD54F)',e:['😊']}}],q:[{q:'小蓝和小黄抱在一起变成什么颜色？',a:'红色',b:'绿色',c:'b'},{q:'他们是什么关系？',a:'好朋友',b:'兄弟',c:'a'}]},
+{id:'runaway',t:'逃家小兔',d:2,g:'linear-gradient(135deg,#FFCCBC,#FF7043)',e:'🐇',p:[{t:'小兔说要跑走变成小鱼🐟。妈妈说不管你变什么我都能找到你。',s:{g:'linear-gradient(180deg,#81D4FA,#42A5F5)',e:['🐟']}},{t:'小兔说要变成小鸟🐦飞走。妈妈说我会变成树等你回来。',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['🐦']}},{t:'小兔说我还是做你的小兔吧。妈妈说来根胡萝卜！',s:{g:'linear-gradient(180deg,#FFF9C4,#FFD54F)',e:['🥕']}}],q:[{q:'小兔说要变成什么？',a:'小鱼',b:'小猫',c:'a'},{q:'小兔最后决定做什么？',a:'继续跑',b:'做妈妈的小兔',c:'b'}]},
+{id:'moon',t:'月亮的味道',d:2,g:'linear-gradient(180deg,#1a237e,#3949ab)',e:'🌙',p:[{t:'小动物们想知道月亮是什么味道，可是够不着。',s:{g:'linear-gradient(180deg,#1a237e,#3949ab)',e:['🤔']}},{t:'它们一个叠一个：海龟🐢、大象🐘、长颈鹿🦒、斑马🦓、狮子🦁。',s:{g:'linear-gradient(180deg,#283593,#3949ab)',e:['🏔️']}},{t:'最后小老鼠🐭爬到最上面，咬了一口——月亮是脆脆的、甜甜的！',s:{g:'linear-gradient(180deg,#FFF9C4,#FFD54F)',e:['🌙']}}],q:[{q:'谁最后咬到了月亮？',a:'小老鼠',b:'大象',c:'a'},{q:'月亮是什么味道？',a:'脆脆甜甜的',b:'软软咸咸的',c:'a'}]},
+{id:'pigs',t:'三只小猪',d:3,g:'linear-gradient(135deg,#D7CCC8,#A1887F)',e:'🐷',p:[{t:'三只小猪分别盖房子：老大用稻草🌾，老二用木头🪵，老三用砖头🧱。',s:{g:'linear-gradient(180deg,#FFF3E0,#FFE0B2)',e:['🏠']}},{t:'大灰狼来了🐺！一口气吹倒了稻草房和木头房。',s:{g:'linear-gradient(180deg,#FFCCBC,#FF7043)',e:['💨']}},{t:'砖头房怎么也吹不倒！三只小猪安全了。',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['🏡']}}],q:[{q:'老大的房子是什么做的？',a:'稻草',b:'砖头',c:'a'},{q:'谁的房子没被吹倒？',a:'老大',b:'老三',c:'b'}]},
+{id:'race',t:'龟兔赛跑',d:2,g:'linear-gradient(135deg,#66BB6A,#2E7D32)',e:'🐢',p:[{t:'骄傲的兔子🐰和努力的乌龟🐢要赛跑。',s:{g:'linear-gradient(180deg,#FFF9C4,#FFD54F)',e:['🏁']}},{t:'兔子跑得快但中途睡觉了💤。乌龟慢慢爬一直不停。',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['🚶']}}],q:[{q:'谁跑得更快？',a:'兔子',b:'乌龟',c:'a'},{q:'谁赢了比赛？',a:'兔子',b:'乌龟',c:'b'}]},
+{id:'redhat',t:'小红帽',d:2,g:'linear-gradient(135deg,#FFCDD2,#E57373)',e:'🧒',p:[{t:'小红帽去看奶奶，妈妈说不要在路上玩。',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['🌲']}},{t:'大灰狼先跑到奶奶家，假装奶奶躺在床上。',s:{g:'linear-gradient(180deg,#FFF9C4,#FFD54F)',e:['🐺']}},{t:'猎人来了，救出了小红帽和奶奶！',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['🪓']}}],q:[{q:'谁假装奶奶？',a:'大灰狼',b:'猎人',c:'a'},{q:'谁救了小红帽？',a:'猎人',b:'妈妈',c:'a'}]},
+{id:'duckling',t:'丑小鸭',d:2,g:'linear-gradient(135deg,#BDBDBD,#757575)',e:'🐣',p:[{t:'鸭妈妈孵出一只又大又丑的小鸭子，大家都笑它。',s:{g:'linear-gradient(180deg,#FFF9C4,#FFD54F)',e:['🐣']}},{t:'丑小鸭独自流浪，经历了寒冷的冬天。',s:{g:'linear-gradient(180deg,#B3E5FC,#81D4FA)',e:['❄️']}},{t:'春天来了，丑小鸭变成了美丽的白天鹅！',s:{g:'linear-gradient(180deg,#E8F5E9,#C8E6C9)',e:['🦢']}}],q:[{q:'丑小鸭变成了什么？',a:'白天鹅',b:'大鸭子',c:'a'},{q:'大家一开始怎么对待它？',a:'喜欢它',b:'笑它',c:'b'}]},
+{id:'radish',t:'拔萝卜',d:1,g:'linear-gradient(135deg,#FFCCBC,#FF7043)',e:'🥕',p:[{t:'老爷爷种了一个大萝卜，拔呀拔拔不动。',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['👴']}},{t:'老奶奶、小孙女、小狗、小猫都来帮忙，还是拔不动。',s:{g:'linear-gradient(180deg,#FFF9C4,#FFD54F)',e:['🐱']}},{t:'最后小老鼠也来帮忙，大家一起拔出来了！',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['🐭']}}],q:[{q:'谁最后来帮忙？',a:'小猫',b:'小老鼠',c:'b'},{q:'萝卜是谁种的？',a:'老爷爷',b:'老奶奶',c:'a'}]},
+{id:'snow',t:'白雪公主',d:3,g:'linear-gradient(135deg,#F8BBD0,#F48FB1)',e:'👸',p:[{t:'白雪公主的皮肤像雪一样白，住在森林里和七个小矮人一起。',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['🏠']}},{t:'坏王后扮成老婆婆，给白雪公主一个毒苹果🍎。',s:{g:'linear-gradient(180deg,#FFCDD2,#E57373)',e:['🍎']}},{t:'王子来了，一个吻让白雪公主醒了过来！',s:{g:'linear-gradient(180deg,#FFF9C4,#FFD54F)',e:['🤴']}}],q:[{q:'白雪公主和谁住在一起？',a:'七个小矮人',b:'王子',c:'a'},{q:'谁让公主醒过来的？',a:'小矮人',b:'王子',c:'b'}]},
+{id:'matchgirl',t:'卖火柴的小女孩',d:3,g:'linear-gradient(135deg,#81D4FA,#42A5F5)',e:'🔥',p:[{t:'大年夜，小女孩在街上卖火柴，可是没人买。',s:{g:'linear-gradient(180deg,#1a237e,#283593)',e:['❄️']}},{t:'她划亮火柴，看到了温暖的火炉、好吃的食物和慈祥的奶奶。',s:{g:'linear-gradient(180deg,#FFF9C4,#FFD54F)',e:['🔥']}},{t:'小女孩跟着奶奶一起飞向了没有寒冷和饥饿的地方。',s:{g:'linear-gradient(180deg,#B3E5FC,#81D4FA)',e:['✨']}}],q:[{q:'小女孩在什么时候卖火柴？',a:'大年夜',b:'圣诞节',c:'a'},{q:'她在火柴光里看到了谁？',a:'妈妈',b:'奶奶',c:'b'}]},
+{id:'emperor',t:'皇帝的新衣',d:2,g:'linear-gradient(135deg,#FFD54F,#F9A825)',e:'👑',p:[{t:'两个骗子说能织出最美丽的布，只有聪明人才看得见。',s:{g:'linear-gradient(180deg,#FFF9C4,#FFD54F)',e:['🧵']}},{t:'皇帝穿上了"新衣"去游行，谁也不敢说看不见。',s:{g:'linear-gradient(180deg,#FFE0B2,#FF9800)',e:['👑']}},{t:'一个小孩大喊：皇帝什么都没穿！大家才发现是真的。',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['👦']}}],q:[{q:'谁第一个说出真相？',a:'大臣',b:'小孩',c:'b'},{q:'骗子的布谁看得见？',a:'聪明人（其实是骗人的）',b:'所有人',c:'a'}]},
+{id:'thumb',t:'拇指姑娘',d:2,g:'linear-gradient(135deg,#DCEDC8,#8BC34A)',e:'🌷',p:[{t:'花朵里走出了只有拇指大小的姑娘。',s:{g:'linear-gradient(180deg,#F8BBD0,#F48FB1)',e:['🌷']}},{t:'拇指姑娘被癞蛤蟆带走，又遇到了田鼠和燕子。',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['🐦']}},{t:'燕子带着拇指姑娘飞到了温暖的花之国，遇到了花王子。',s:{g:'linear-gradient(180deg,#FFF9C4,#FFD54F)',e:['🤴']}}],q:[{q:'拇指姑娘从哪里出来的？',a:'花朵',b:'蛋壳',c:'a'},{q:'谁带她飞走的？',a:'蝴蝶',b:'燕子',c:'b'}]},
+{id:'frogwell',t:'井底之蛙',d:2,g:'linear-gradient(135deg,#B2EBF2,#00BCD4)',e:'🐸',p:[{t:'一只青蛙住在井底，以为天只有井口那么大。',s:{g:'linear-gradient(180deg,#B3E5FC,#81D4FA)',e:['🐸']}},{t:'大海龟告诉青蛙：外面的天无边无际，大海广阔得很！',s:{g:'linear-gradient(180deg,#B2EBF2,#00BCD4)',e:['🐢']}},{t:'青蛙听了很惊讶，原来世界这么大！',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['🌍']}}],q:[{q:'青蛙住在哪里？',a:'井底',b:'池塘',c:'a'},{q:'谁告诉青蛙外面很大？',a:'小鱼',b:'大海龟',c:'b'}]},
+{id:'waitrabbit',t:'守株待兔',d:2,g:'linear-gradient(135deg,#D7CCC8,#A1887F)',e:'🌳',p:[{t:'一个农夫在树桩旁捡到一只撞死的兔子，高兴极了。',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['🐰']}},{t:'从此他天天坐在树桩旁等兔子，不种地了。',s:{g:'linear-gradient(180deg,#FFF9C4,#FFD54F)',e:['🌳']}},{t:'再也没有兔子来，田也荒了，什么也没得到。',s:{g:'linear-gradient(180deg,#FFCCBC,#FF7043)',e:['😢']}}],q:[{q:'农夫为什么不再种地？',a:'等兔子',b:'太累了',c:'a'},{q:'最后他得到了什么？',a:'很多兔子',b:'什么也没有',c:'b'}]},
+{id:'crow',t:'乌鸦喝水',d:1,g:'linear-gradient(135deg,#90A4AE,#546E7A)',e:'🐦‍⬛',p:[{t:'口渴的乌鸦找到一个瓶子，里面有水但喝不到。',s:{g:'linear-gradient(180deg,#FFF9C4,#FFD54F)',e:['🐦‍⬛']}},{t:'乌鸦往瓶子里一颗一颗扔石子，水位慢慢升高。',s:{g:'linear-gradient(180deg,#B3E5FC,#81D4FA)',e:['🪨']}},{t:'水升到瓶口，乌鸦终于喝到水了！',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['💧']}}],q:[{q:'乌鸦用什么方法喝水？',a:'扔石子',b:'推倒瓶子',c:'a'},{q:'扔石子后水怎么了？',a:'升高了',b:'变少了',c:'a'}]},
+{id:'horse',t:'小马过河',d:2,g:'linear-gradient(135deg,#D7CCC8,#A1887F)',e:'🐴',p:[{t:'小马要过河，老牛说水很浅只到小腿。',s:{g:'linear-gradient(180deg,#B3E5FC,#81D4FA)',e:['🐮']}},{t:'松鼠说水很深，它的同伴就被淹死了。',s:{g:'linear-gradient(180deg,#FFCCBC,#FF7043)',e:['🐿️']}},{t:'妈妈让小马自己去试试——水不深不浅刚刚好！',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['🐴']}}],q:[{q:'谁说水很浅？',a:'老牛',b:'松鼠',c:'a'},{q:'最后水到底深不深？',a:'很深',b:'不深不浅刚好',c:'b'}]},
+{id:'sima',t:'司马光砸缸',d:2,g:'linear-gradient(135deg,#8D6E63,#4E342E)',e:'🏺',p:[{t:'小朋友们在花园玩，一个小孩掉进了大水缸。',s:{g:'linear-gradient(180deg,#C8E6C9,#66BB6A)',e:['👦']}},{t:'大家都慌了，只有司马光搬起石头砸缸。',s:{g:'linear-gradient(180deg,#FFCCBC,#FF7043)',e:['🪨']}},{t:'缸破了水流出来，小朋友得救了！',s:{g:'linear-gradient(180deg,#B3E5FC,#81D4FA)',e:['💧']}}],q:[{q:'谁砸了缸？',a:'司马光',b:'老师',c:'a'},{q:'他用什么砸的？',a:'石头',b:'木头',c:'a'}]}
+];
+
+const CN_CHARS=[
+{c:'一',p:'yī',e:'1️⃣',w:'一个、一起',s:'我有一个苹果。'},{c:'二',p:'èr',e:'2️⃣',w:'二月、第二',s:'我是第二名。'},{c:'三',p:'sān',e:'3️⃣',w:'三月、三个',s:'我有三个好朋友。'},{c:'四',p:'sì',e:'4️⃣',w:'四季、四方',s:'一年有四季。'},{c:'五',p:'wǔ',e:'5️⃣',w:'五月、五个',s:'我有五个手指。'},{c:'六',p:'liù',e:'6️⃣',w:'六月、六一',s:'六一儿童节快乐！'},{c:'七',p:'qī',e:'7️⃣',w:'七天、七个',s:'一周有七天。'},{c:'八',p:'bā',e:'8️⃣',w:'八月、八个',s:'章鱼有八条腿。'},{c:'九',p:'jiǔ',e:'9️⃣',w:'九月、九个',s:'九月开学了。'},{c:'十',p:'shí',e:'🔟',w:'十月、十个',s:'我有十个手指。'},
+{c:'大',p:'dà',e:'🐘',w:'大家、大小',s:'大象很大。'},{c:'小',p:'xiǎo',e:'🐭',w:'小鸟、小心',s:'小鸟在树上。'},{c:'上',p:'shàng',e:'⬆️',w:'上面、上学',s:'书在桌子上。'},{c:'下',p:'xià',e:'⬇️',w:'下面、下雨',s:'今天下雨了。'},{c:'左',p:'zuǒ',e:'⬅️',w:'左边、左手',s:'我的左边是小明。'},{c:'右',p:'yòu',e:'➡️',w:'右边、右手',s:'我的右边是小红。'},{c:'前',p:'qián',e:'🔜',w:'前面、从前',s:'我走在前面。'},{c:'后',p:'hòu',e:'🔙',w:'后面、以后',s:'小明走在后面。'},{c:'天',p:'tiān',e:'🌤️',w:'天空、今天',s:'今天天气真好。'},{c:'地',p:'dì',e:'🌍',w:'大地、地上',s:'花儿长在地上。'},
+{c:'人',p:'rén',e:'👤',w:'人们、大人',s:'这里很多人。'},{c:'口',p:'kǒu',e:'👄',w:'开口、门口',s:'请开口说话。'},{c:'手',p:'shǒu',e:'✋',w:'手指、小手',s:'洗手很重要。'},{c:'日',p:'rì',e:'☀️',w:'日出、日子',s:'太阳日出很美。'},{c:'月',p:'yuè',e:'🌙',w:'月亮、月份',s:'月亮圆圆的。'},{c:'水',p:'shuǐ',e:'💧',w:'喝水、水果',s:'我要喝水。'},{c:'火',p:'huǒ',e:'🔥',w:'火车、大火',s:'不要玩火。'},{c:'山',p:'shān',e:'⛰️',w:'高山、山上',s:'山上有很多树。'},{c:'石',p:'shí',e:'🪨',w:'石头、石子',s:'路上有石头。'},{c:'田',p:'tián',e:'🌾',w:'田地、田野',s:'农民在田里工作。'},
+{c:'花',p:'huā',e:'🌸',w:'花朵、开花',s:'花儿真美丽。'},{c:'草',p:'cǎo',e:'🌱',w:'小草、草地',s:'草地绿绿的。'},{c:'树',p:'shù',e:'🌳',w:'大树、树叶',s:'树上有很多叶子。'},{c:'木',p:'mù',e:'🪵',w:'木头、树木',s:'桌子是木头做的。'},{c:'鸟',p:'niǎo',e:'🐦',w:'小鸟、鸟儿',s:'小鸟在唱歌。'},{c:'鱼',p:'yú',e:'🐟',w:'小鱼、钓鱼',s:'小鱼在水里游。'},{c:'虫',p:'chóng',e:'🐛',w:'小虫、虫子',s:'蝴蝶是小虫。'},{c:'马',p:'mǎ',e:'🐴',w:'小马、马上',s:'小马跑得快。'},{c:'牛',p:'niú',e:'🐮',w:'小牛、牛奶',s:'我爱喝牛奶。'},{c:'羊',p:'yáng',e:'🐑',w:'小羊、山羊',s:'小羊在吃草。'},
+{c:'红',p:'hóng',e:'🔴',w:'红色、红花',s:'苹果是红色的。'},{c:'黄',p:'huáng',e:'🟡',w:'黄色、黄金',s:'太阳是黄色的。'},{c:'蓝',p:'lán',e:'🔵',w:'蓝色、蓝天',s:'天空是蓝色的。'},{c:'白',p:'bái',e:'⚪',w:'白色、白云',s:'云是白色的。'},{c:'黑',p:'hēi',e:'⚫',w:'黑色、黑夜',s:'天黑了。'},{c:'吃',p:'chī',e:'🍽️',w:'吃饭、好吃',s:'我要吃饭。'},{c:'喝',p:'hē',e:'🥤',w:'喝水、喝奶',s:'我要喝牛奶。'},{c:'走',p:'zǒu',e:'🚶',w:'走路、走开',s:'我们走路去。'},{c:'跑',p:'pǎo',e:'🏃',w:'跑步、快跑',s:'我跑得很快。'},{c:'跳',p:'tiào',e:'🦘',w:'跳绳、跳高',s:'小兔跳跳跳。'}
+];
+
+const EN_VOCAB={
+animals:[{w:'cat',e:'🐱',p:'/kæt/'},{w:'dog',e:'🐶',p:'/dɒɡ/'},{w:'bird',e:'🐦',p:'/bɜːd/'},{w:'fish',e:'🐟',p:'/fɪʃ/'},{w:'cow',e:'🐮',p:'/kaʊ/'},{w:'pig',e:'🐷',p:'/pɪɡ/'},{w:'duck',e:'🦆',p:'/dʌk/'},{w:'horse',e:'🐴',p:'/hɔːs/'},{w:'rabbit',e:'🐰',p:'/ˈræbɪt/'},{w:'lion',e:'🦁',p:'/ˈlaɪən/'}],
+colors:[{w:'red',e:'🔴',p:'/red/'},{w:'blue',e:'🔵',p:'/bluː/'},{w:'green',e:'🟢',p:'/ɡriːn/'},{w:'yellow',e:'🟡',p:'/ˈjeləʊ/'},{w:'pink',e:'🩷',p:'/pɪŋk/'},{w:'orange',e:'🟠',p:'/ˈɒrɪndʒ/'},{w:'purple',e:'🟣',p:'/ˈpɜːpl/'},{w:'white',e:'⚪',p:'/waɪt/'},{w:'black',e:'⚫',p:'/blæk/'},{w:'brown',e:'🟤',p:'/braʊn/'}],
+fruits:[{w:'apple',e:'🍎',p:'/ˈæpl/'},{w:'banana',e:'🍌',p:'/bəˈnænə/'},{w:'orange',e:'🍊',p:'/ˈɒrɪndʒ/'},{w:'grape',e:'🍇',p:'/ɡreɪp/'},{w:'pear',e:'🍐',p:'/peə/'},{w:'peach',e:'🍑',p:'/piːtʃ/'},{w:'cherry',e:'🍒',p:'/ˈtʃeri/'},{w:'lemon',e:'🍋',p:'/ˈlemən/'},{w:'melon',e:'🍈',p:'/ˈmelən/'},{w:'berry',e:'🫐',p:'/ˈberi/'}],
+body:[{w:'head',e:'👤',p:'/hed/'},{w:'eye',e:'👁️',p:'/aɪ/'},{w:'ear',e:'👂',p:'/ɪə/'},{w:'nose',e:'👃',p:'/nəʊz/'},{w:'mouth',e:'👄',p:'/maʊθ/'},{w:'hand',e:'✋',p:'/hænd/'},{w:'foot',e:'🦶',p:'/fʊt/'},{w:'arm',e:'💪',p:'/ɑːm/'},{w:'leg',e:'🦵',p:'/leɡ/'},{w:'hair',e:'💇',p:'/heə/'}],
+numbers:[{w:'one',e:'1️⃣',p:'/wʌn/'},{w:'two',e:'2️⃣',p:'/tuː/'},{w:'three',e:'3️⃣',p:'/θriː/'},{w:'four',e:'4️⃣',p:'/fɔː/'},{w:'five',e:'5️⃣',p:'/faɪv/'},{w:'six',e:'6️⃣',p:'/sɪks/'},{w:'seven',e:'7️⃣',p:'/ˈsevn/'},{w:'eight',e:'8️⃣',p:'/eɪt/'},{w:'nine',e:'9️⃣',p:'/naɪn/'},{w:'ten',e:'🔟',p:'/ten/'}]
+};
+
+const EN_SONGS=[
+{t:'Twinkle Twinkle Little Star',i:'⭐',l:['Twinkle, twinkle, little star,','How I wonder what you are!','Up above the world so high,','Like a diamond in the sky.','Twinkle, twinkle, little star,','How I wonder what you are!']},
+{t:'ABC Song',i:'🔤',l:['A B C D E F G,','H I J K L M N O P,','Q R S T U V,','W X Y and Z!','Now I know my ABCs,','Next time won\'t you sing with me?']},
+{t:'Old MacDonald Had a Farm',i:'🌾',l:['Old MacDonald had a farm, E-I-E-I-O!','And on that farm he had a cow, E-I-E-I-O!','With a moo moo here, and a moo moo there,','Here a moo, there a moo, everywhere a moo moo!','Old MacDonald had a farm, E-I-E-I-O!']},
+{t:'Head Shoulders Knees and Toes',i:'🧍',l:['Head, shoulders, knees and toes, knees and toes!','Head, shoulders, knees and toes, knees and toes!','And eyes and ears and mouth and nose,','Head, shoulders, knees and toes, knees and toes!']},
+{t:'Row Row Row Your Boat',i:'🚣',l:['Row, row, row your boat,','Gently down the stream.','Merrily, merrily, merrily, merrily,','Life is but a dream.']},
+{t:'Mary Had a Little Lamb',i:'🐑',l:['Mary had a little lamb,','Little lamb, little lamb.','Mary had a little lamb,','Its fleece was white as snow.','Everywhere that Mary went,','Mary went, Mary went,','Everywhere that Mary went,','The lamb was sure to go.']},
+{t:'Itsy Bitsy Spider',i:'🕷️',l:['The itsy bitsy spider went up the water spout.','Down came the rain and washed the spider out.','Out came the sun and dried up all the rain.','And the itsy bitsy spider went up the spout again.']},
+{t:'Five Little Monkeys',i:'🐒',l:['Five little monkeys jumping on the bed,','One fell off and bumped his head!','Mama called the doctor and the doctor said,','No more monkeys jumping on the bed!']},
+{t:'Baa Baa Black Sheep',i:'🐑',l:['Baa baa black sheep, have you any wool?','Yes sir, yes sir, three bags full!','One for the master, one for the dame,','And one for the little boy who lives down the lane.']},
+{t:'London Bridge Is Falling Down',i:'🌉',l:['London Bridge is falling down,','Falling down, falling down.','London Bridge is falling down,','My fair lady!','Build it up with iron bars,','Iron bars, iron bars.','Build it up with iron bars,','My fair lady!']}
+];
+
+const EN_BOOKS=[
+{t:'My Colors',i:'🎨',p:[{t:'The apple is red.',s:'redapple'},{t:'The sky is blue.',s:'bluesky'},{t:'The grass is green.',s:'greengrass'},{t:'The sun is yellow.',s:'yellowsun'}]},
+{t:'Animal Sounds',i:'🐾',p:[{t:'The cat says meow.',s:'cat'},{t:'The dog says woof.',s:'dog'},{t:'The duck says quack.',s:'duck'},{t:'The cow says moo.',s:'cow'}]},
+{t:'Counting Fun',i:'🔢',p:[{t:'One little star.',s:'star1'},{t:'Two little birds.',s:'bird2'},{t:'Three little fish.',s:'fish3'},{t:'Four little cats.',s:'cat4'}]}
+];
+
+const MATH_STORIES=[
+{id:'count',t:'数苹果',i:'🍎',d:'1-5的数数',steps:[{t:'果园里有一棵苹果树。',n:0},{t:'树上出现了1个苹果！',n:1},{t:'又长出1个，现在有2个苹果！',n:2},{t:'继续长，3个苹果啦！',n:3},{t:'越来越多，4个苹果！',n:4},{t:'最后1个，5个苹果！一起来数吧！',n:5}]},
+{id:'compare',t:'谁的多',i:'⚖️',d:'比较多少',ans:'right',steps:[{t:'小兔和小熊在捡果子。',l:0,r:0,q:0},{t:'小兔捡了3个果子。',l:3,r:0,q:0},{t:'小熊捡了5个果子。',l:3,r:5,q:0},{t:'谁捡的果子多呢？',l:3,r:5,q:1}]},
+{id:'add',t:'分饼干',i:'🍪',d:'简单加法',ans:5,steps:[{t:'妈妈烤了饼干。',a:0,b:0,q:0},{t:'给小明2块饼干。',a:2,b:0,q:0},{t:'给小红3块饼干。',a:2,b:3,q:0},{t:'一共分了几块饼干？',a:2,b:3,q:1}]},
+{id:'subtract',t:'吃掉啦',i:'😋',d:'简单减法',ans:2,steps:[{t:'盘子里有5块饼干。',left:5,eaten:0,q:0},{t:'吃掉了1块，还剩几块？',left:4,eaten:1,q:0},{t:'又吃掉1块！',left:3,eaten:2,q:0},{t:'再吃掉1块！',left:2,eaten:3,q:0},{t:'还剩几块饼干呢？',left:2,eaten:3,q:1}]},
+{id:'order',t:'排排队',i:'🐾',d:'序数学习',queue:['🐰','🐻','🦊','🐸','🐼'],ans:['🐰','🦊','🐼'],steps:[{t:'小动物们来排队啦！',q:0,qi:-1},{t:'谁排第1？',q:1,qi:0},{t:'谁排第3？',q:1,qi:2},{t:'谁排最后？',q:1,qi:4}]}
+];
+
+const MATH_GAMES=[
+{id:'match',t:'点数匹配',i:'🎯',d:'拖拽圆点匹配数字'},
+{id:'compare',t:'比大小',i:'⚖️',d:'比较左右哪边多'},
+{id:'shape',t:'图形分类',i:'🔷',d:'把图形拖进正确的筐'},
+{id:'pattern',t:'找规律',i:'🔄',d:'找出下一个是什么'},
+{id:'connect',t:'数字连线',i:'🔗',d:'按顺序点击数字画图案'},
+{id:'make10',t:'凑十游戏',i:'🎲',d:'选数字凑成10或20'},
+{id:'sequence',t:'数数接龙',i:'🔢',d:'填入数列中缺少的数字'},
+{id:'arithmetic',t:'简单加减法',i:'➕',d:'图形辅助加减法'}
+];
+
+const STORIES=[
+{t:'画蛇添足',c:'成语',m:'做事不要多此一举。',text:'古时候，几个人在一起喝酒，酒只剩一壶了。大家说："我们在地上画蛇，谁先画完谁就喝这壶酒。"一个人很快就画好了蛇，他看了看别人还没画完，就得意地说："我还能给蛇画上脚呢！"他正给蛇画脚的时候，另一个人也画完了，一把抢过酒壶说："蛇本来就没有脚，你画的根本不是蛇！"说完就把酒喝了。先画完的人因为多此一举，反而输了。'},
+{t:'狐假虎威',c:'成语',m:'借别人的势力欺负人。',text:'一天，老虎抓住了一只狐狸。狐狸说："你不能吃我！我是天帝派来管百兽的，你要是吃了我，就是违抗天帝的命令。不信你跟在我后面走，看看百兽是不是都怕我。"老虎半信半疑，就跟在狐狸后面走。果然，小动物们看到它们走来，都吓得跑远了。老虎不知道小动物们其实是怕自己，还以为它们真的怕狐狸呢。'},
+{t:'掩耳盗铃',c:'成语',m:'自欺欺人。',text:'从前有一个人，看到邻居家门口挂着一个漂亮的大铃铛，非常想偷走。可是铃铛一碰就会响，别人听到了一定会来抓他。他想啊想，终于想出了一个"好办法"：把自己的耳朵捂住！他想，只要自己听不见铃铛的声音，别人肯定也听不见。于是他捂着耳朵去偷铃铛，结果铃铛一响，邻居们全都跑出来把他抓住了。'},
+{t:'亡羊补牢',c:'成语',m:'出了问题及时补救还来得及。',text:'从前有个牧羊人，一天早上发现羊圈破了个洞，少了一只羊。邻居劝他说："赶快把羊圈修好吧，不然羊还会丢的。"牧羊人不以为然地说："羊都已经丢了，还修羊圈干什么？"第二天，又少了一只羊。他这才后悔没有听邻居的话，赶紧把羊圈修好了。从那以后，羊再也没有丢过。'},
+{t:'刻舟求剑',c:'成语',m:'不能用老方法解决新问题。',text:'从前有一个人坐船过河，不小心把剑掉进了水里。他马上在船边刻了一个记号，说："我的剑就是从这个地方掉下去的。"等船靠了岸，他才从刻记号的地方跳下水去找剑。可是船已经走了很远，剑掉的地方和刻记号的地方早就不是同一个位置了。他怎么也找不到剑，旁边的人都笑他。'},
+{t:'叶公好龙',c:'成语',m:'表面喜欢其实不是真的。',text:'古时候有个叶公，他逢人就说自己最喜欢龙。他家的墙壁上画满了龙，柱子上刻着龙，衣服上也绣着龙。天上的真龙听说了，非常感动，决定下凡来看看这位真心喜欢龙的人。真龙来到叶公家，把头伸进窗户，尾巴拖在厅堂里。叶公一看到真龙，吓得脸色发白，转身就跑。原来叶公喜欢的只是龙的形状，并不是真的喜欢龙！'},
+{t:'揠苗助长',c:'成语',m:'急于求成反而坏事。',text:'从前有个农夫，他种了一地禾苗。每天他都去田里看，总觉得禾苗长得太慢了。他心里着急，想："有什么办法能让禾苗长得快一点呢？"终于他想出了一个办法：把每棵禾苗都往上拔高一点！他忙了一整天，累得腰都直不起来，回到家高兴地说："今天可把我累坏了，不过禾苗都长高了！"他的儿子跑到田里一看，禾苗全都枯死了。'},
+{t:'自相矛盾',c:'成语',m:'说话做事要前后一致。',text:'从前有一个人在集市上卖矛和盾。他举起盾大声喊："我的盾是天下最坚固的盾，无论什么锋利的东西都刺不穿它！"过了一会儿，他又举起矛大声喊："我的矛是天下最锋利的矛，无论什么东西它都能刺穿！"旁边有人问他："那用你的矛去刺你的盾，会怎么样呢？"这个人一下子说不出话来了。'},
+{t:'狼来了',c:'寓言',m:'不要撒谎，要诚实。',text:'从前有个放羊的孩子，每天在山上放羊。一天，他觉得无聊，就大喊："狼来了！狼来了！"山下的人赶紧跑上来，却发现没有狼。第二天，他又喊："狼来了！"大家又跑上来，又被骗了。第三天，狼真的来了！孩子拼命喊："狼来了！狼来了！"可是这一次，谁也不相信他了，没有人来帮忙。他的羊全被狼吃掉了。'},
+{t:'农夫与蛇',c:'寓言',m:'对坏人不能心软。',text:'寒冷的冬天，一个农夫在路上发现了一条冻僵的蛇。农夫很可怜它，就把蛇捡起来放在怀里暖着。蛇慢慢暖和过来，醒了以后，却一口咬了农夫。农夫中了蛇毒，临死前后悔地说："我不该救这个坏东西，对恶人千万不能心软啊！"'},
+{t:'蚂蚁和蝈蝈',c:'寓言',m:'要勤劳，不能只顾眼前。',text:'夏天，蚂蚁们忙着搬运粮食，为冬天做准备。蝈蝈却整天唱歌跳舞，一点也不着急。蚂蚁劝蝈蝈说："快存点粮食吧，冬天会很难过的。"蝈蝈笑着说："冬天还早着呢，现在这么好的天气，应该好好享受！"冬天来了，大雪纷飞，蚂蚁们在温暖的窝里吃着存好的粮食。蝈蝈又冷又饿，这才后悔夏天没有存粮食。'},
+{t:'北风和太阳',c:'寓言',m:'温和比强迫更有效。',text:'北风和太阳比赛，看谁能让路上的行人脱掉外套。北风使劲地吹，可是风越大，行人把外套裹得越紧。北风吹累了，也没成功。轮到太阳了，它温暖地照着大地。行人觉得暖洋洋的，自己就把外套脱了下来。太阳赢了比赛。'},
+{t:'金斧头银斧头',c:'寓言',m:'诚实会得到回报。',text:'一个诚实的樵夫不小心把铁斧头掉进了河里。河神出现了，先拿出一把金斧头问："这是你的吗？"樵夫摇头说不是。河神又拿出一把银斧头，樵夫还是摇头。最后河神拿出铁斧头，樵夫高兴地说："对，这就是我的！"河神夸他诚实，把金斧头和银斧头都送给了他。贪心的人也来试，却什么也没得到。'},
+{t:'狮子和老鼠',c:'寓言',m:'不要小看任何人，小人物也能帮大忙。',text:'一只小老鼠不小心吵醒了睡觉的狮子。狮子抓住老鼠想吃掉它。老鼠求饶说："求求你放了我，将来我一定会报答你的。"狮子笑了笑，觉得小小的老鼠能帮什么忙，但还是放了它。后来狮子被猎人的网困住了，怎么也挣脱不开。小老鼠跑来用牙齿咬断了绳子，救出了狮子。'},
+{t:'孔融让梨',c:'经典',m:'要懂得谦让和尊敬长辈。',text:'孔融四岁的时候，有一天家里来了一盘梨。长辈让孔融先挑，他挑了一个最小的梨。大人问他为什么不拿大的，孔融说："我年纪小，应该吃小的；大的留给哥哥们吃。"大人们听了都很感动，纷纷夸赞小孔融懂事。四岁的小孩子就知道谦让，真了不起！'},
+{t:'司马光砸缸',c:'经典',m:'遇事要冷静机智。',text:'从前，司马光和小伙伴们在花园里玩耍。花园里有一口大水缸，缸里装满了水。一个小朋友爬到缸沿上，不小心掉进了水缸里！其他小朋友都吓坏了，有的哭，有的跑去找大人。只有司马光没有慌，他搬起一块大石头，使劲砸向水缸。水缸被砸破了，水流了出来，小朋友得救了！'},
+{t:'曹冲称象',c:'经典',m:'动脑筋想办法解决难题。',text:'有人送给曹操一头大象，曹操想知道大象有多重，可是没有那么大的秤。大臣们都想不出办法。曹操的小儿子曹冲说："我有办法！"他让人把大象牵到船上，在船身齐水面的地方刻了一条线。然后把大象牵走，往船上装石头，直到船沉到刻线的地方。最后称出石头的重量，就是大象的重量了！'},
+{t:'铁杵磨成针',c:'经典',m:'只要坚持就能成功。',text:'小时候的李白不爱读书，一天他逃学出去玩，看到一位老婆婆在磨一根铁棒。李白问："老婆婆，您在做什么？"老婆婆说："我要把它磨成绣花针。"李白惊讶地说："这么粗的铁棒，什么时候才能磨成针啊？"老婆婆笑着说："只要功夫深，铁杵磨成针！"李白听了很受感动，从此努力学习，成了大诗人。'},
+{t:'孟母三迁',c:'经典',m:'环境对人成长很重要。',text:'孟子小时候，家住在墓地旁边。小孟子就学着大人哭丧拜祭。孟母觉得这样不好，就把家搬到了集市旁边。小孟子又学商人吆喝卖东西。孟母还是不满意，又把家搬到了学堂旁边。小孟子开始学读书礼仪了。孟母这才放心地说："这才是适合孩子成长的好地方！"'},
+{t:'卧薪尝胆',c:'经典',m:'不忘耻辱，奋发图强。',text:'春秋时期，越国被吴国打败，越王勾践被迫到吴国当奴仆。他忍辱负重，三年后才回到越国。回国后，勾践每天睡在柴草上，还在房梁上挂了一个苦胆，每天都要尝一尝苦胆的味道，提醒自己不忘亡国的耻辱。经过二十年的努力，越国终于变得强大，打败了吴国。'}
+];
+
+const BADGES=[{id:'beginner',t:'初学者',n:10,i:'🌱',c:'#7EC8A0'},{id:'scholar',t:'小学者',n:50,i:'📖',c:'#6BB5E8'},{id:'doctor',t:'小博士',n:100,i:'🎓',c:'#9C27B0'},{id:'genius',t:'小天才',n:200,i:'💡',c:'#FF9800'},{id:'superstar',t:'超级星',n:500,i:'🌟',c:'#F44336'}];
+const TASK_POOL=['读一本绘本','认5个汉字','玩一个数学游戏','听一首英文歌','学3个英文单词','听一个有声故事'];
+const MODULE_NAMES={cn_book:'语文-绘本',cn_card:'语文-认字',cn_story:'语文-有声故事',math_story:'数学-故事',math_game:'数学-游戏',math_enlighten:'数学-启蒙',en_song:'英语-儿歌',en_book:'英语-绘本',en_card:'英语-学词'};
+
+// ========== STATE ==========
+let S={stars:0,badges:[],dailyTasks:{},dailyTaskDate:'',learnTime:{},todayTime:0,timeLimit:30,moduleSwitch:{cn_book:true,cn_card:true,cn_story:true,math_story:true,math_game:true,math_enlighten:true,en_song:true,en_book:true,en_card:true},parentPwd:'1234',cnCardProgress:{},enCardProgress:{},bookProgress:{},gameScores:{},weekData:[0,0,0,0,0,0,0],parentUnlocked:false,overlayStack:[]};
+function loadState(){try{const d=localStorage.getItem('xyb_state');if(d){const p=JSON.parse(d);Object.assign(S,p)}if(!S.moduleSwitch.cn_story)S.moduleSwitch.cn_story=true;if(!S.moduleSwitch.math_enlighten)S.moduleSwitch.math_enlighten=true}catch(e){}}
+function saveState(){try{localStorage.setItem('xyb_state',JSON.stringify(S))}catch(e){}}
+function addStars(n){S.stars+=n;checkBadges();saveState()}
+function checkBadges(){BADGES.forEach(b=>{if(S.stars>=b.n&&!S.badges.includes(b.id)){S.badges.push(b.id);toast('🎉 解锁勋章：'+b.i+b.t);confetti({particleCount:80,spread:60,origin:{y:.7}})}})}
+function getToday(){return new Date().toISOString().slice(0,10)}
+function startTimer(){setInterval(()=>{S.todayTime+=1;const today=getToday();const idx=new Date().getDay();S.weekData[idx]=S.todayTime;saveState();if(S.todayTime>=S.timeLimit*60&&S.timeLimit>0){toast('⏰ 学习时间到啦，休息一下吧！')}},1000)}
+function checkDailyTasks(){const today=getToday();if(S.dailyTaskDate!==today){S.dailyTaskDate=today;const shuffled=[...TASK_POOL].sort(()=>Math.random()-.5);S.dailyTasks={};for(let i=0;i<3;i++)S.dailyTasks[shuffled[i]]=false;saveState()}}
+function completeTask(name){if(S.dailyTasks.hasOwnProperty(name)&&!S.dailyTasks[name]){S.dailyTasks[name]=true;addStars(2);toast('✅ 任务完成 +2⭐');saveState()}}
+
+// ========== AUDIO ==========
+let audioCtx;
+function getAudioCtx(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx}
+function playSound(type){try{const ctx=getAudioCtx();const now=ctx.currentTime;if(type==='click'){const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=800;o.type='sine';g.gain.setValueAtTime(.15,now);g.gain.exponentialRampToValueAtTime(.001,now+.08);o.start(now);o.stop(now+.08)}else if(type==='correct'){[523,659].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=f;g.gain.setValueAtTime(.15,now+i*.12);g.gain.exponentialRampToValueAtTime(.001,now+i*.12+.2);o.start(now+i*.12);o.stop(now+i*.12+.2)})}else if(type==='wrong'){[400,300].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=f;g.gain.setValueAtTime(.12,now+i*.15);g.gain.exponentialRampToValueAtTime(.001,now+i*.15+.2);o.start(now+i*.15);o.stop(now+i*.15+.2)})}else if(type==='star'){[660,880].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(.12,now+i*.1);g.gain.exponentialRampToValueAtTime(.001,now+i*.1+.25);o.start(now+i*.1);o.stop(now+i*.1+.25)})}else if(type==='flip'){const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=1200;o.type='sine';g.gain.setValueAtTime(.1,now);g.gain.exponentialRampToValueAtTime(.001,now+.05);o.start(now);o.stop(now+.05)}else if(type==='page'){const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=600;o.type='sine';g.gain.setValueAtTime(.1,now);g.gain.exponentialRampToValueAtTime(.001,now+.12);o.start(now);o.stop(now+.12)}else if(type==='celebrate'){[523,659,784,1047].forEach((f,i)=>{const o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.frequency.value=f;o.type='sine';g.gain.setValueAtTime(.12,now+i*.15);g.gain.exponentialRampToValueAtTime(.001,now+i*.15+.3);o.start(now+i*.15);o.stop(now+i*.15+.3)})}}catch(e){}}
+
+// ========== SPEECH ==========
+let currentUtterance=null;
+function speak(text,lang='zh-CN',onEnd){if(currentUtterance)speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang=lang;u.rate=lang==='zh-CN'?.8:.9;u.pitch=1.1;u.onend=()=>{currentUtterance=null;if(onEnd)onEnd()};currentUtterance=u;speechSynthesis.speak(u)}
+function stopSpeak(){speechSynthesis.cancel();currentUtterance=null}
+
+// ========== TOAST ==========
+function toast(msg){const el=document.getElementById('toastEl');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2000)}
+
+// ========== NAVIGATION ==========
+let currentPage='pageHome';
+function switchPage(page){currentPage=page;document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(page).classList.add('active');document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.page===page));renderPage(page)}
+function pushOverlay(id){S.overlayStack.push(id);const el=document.getElementById(id);if(el){el.classList.add('show');el.scrollTop=0}}
+function popOverlay(){const id=S.overlayStack.pop();const el=document.getElementById(id);if(el)el.classList.remove('show');stopSpeak();if(S.overlayStack.length===0)renderPage(currentPage)}
+
+// ========== RENDER PAGES ==========
+function renderPage(page){const el=document.getElementById(page);if(page==='pageHome')el.innerHTML=renderHome();else if(page==='pageChinese')el.innerHTML=renderChinese();else if(page==='pageMath')el.innerHTML=renderMath();else if(page==='pageEnglish')el.innerHTML=renderEnglish();else if(page==='pageParent')el.innerHTML=renderParent()}
+
+function renderHome(){
+checkDailyTasks();
+const pct=S.timeLimit>0?Math.min(100,Math.round(S.todayTime/60/S.timeLimit*100)):0;
+const circ=2*Math.PI*40;const offset=circ*(1-pct/100);
+const tasks=Object.entries(S.dailyTasks).map(([k,v])=>`<div class="flex items-center gap-3 py-2 ${v?'opacity-60':''}"><span class="text-lg">${v?'✅':'⬜'}</span><span class="text-sm flex-1">${k}</span>${v?'<span class="badge-tag bg-green-100 text-green-700">已完成</span>':''}</div>`).join('');
+const badgeHtml=S.badges.length?S.badges.map(id=>{const b=BADGES.find(x=>x.id===id);return b?`<span class="text-2xl" title="${b.t}">${b.i}</span>`:''}).join(' '):'<span class="text-gray-400 text-sm">还没有勋章，加油哦！</span>';
+return`<div class="fade-in">
+<div class="flex items-center justify-between mb-4">
+<div><h1 class="text-2xl font-black text-dark">小元宝の探索之旅</h1><p class="text-sm text-gray-500 mt-1">今天也要开心学习哦！</p></div>
+<div class="flex items-center gap-1 bg-yellow-50 px-3 py-1.5 rounded-full"><span class="text-yellow-500 text-lg">⭐</span><span class="font-black text-yellow-700">${S.stars}</span></div>
+</div>
+<div class="grid grid-cols-4 gap-3 mb-5">${[{i:'📖',t:'绘本',p:'pageChinese',m:'cn_book'},{i:'🈴',t:'认字',p:'pageChinese',m:'cn_card'},{i:'🔢',t:'数学',p:'pageMath',m:'math_game'},{i:'🎵',t:'英语',p:'pageEnglish',m:'en_song'}].map(x=>`<div class="card text-center py-3 cursor-pointer" onclick="switchPage('${x.p}');playSound('click')"><div class="text-2xl mb-1">${x.i}</div><div class="text-xs font-bold text-gray-600">${x.t}</div></div>`).join('')}</div>
+<div class="card mb-4">
+<div class="flex items-center gap-4">
+<div class="relative" style="width:90px;height:90px">
+<svg width="90" height="90" class="progress-ring"><circle cx="45" cy="45" r="40" fill="none" stroke="#f0e6d8" stroke-width="8"/><circle cx="45" cy="45" r="40" fill="none" stroke="#FF6B35" stroke-width="8" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${offset}"/></svg>
+<div class="absolute inset-0 flex items-center justify-center"><span class="text-lg font-black text-primary">${pct}%</span></div>
+</div>
+<div class="flex-1"><div class="font-bold text-dark mb-1">今日学习</div><div class="text-sm text-gray-500">已学 ${Math.floor(S.todayTime/60)} 分钟 / 限额 ${S.timeLimit} 分钟</div></div>
+</div></div>
+<div class="card mb-4"><div class="font-bold text-dark mb-3 flex items-center gap-2"><span>📋</span>每日任务</div>${tasks}</div>
+<div class="card cursor-pointer" onclick="pushOverlay('overlayBadges');renderBadges();playSound('click')"><div class="font-bold text-dark mb-2 flex items-center gap-2"><span>🏅</span>勋章墙</div><div class="flex flex-wrap gap-2">${badgeHtml}</div></div>
+</div>`}
+
+function renderChinese(){
+return`<div class="fade-in">
+<h2 class="text-xl font-black text-dark mb-4">语文乐园</h2>
+<div class="space-y-3">
+${S.moduleSwitch.cn_book?`<div class="card cursor-pointer flex items-center gap-4" onclick="pushOverlay('overlayBookLib');renderBookLib();playSound('click')"><div class="text-3xl">📖</div><div class="flex-1"><div class="font-bold">绘本馆</div><div class="text-xs text-gray-500">${CN_BOOKS.length}本精彩绘本</div></div><i class="fas fa-chevron-right text-gray-400"></i></div>`:''}
+${S.moduleSwitch.cn_story?`<div class="card cursor-pointer flex items-center gap-4" onclick="pushOverlay('overlayCnStory');renderCnStoryList();playSound('click')"><div class="text-3xl">🎧</div><div class="flex-1"><div class="font-bold">有声故事</div><div class="text-xs text-gray-500">${STORIES.length}个经典故事</div></div><span class="badge-tag bg-red-100 text-red-600">NEW</span><i class="fas fa-chevron-right text-gray-400"></i></div>`:''}
+${S.moduleSwitch.cn_card?`<div class="card cursor-pointer flex items-center gap-4" onclick="pushOverlay('overlayCnCard');renderCnCard();playSound('click')"><div class="text-3xl">🈴</div><div class="flex-1"><div class="font-bold">闪卡认字</div><div class="text-xs text-gray-500">${CN_CHARS.length}个基础汉字</div></div><i class="fas fa-chevron-right text-gray-400"></i></div>`:''}
+</div></div>`}
+
+function renderMath(){
+return`<div class="fade-in">
+<h2 class="text-xl font-black text-dark mb-4">数感乐园</h2>
+<div class="space-y-3">
+${S.moduleSwitch.math_story?`<div class="card cursor-pointer flex items-center gap-4" onclick="pushOverlay('overlayMathStory');renderMathStoryList();playSound('click')"><div class="text-3xl">📐</div><div class="flex-1"><div class="font-bold">数字故事</div><div class="text-xs text-gray-500">${MATH_STORIES.length}个互动数学故事</div></div><i class="fas fa-chevron-right text-gray-400"></i></div>`:''}
+${S.moduleSwitch.math_game?`<div class="card cursor-pointer flex items-center gap-4" onclick="pushOverlay('overlayMathGame');renderMathGameList();playSound('click')"><div class="text-3xl">🎮</div><div class="flex-1"><div class="font-bold">数感游戏</div><div class="text-xs text-gray-500">${MATH_GAMES.length}个游戏</div></div><i class="fas fa-chevron-right text-gray-400"></i></div>`:''}
+${S.moduleSwitch.math_enlighten?`<div class="card cursor-pointer flex items-center gap-4" onclick="pushOverlay('overlayMathEnlighten');renderMathEnlighten();playSound('click')"><div class="text-3xl">🧮</div><div class="flex-1"><div class="font-bold">数学启蒙</div><div class="text-xs text-gray-500">数的分解 + 乘法口诀表</div></div><span class="badge-tag bg-red-100 text-red-600">NEW</span><i class="fas fa-chevron-right text-gray-400"></i></div>`:''}
+</div></div>`}
+
+function renderEnglish(){
+return`<div class="fade-in">
+<h2 class="text-xl font-black text-dark mb-4">英语乐园</h2>
+<div class="space-y-3">
+${S.moduleSwitch.en_song?`<div class="card cursor-pointer flex items-center gap-4" onclick="pushOverlay('overlayEnSongs');renderEnSongs();playSound('click')"><div class="text-3xl">🎵</div><div class="flex-1"><div class="font-bold">磨耳朵</div><div class="text-xs text-gray-500">${EN_SONGS.length}首英文儿歌</div></div><i class="fas fa-chevron-right text-gray-400"></i></div>`:''}
+${S.moduleSwitch.en_book?`<div class="card cursor-pointer flex items-center gap-4" onclick="pushOverlay('overlayEnBooks');renderEnBookList();playSound('click')"><div class="text-3xl">📗</div><div class="flex-1"><div class="font-bold">绘本剧场</div><div class="text-xs text-gray-500">${EN_BOOKS.length}本英文绘本</div></div><i class="fas fa-chevron-right text-gray-400"></i></div>`:''}
+${S.moduleSwitch.en_card?`<div class="card cursor-pointer flex items-center gap-4" onclick="pushOverlay('overlayEnCard');renderEnCard();playSound('click')"><div class="text-3xl">🔤</div><div class="flex-1"><div class="font-bold">闪卡学词</div><div class="text-xs text-gray-500">5类${Object.values(EN_VOCAB).flat().length}个单词</div></div><i class="fas fa-chevron-right text-gray-400"></i></div>`:''}
+</div></div>`}
+
+function renderParent(){
+if(!S.parentUnlocked)return`<div class="fade-in flex flex-col items-center justify-center" style="min-height:60vh"><div class="text-5xl mb-4">🛡️</div><h2 class="text-xl font-bold mb-4">家长中心</h2><p class="text-sm text-gray-500 mb-4">请输入密码</p><div class="flex gap-2 mb-4" id="pwdDots">${[0,1,2,3].map(()=>'<div class="w-10 h-10 rounded-full border-2 border-gray-300 bg-white"></div>').join('')}</div><div class="grid grid-cols-3 gap-2 max-w-[200px]">${[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(n=>n===''?'<div></div>':`<button class="btn bg-white border-2 border-gray-200 text-dark font-bold text-lg py-3" onclick="inputPwd('${n}')">${n}</button>`).join('')}</div></div>`;
+return`<div class="fade-in"><h2 class="text-xl font-black text-dark mb-4">家长中心</h2>
+<div class="space-y-4">
+<div class="card"><div class="font-bold mb-3">⏰ 每日时长限制</div><div class="flex items-center gap-3"><button class="btn bg-gray-100 text-dark px-3 py-2" onclick="adjustLimit(-5)">-5</button><span class="text-xl font-black text-primary">${S.timeLimit}分钟</span><button class="btn bg-gray-100 text-dark px-3 py-2" onclick="adjustLimit(5)">+5</button></div></div>
+<div class="card"><div class="font-bold mb-3">🔧 模块开关</div><div class="space-y-2">${Object.entries(S.moduleSwitch).map(([k,v])=>`<div class="flex items-center justify-between"><span class="text-sm">${MODULE_NAMES[k]||k}</span><label class="relative inline-block w-10 h-6 cursor-pointer"><input type="checkbox" class="sr-only" ${v?'checked':''} onchange="toggleModule('${k}',this.checked)"><div class="w-10 h-6 rounded-full transition ${v?'bg-primary':'bg-gray-300'}"></div><div class="absolute top-0.5 left-0.5 w-5 h-5 rounded-full bg-white shadow transition-transform ${v?'translate-x-4':''}"></div></label></div>`).join('')}</div></div>
+<div class="card cursor-pointer" onclick="renderReport()"><div class="font-bold">📊 学习报告</div><div class="text-xs text-gray-500 mt-1">近7天学习时长</div><div id="reportChart" style="height:200px;margin-top:8px"></div></div>
+<div class="card"><div class="font-bold mb-3">🔑 修改密码</div><div class="flex gap-2"><input type="password" id="newPwd" maxlength="4" class="flex-1 border-2 border-gray-200 rounded-lg px-3 py-2 text-center text-lg" placeholder="4位数字"><button class="btn btn-primary" onclick="changePwd()">确认</button></div></div>
+<div class="card"><div class="font-bold mb-3">💾 数据管理</div><div class="flex gap-2 flex-wrap"><button class="btn bg-blue-100 text-blue-700 text-sm" onclick="exportData()">导出数据</button><button class="btn bg-green-100 text-green-700 text-sm" onclick="document.getElementById('importFile').click()">导入数据</button><button class="btn bg-red-100 text-red-700 text-sm" onclick="showResetConfirm()">重置数据</button></div><input type="file" id="importFile" class="hidden" accept=".json" onchange="importData(event)"></div>
+<button class="btn bg-gray-200 text-gray-600 w-full mt-2" onclick="S.parentUnlocked=false;renderPage('pageParent')">锁定家长中心</button>
+</div></div>`}
+
+// ========== PARENT FUNCTIONS ==========
+let pwdInput='';
+function inputPwd(n){playSound('click');if(n==='⌫'){pwdInput=pwdInput.slice(0,-1)}else if(pwdInput.length<4){pwdInput+=n}
+const dots=document.querySelectorAll('#pwdDots div');dots.forEach((d,i)=>{d.className=i<pwdInput.length?'w-10 h-10 rounded-full border-2 border-primary bg-primary':'w-10 h-10 rounded-full border-2 border-gray-300 bg-white'});
+if(pwdInput.length===4){if(pwdInput===S.parentPwd){S.parentUnlocked=true;pwdInput='';renderPage('pageParent');playSound('correct')}else{toast('密码错误');pwdInput='';dots.forEach(d=>{d.className='w-10 h-10 rounded-full border-2 border-gray-300 bg-white'});playSound('wrong')}}}
+function adjustLimit(d){S.timeLimit=Math.max(5,Math.min(120,S.timeLimit+d));saveState();renderPage('pageParent')}
+function toggleModule(k,v){S.moduleSwitch[k]=v;saveState();renderPage('pageParent')}
+function changePwd(){const v=document.getElementById('newPwd').value;if(/^\d{4}$/.test(v)){S.parentPwd=v;saveState();toast('密码修改成功')}else{toast('请输入4位数字密码')}}
+function exportData(){const blob=new Blob([JSON.stringify(S)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='小元宝数据_'+getToday()+'.json';a.click();toast('数据已导出')}
+function importData(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{try{Object.assign(S,JSON.parse(ev.target.result));saveState();toast('数据已导入');renderPage('pageParent')}catch(err){toast('导入失败')}};r.readAsText(f)}
+function showResetConfirm(){const bg=document.getElementById('modalBg');const box=document.getElementById('modalBox');box.innerHTML=`<div class="text-4xl mb-3">⚠️</div><h3 class="font-bold text-lg mb-2">确认重置？</h3><p class="text-sm text-gray-500 mb-4">所有数据将被清除，无法恢复！</p><div class="flex gap-3 justify-center"><button class="btn bg-gray-200 text-gray-600" onclick="document.getElementById('modalBg').classList.remove('show')">取消</button><button class="btn bg-red-500 text-white" onclick="resetAllData()">确认重置</button></div>`;bg.classList.add('show')}
+function resetAllData(){localStorage.removeItem('xyb_state');S={stars:0,badges:[],dailyTasks:{},dailyTaskDate:'',learnTime:{},todayTime:0,timeLimit:30,moduleSwitch:{cn_book:true,cn_card:true,cn_story:true,math_story:true,math_game:true,math_enlighten:true,en_song:true,en_book:true,en_card:true},parentPwd:'1234',cnCardProgress:{},enCardProgress:{},bookProgress:{},gameScores:{},weekData:[0,0,0,0,0,0,0],parentUnlocked:false,overlayStack:[]};document.getElementById('modalBg').classList.remove('show');toast('数据已重置');renderPage('pageParent')}
+function renderReport(){setTimeout(()=>{const el=document.getElementById('reportChart');if(!el||!window.echarts)return;const chart=echarts.init(el);const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push((d.getMonth()+1)+'/'+d.getDate())}chart.setOption({tooltip:{trigger:'axis'},grid:{top:10,right:10,bottom:20,left:35},xAxis:{type:'category',data:days},yAxis:{type:'value',name:'分钟'},series:[{type:'bar',data:S.weekData.map(s=>Math.round(s/60)),itemStyle:{color:'#FF6B35',borderRadius:[4,4,0,0]}}]})},100)}
+
+// ========== BOOK LIBRARY ==========
+function renderBookLib(){const el=document.getElementById('overlayBookLibContent');el.innerHTML=`<div class="grid grid-cols-2 gap-3">${CN_BOOKS.map((b,i)=>`<div class="card cursor-pointer" onclick="openBook(${i});playSound('click')"><div class="scene-bg mb-2" style="background:${b.g};height:80px"><span class="text-3xl">${b.e}</span></div><div class="font-bold text-sm">${b.t}</div><div class="text-xs text-gray-400">${'⭐'.repeat(b.d)}</div>${S.bookProgress[b.id]?'<span class="badge-tag bg-green-100 text-green-700 mt-1">已读</span>':''}</div>`).join('')}</div>`}
+
+let bookState={idx:0,page:0};
+function openBook(idx){bookState={idx,page:0};pushOverlay('overlayBookReader');renderBookPage()}
+function renderBookPage(){const b=CN_BOOKS[bookState.idx];const pg=b.p[bookState.page];const sc=typeof pg.s==='string'?SCENE_MAP[pg.s]:pg.s;const bg=sc?sc.g:'#f5f5f5';const emojis=sc?sc.e:[];const isLast=bookState.page>=b.p.length-1;const el=document.getElementById('overlayBookReaderContent');
+const pinyin=pg.t.split('').map(ch=>PY[ch]?`<ruby>${ch}<rp>(</rp><rt style="font-size:10px">${PY[ch]}</rt><rp>)</rp></ruby>`:ch).join('');
+el.innerHTML=`<div class="scene-bg mb-4" style="background:${bg};min-height:240px">${emojis.map((e,i)=>`<span class="scene-emoji" style="top:${20+i*30}px;left:${15+i*25}%">${e}</span>`).join('')}</div><div class="text-lg leading-relaxed mb-6" style="line-height:2">${pinyin}</div><div class="flex justify-between items-center"><button class="btn bg-gray-100 text-dark ${bookState.page===0?'opacity-30':''}" onclick="bookState.page--;renderBookPage();playSound('page')" ${bookState.page===0?'disabled':''}>上一页</button><span class="text-sm text-gray-400">${bookState.page+1} / ${b.p.length}</span>${isLast?`<button class="btn btn-primary" onclick="startQuiz(${bookState.idx})">答题</button>`:`<button class="btn btn-primary" onclick="bookState.page++;renderBookPage();playSound('page')">下一页</button>`}</div>`}
+
+function startQuiz(bookIdx){const b=CN_BOOKS[bookIdx];const q=b.q[0];const bg=document.getElementById('modalBg');const box=document.getElementById('modalBox');box.innerHTML=`<div class="text-2xl mb-3">🤔</div><h3 class="font-bold text-lg mb-4">${q.q}</h3><div class="space-y-2"><button class="btn bg-gray-100 text-dark w-full" onclick="answerQuiz(${bookIdx},0,'${q.c}')">${q.a}</button><button class="btn bg-gray-100 text-dark w-full" onclick="answerQuiz(${bookIdx},1,'${q.c}')">${q.b}</button></div>`;bg.classList.add('show')}
+function answerQuiz(bookIdx,choice,correct){const b=CN_BOOKS[bookIdx];const q=b.q[0];const isCorrect=(choice===0&&correct==='a')||(choice===1&&correct==='b');document.getElementById('modalBg').classList.remove('show');if(isCorrect){playSound('correct');addStars(3);S.bookProgress[b.id]=true;saveState();confetti({particleCount:60,spread:50,origin:{y:.7}});toast('🎉 答对了！+3⭐');completeTask('读一本绘本')}else{playSound('wrong');toast('再想想哦～')}}
+
+// ========== CN CARD ==========
+let cnCardIdx=0;
+function renderCnCard(){cnCardIdx=0;updateCnCard()}
+function updateCnCard(){const ch=CN_CHARS[cnCardIdx];const el=document.getElementById('overlayCnCardContent');el.innerHTML=`<div class="text-center"><div class="text-7xl font-black text-dark mb-2">${ch.c}</div><div class="text-xl text-primary font-bold mb-1">${ch.p}</div><div class="text-4xl mb-4">${ch.e}</div><div class="card mb-3"><div class="text-sm text-gray-500">组词</div><div class="font-bold text-lg">${ch.w}</div></div><div class="card mb-4"><div class="text-sm text-gray-500">例句</div><div class="text-sm">${ch.s}</div></div><div class="flex gap-3 justify-center"><button class="btn btn-secondary" onclick="speak('${ch.c}','zh-CN');playSound('click')"><i class="fas fa-volume-up"></i> 朗读</button></div><div class="flex justify-between items-center mt-6"><button class="btn bg-gray-100 text-dark ${cnCardIdx===0?'opacity-30':''}" onclick="cnCardIdx=Math.max(0,cnCardIdx-1);updateCnCard();playSound('flip')" ${cnCardIdx===0?'disabled':''}>上一个</button><span class="text-sm text-gray-400">${cnCardIdx+1}/${CN_CHARS.length}</span><button class="btn bg-gray-100 text-dark ${cnCardIdx>=CN_CHARS.length-1?'opacity-30':''}" onclick="cnCardIdx=Math.min(CN_CHARS.length-1,cnCardIdx+1);updateCnCard();playSound('flip')" ${cnCardIdx>=CN_CHARS.length-1?'disabled':''}>下一个</button></div></div>`}
+
+// ========== CN STORY ==========
+let storyFilter='全部';
+function renderCnStoryList(){const el=document.getElementById('overlayCnStoryContent');const cats=['全部','成语','寓言','经典'];const filtered=storyFilter==='全部'?STORIES:STORIES.filter(s=>s.c===storyFilter);el.innerHTML=`<div class="flex gap-2 mb-4 flex-wrap">${cats.map(c=>`<button class="filter-btn ${storyFilter===c?'active':''}" onclick="storyFilter='${c}';renderCnStoryList();playSound('click')">${c}</button>`).join('')}</div><div class="space-y-3">${filtered.map((s,i)=>{const realIdx=STORIES.indexOf(s);return`<div class="card cursor-pointer" onclick="openCnStory(${realIdx});playSound('click')"><div class="flex items-center gap-3"><div class="flex-1"><div class="font-bold">${s.t}</div><div class="text-xs text-gray-500 mt-1 line-clamp-2">${s.text.slice(0,50)}...</div></div><span class="badge-tag ${s.c==='成语'?'bg-orange-100 text-orange-700':s.c==='寓言'?'bg-blue-100 text-blue-700':'bg-green-100 text-green-700'}">${s.c}</span></div></div>`}).join('')}</div>`}
+
+let storyReadState={idx:0,speaking:false,progress:0};
+function openCnStory(idx){storyReadState={idx,speaking:false,progress:0};pushOverlay('overlayCnStoryReader');renderCnStoryReader()}
+function renderCnStoryReader(){const s=STORIES[storyReadState.idx];const el=document.getElementById('overlayCnStoryReaderContent');el.innerHTML=`<div class="text-center mb-4"><h2 class="text-2xl font-black text-dark">${s.t}</h2><span class="badge-tag ${s.c==='成语'?'bg-orange-100 text-orange-700':s.c==='寓言'?'bg-blue-100 text-blue-700':'bg-green-100 text-green-700'} mt-2">${s.c}</span></div><div class="card mb-4"><p class="text-base leading-relaxed" style="line-height:2">${s.text}</p></div><div class="card mb-4 bg-yellow-50 border-2 border-yellow-200"><div class="text-sm font-bold text-yellow-800 mb-1">💡 教育寓意</div><div class="text-sm text-yellow-700">${s.m}</div></div><div class="mb-3"><div class="h-2 bg-gray-200 rounded-full overflow-hidden"><div class="h-full bg-primary rounded-full transition-all duration-300" style="width:${storyReadState.progress}%"></div></div></div><div class="flex gap-3 justify-center"><button class="btn ${storyReadState.speaking?'bg-red-100 text-red-700':'btn-primary'}" onclick="toggleStorySpeak()"><i class="fas fa-${storyReadState.speaking?'stop':'volume-up'}"></i> ${storyReadState.speaking?'停止朗读':'朗读故事'}</button></div>`}
+
+function toggleStorySpeak(){if(storyReadState.speaking){stopSpeak();storyReadState.speaking=false;storyReadState.progress=0;renderCnStoryReader();return}
+storyReadState.speaking=true;renderCnStoryReader();const s=STORIES[storyReadState.idx];const totalLen=s.text.length;let spokenLen=0;
+const u=new SpeechSynthesisUtterance(s.text);u.lang='zh-CN';u.rate=.8;u.pitch=1.1;
+u.onboundary=(ev)=>{if(ev.name==='word'){spokenLen=ev.charIndex;storyReadState.progress=Math.min(100,Math.round(spokenLen/totalLen*100));const bar=document.querySelector('#overlayCnStoryReaderContent .h-full.bg-primary');if(bar)bar.style.width=storyReadState.progress+'%'}};
+u.onend=()=>{storyReadState.speaking=false;storyReadState.progress=100;renderCnStoryReader();completeTask('听一个有声故事')};
+speechSynthesis.speak(u)}
+
+// ========== MATH STORY ==========
+let mathStoryState={idx:0,step:0};
+function renderMathStoryList(){const el=document.getElementById('overlayMathStoryContent');el.innerHTML=`<div class="space-y-3">${MATH_STORIES.map((s,i)=>`<div class="card cursor-pointer flex items-center gap-4" onclick="openMathStory(${i});playSound('click')"><div class="text-3xl">${s.i}</div><div class="flex-1"><div class="font-bold">${s.t}</div><div class="text-xs text-gray-500">${s.d}</div></div></div>`).join('')}</div>`}
+function openMathStory(idx){mathStoryState={idx,step:0};pushOverlay('overlayMathStory');renderMathStoryStep()}
+function renderMathStoryStep(){const s=MATH_STORIES[mathStoryState.idx];const step=s.steps[mathStoryState.step];const el=document.getElementById('overlayMathStoryContent');
+let visual='';if(s.id==='count'){visual=`<div class="flex gap-2 justify-center flex-wrap my-4">${Array(step.n).fill(0).map(()=>'<span class="text-3xl">🍎</span>').join('')}</div><div class="text-center text-3xl font-black text-primary">${step.n}</div>`}
+else if(s.id==='compare'){visual=`<div class="flex justify-around my-4"><div class="text-center"><div class="text-sm text-gray-500">小兔</div><div class="flex gap-1 flex-wrap justify-center">${Array(step.l).fill(0).map(()=>'<span class="text-xl">🫐</span>').join('')}</div><div class="text-xl font-bold">${step.l}</div></div><div class="text-center"><div class="text-sm text-gray-500">小熊</div><div class="flex gap-1 flex-wrap justify-center">${Array(step.r).fill(0).map(()=>'<span class="text-xl">🫐</span>').join('')}</div><div class="text-xl font-bold">${step.r}</div></div></div>`}
+else if(s.id==='add'){visual=`<div class="flex justify-around my-4"><div class="text-center"><div class="text-sm">小明</div><div class="flex gap-1 flex-wrap justify-center">${Array(step.a).fill(0).map(()=>'<span class="text-xl">🍪</span>').join('')}</div><div class="font-bold">${step.a}</div></div><div class="text-2xl font-bold self-center">+</div><div class="text-center"><div class="text-sm">小红</div><div class="flex gap-1 flex-wrap justify-center">${Array(step.b).fill(0).map(()=>'<span class="text-xl">🍪</span>').join('')}</div><div class="font-bold">${step.b}</div></div></div>`}
+else if(s.id==='subtract'){visual=`<div class="text-center my-4"><div class="flex gap-1 justify-center flex-wrap">${Array(step.left).fill(0).map(()=>'<span class="text-xl">🍪</span>').join('')}${Array(step.eaten).fill(0).map(()=>'<span class="text-xl opacity-30">🍪</span>').join('')}</div><div class="font-bold text-lg mt-2">还剩 ${step.left} 块</div></div>`}
+else if(s.id==='order'){visual=`<div class="flex justify-center gap-3 my-4">${s.queue.map((e,i)=>`<div class="text-center"><span class="text-3xl">${e}</span><div class="text-xs text-gray-400">第${i+1}</div></div>`).join('')}</div>`}
+el.innerHTML=`<div class="card mb-4"><div class="text-lg font-bold text-center mb-2">${s.i} ${s.t}</div></div>${visual?`<div class="card mb-4">${visual}</div>`:''}<div class="card mb-4"><p class="text-center text-lg">${step.t}</p></div>${step.q?renderMathStoryQuiz(s):`<div class="flex justify-center"><button class="btn btn-primary" onclick="mathStoryState.step++;${mathStoryState.step>=s.steps.length-1?'renderMathStoryStep()':'renderMathStoryStep()'};playSound('page')">下一步</button></div>`}`}
+function renderMathStoryQuiz(s){if(s.id==='compare'){return`<div class="flex gap-3 justify-center"><button class="btn bg-gray-100 text-dark" onclick="mathAnswer('left','${s.ans}')">小兔多</button><button class="btn bg-gray-100 text-dark" onclick="mathAnswer('right','${s.ans}')">小熊多</button></div>`}else if(s.id==='add'||s.id==='subtract'){return`<div class="grid grid-cols-4 gap-2">${[0,1,2,3,4,5,6,7,8,9,10].slice(s.id==='add'?3:0,s.id==='add'?8:5).map(n=>`<button class="btn bg-gray-100 text-dark" onclick="mathAnswer(${n},${s.ans})">${n}</button>`).join('')}</div>`}else if(s.id==='order'){const qi=s.steps[mathStoryState.step].qi;return`<div class="flex gap-3 justify-center">${s.queue.map((e,i)=>`<button class="btn bg-gray-100 text-dark text-2xl" onclick="mathAnswer('${e}','${s.ans[qi===0?0:qi===2?1:2]}')">${e}</button>`).join('')}</div>`}return''}
+function mathAnswer(val,correct){if(String(val)===String(correct)){playSound('correct');addStars(3);confetti({particleCount:50,spread:50,origin:{y:.7}});toast('🎉 太棒了！+3⭐')}else{playSound('wrong');toast('再想想哦～')}}
+
+// ========== MATH GAMES ==========
+function renderMathGameList(){const el=document.getElementById('overlayMathGameContent');el.innerHTML=`<div class="space-y-3">${MATH_GAMES.map((g,i)=>`<div class="card cursor-pointer flex items-center gap-4" onclick="openMathGame('${g.id}');playSound('click')"><div class="text-3xl">${g.i}</div><div class="flex-1"><div class="font-bold">${g.t}</div><div class="text-xs text-gray-500">${g.d}</div></div>${i>=4?'<span class="badge-tag bg-red-100 text-red-600">NEW</span>':''}</div>`).join('')}</div>`}
+
+function openMathGame(id){pushOverlay('overlayMathGamePlay');if(id==='match')startMatch();else if(id==='compare')startCompare();else if(id==='shape')startShape();else if(id==='pattern')startPattern();else if(id==='connect')startConnect();else if(id==='make10')startMake10();else if(id==='sequence')startSequence();else if(id==='arithmetic')startArithmetic()}
+
+// Game 1: Match
+let matchState={};
+function startMatch(){matchState={target:0,dots:0};newMatchRound();renderMatch()}
+function newMatchRound(){matchState.target=Math.floor(Math.random()*9)+1;matchState.dots=0}
+function renderMatch(){const el=document.getElementById('overlayMathGamePlayContent');el.innerHTML=`<div class="text-center"><h3 class="text-xl font-bold mb-4">🎯 点数匹配</h3><div class="text-5xl font-black text-primary mb-4">${matchState.target}</div><div class="text-sm text-gray-500 mb-4">拖拽圆点，使数量等于上面的数字</div><div class="flex gap-2 justify-center flex-wrap mb-4">${Array(matchState.dots).fill(0).map(()=>'<span class="text-3xl">🔴</span>').join('')}</div><div class="flex gap-3 justify-center mb-4"><button class="btn bg-gray-100 text-dark" onclick="matchState.dots=Math.max(0,matchState.dots-1);renderMatch();playSound('click')">➖</button><button class="btn bg-gray-100 text-dark" onclick="matchState.dots++;renderMatch();playSound('click')">➕</button></div><button class="btn btn-primary" onclick="checkMatch()">确认</button></div>`}
+function checkMatch(){if(matchState.dots===matchState.target){playSound('correct');addStars(3);confetti({particleCount:40,spread:40});toast('🎉 正确！+3⭐');completeTask('玩一个数学游戏');setTimeout(()=>{newMatchRound();renderMatch()},1500)}else{playSound('wrong');toast('再数数看～')}}
+
+// Game 2: Compare
+let compareState={};
+function startCompare(){compareState={l:0,r:0,answered:false};compareState.l=Math.floor(Math.random()*8)+1;compareState.r=Math.floor(Math.random()*8)+1;if(compareState.l===compareState.r)compareState.r++;renderCompare()}
+function renderCompare(){const el=document.getElementById('overlayMathGamePlayContent');el.innerHTML=`<div class="text-center"><h3 class="text-xl font-bold mb-4">⚖️ 比大小</h3><div class="flex justify-around my-6"><div class="text-center"><div class="flex gap-1 flex-wrap justify-center mb-2">${Array(compareState.l).fill(0).map(()=>'<span class="text-2xl">⭐</span>').join('')}</div><div class="text-3xl font-bold">${compareState.l}</div></div><div class="text-3xl font-bold self-center text-gray-400">VS</div><div class="text-center"><div class="flex gap-1 flex-wrap justify-center mb-2">${Array(compareState.r).fill(0).map(()=>'<span class="text-2xl">⭐</span>').join('')}</div><div class="text-3xl font-bold">${compareState.r}</div></div></div><div class="flex gap-3 justify-center"><button class="btn bg-gray-100 text-dark" onclick="checkCompare('left')">左边多</button><button class="btn bg-gray-100 text-dark" onclick="checkCompare('right')">右边多</button></div></div>`}
+function checkCompare(ans){const correct=compareState.l>compareState.r?'left':'right';if(ans===correct){playSound('correct');addStars(3);toast('🎉 正确！+3⭐');completeTask('玩一个数学游戏');setTimeout(()=>startCompare(),1200)}else{playSound('wrong');toast('再看看～')}}
+
+// Game 3: Shape
+const SHAPES=[{s:'🔴',c:'红'},{s:'🔵',c:'蓝'},{s:'🟢',c:'绿'},{s:'🟡',c:'黄'},{s:'🔷',c:'菱'},{s:'⬛',c:'方'}];
+let shapeState={};
+function startShape(){const cats=SHAPES.slice(0,4);shapeState={cats,items:[],basket:{},score:0};for(let i=0;i<6;i++){const c=cats[Math.floor(Math.random()*cats.length)];shapeState.items.push({...c,id:i})}renderShape()}
+function renderShape(){const el=document.getElementById('overlayMathGamePlayContent');el.innerHTML=`<div class="text-center"><h3 class="text-xl font-bold mb-4">🔷 图形分类</h3><div class="text-sm text-gray-500 mb-3">把图形拖进正确的筐</div><div class="flex gap-2 justify-center flex-wrap mb-6">${shapeState.items.map(it=>`<span class="text-3xl cursor-pointer" onclick="pickShape(${it.id})" id="shape${it.id}">${it.s}</span>`).join('')}</div><div class="grid grid-cols-2 gap-3">${shapeState.cats.map(c=>`<div class="card border-2 border-dashed border-gray-300 text-center py-4 cursor-pointer" onclick="dropShape('${c.c}')"><div class="text-sm font-bold">${c.c}</div><div class="text-2xl">${c.s}</div></div>`).join('')}</div></div>`}
+let pickedShape=null;
+function pickShape(id){pickedShape=id;playSound('click');document.querySelectorAll('[id^="shape"]').forEach(e=>e.style.opacity='.3');const el=document.getElementById('shape'+id);if(el)el.style.opacity='1'}
+function dropShape(cat){if(pickedShape===null)return;const it=shapeState.items.find(x=>x.id===pickedShape);if(it&&it.c===cat){shapeState.items=shapeState.items.filter(x=>x.id!==pickedShape);playSound('correct');if(shapeState.items.length===0){addStars(3);toast('🎉 全部分对了！+3⭐');completeTask('玩一个数学游戏');confetti({particleCount:40,spread:40})}}else{playSound('wrong')}pickedShape=null;renderShape()}
+
+// Game 4: Pattern
+const PATTERNS=[{seq:['🔴','🔵','🔴','🔵','?'],ans:'🔴'},{seq:['⭐','⭐','🌙','⭐','⭐','?'],ans:'🌙'},{seq:['1','2','3','4','?'],ans:'5'},{seq:['🍎','🍎','🍐','🍎','🍎','?'],ans:'🍐'},{seq:['A','B','A','B','?'],ans:'A'}];
+let patternState={};
+function startPattern(){patternState={idx:Math.floor(Math.random()*PATTERNS.length)};renderPattern()}
+function renderPattern(){const p=PATTERNS[patternState.idx];const opts=[p.ans];while(opts.length<4){const fake=['🔴','🔵','🟢','⭐','🌙','5','3','🍎','🍐','A','B'][Math.floor(Math.random()*11)];if(!opts.includes(fake))opts.push(fake)}opts.sort(()=>Math.random()-.5);const el=document.getElementById('overlayMathGamePlayContent');el.innerHTML=`<div class="text-center"><h3 class="text-xl font-bold mb-4">🔄 找规律</h3><div class="flex gap-2 justify-center mb-6 text-2xl">${p.seq.map(s=>`<span class="card px-3 py-2">${s}</span>`).join('')}</div><div class="grid grid-cols-2 gap-3">${opts.map(o=>`<button class="btn bg-gray-100 text-dark text-xl" onclick="checkPattern('${o}')">${o}</button>`).join('')}</div></div>`}
+function checkPattern(ans){if(ans===PATTERNS[patternState.idx].ans){playSound('correct');addStars(3);toast('🎉 正确！+3⭐');completeTask('玩一个数学游戏');setTimeout(()=>startPattern(),1200)}else{playSound('wrong');toast('再看看规律～')}}
+
+// Game 5: Connect
+let connectState={};
+function startConnect(){connectState={max:10,current:1,dots:[],lines:[],done:false};const positions=[];for(let i=1;i<=connectState.max;i++){let x,y,ok;do{ok=true;x=30+Math.random()*240;y=30+Math.random()*300;for(const p of positions){if(Math.abs(p.x-x)<40&&Math.abs(p.y-y)<40){ok=false;break}}}while(!ok);positions.push({x,y})}connectState.dots=positions;renderConnect()}
+function renderConnect(){const el=document.getElementById('overlayMathGamePlayContent');el.innerHTML=`<div class="text-center mb-3"><h3 class="text-xl font-bold">🔗 数字连线</h3><div class="text-sm text-gray-500">按 1-2-3 顺序点击数字</div><div class="flex gap-2 justify-center mt-2"><button class="filter-btn ${connectState.max===10?'active':''}" onclick="connectState.max=10;startConnect()">1-10</button><button class="filter-btn ${connectState.max===20?'active':''}" onclick="connectState.max=20;startConnect()">1-20</button></div></div><div class="relative mx-auto" style="width:300px;height:360px;background:#FFF3E0;border-radius:16px;border:2px solid #FFD54F" id="connectArea">${connectState.dots.map((d,i)=>`<div class="connect-dot ${i+1<connectState.current?'done':''}" style="left:${d.x-22}px;top:${d.y-22}px" onclick="clickConnectDot(${i+1})">${i+1}</div>`).join('')}</div>`}
+function clickConnectDot(n){if(connectState.done)return;if(n===connectState.current){playSound('click');connectState.current++;if(connectState.current>connectState.max){connectState.done=true;playSound('celebrate');addStars(5);confetti({particleCount:80,spread:60});toast('🎉 连线完成！+5⭐');completeTask('玩一个数学游戏')}renderConnect()}else{playSound('wrong');const dot=document.querySelector(`.connect-dot[onclick="clickConnectDot(${n})"]`);if(dot){dot.classList.add('wrong');setTimeout(()=>dot.classList.remove('wrong'),300)}}}
+
+// Game 6: Make10
+let make10State={};
+function startMake10(){make10State={target:10,question:0,total:5};newMake10Round();renderMake10()}
+function newMake10Round(){make10State.target=Math.floor(Math.random()*9)+1;if(make10State.target>=10)make10State.target=9}
+function renderMake10(){const target=make10State.target;const ans=make10State.target<=10?10-target:20-target;const opts=[ans];while(opts.length<4){const f=Math.floor(Math.random()*19)+1;if(!opts.includes(f))opts.push(f)}opts.sort(()=>Math.random()-.5);const el=document.getElementById('overlayMathGamePlayContent');el.innerHTML=`<div class="text-center"><h3 class="text-xl font-bold mb-4">🎲 凑十游戏</h3><div class="flex gap-2 justify-center mb-4"><button class="filter-btn ${make10State.target<=10?'active':''}" onclick="make10State.mode=10;startMake10()">凑10</button><button class="filter-btn ${make10State.mode===20?'active':''}" onclick="make10State.mode=20;startMake10()">凑20</button></div><div class="text-5xl font-black text-primary mb-2">${target}</div><div class="text-sm text-gray-500 mb-6">选一个数凑成${make10State.mode||10}</div><div class="grid grid-cols-2 gap-3">${opts.map(o=>`<button class="btn bg-gray-100 text-dark text-2xl" onclick="checkMake10(${o})">${o}</button>`).join('')}</div></div>`}
+function checkMake10(val){const mode=make10State.mode||10;const ans=mode-make10State.target;if(val===ans){playSound('correct');addStars(3);toast('🎉 正确！+3⭐');completeTask('玩一个数学游戏');make10State.question++;if(make10State.question>=make10State.total){confetti({particleCount:60,spread:50});toast('🎉 全部完成！')}setTimeout(()=>{newMake10Round();renderMake10()},1200)}else{playSound('wrong');toast('再算算～')}}
+
+// Game 7: Sequence
+let seqState={};
+function startSequence(){seqState={mode:10};newSeqRound();renderSequence()}
+function newSeqRound(){const mode=seqState.mode;const start=Math.floor(Math.random()*(mode-4))+1;const step=[1,2][Math.floor(Math.random()*2)];const seq=[];for(let i=0;i<5;i++)seq.push(start+i*step);const missingIdx=Math.floor(Math.random()*3)+1;seqState={...seqState,seq,missingIdx,ans:seq[missingIdx]};seq[missingIdx]='?';seqState.display=seq}
+function renderSequence(){const el=document.getElementById('overlayMathGamePlayContent');el.innerHTML=`<div class="text-center"><h3 class="text-xl font-bold mb-4">🔢 数数接龙</h3><div class="flex gap-2 justify-center mb-4"><button class="filter-btn ${seqState.mode===10?'active':''}" onclick="seqState.mode=10;newSeqRound();renderSequence()">10以内</button><button class="filter-btn ${seqState.mode===20?'active':''}" onclick="seqState.mode=20;newSeqRound();renderSequence()">20以内</button></div><div class="flex gap-2 justify-center mb-6 text-2xl">${seqState.display.map(n=>`<span class="card px-3 py-2 ${n==='?'?'border-2 border-primary bg-yellow-50':'bg-white'}">${n}</span>`).join('')}</div><div class="grid grid-cols-4 gap-2">${generateOptions(seqState.ans).map(o=>`<button class="btn bg-gray-100 text-dark text-xl" onclick="checkSequence(${o})">${o}</button>`).join('')}</div></div>`}
+function generateOptions(ans){const opts=[ans];while(opts.length<6){const f=Math.floor(Math.random()*seqState.mode)+1;if(!opts.includes(f))opts.push(f)}return opts.sort(()=>Math.random()-.5)}
+function checkSequence(val){if(val===seqState.ans){playSound('correct');addStars(3);toast('🎉 正确！+3⭐');completeTask('玩一个数学游戏');setTimeout(()=>{newSeqRound();renderSequence()},1200)}else{playSound('wrong');toast('再想想～')}}
+
+// Game 8: Arithmetic
+let arithState={};
+function startArithmetic(){arithState={mode:'add10'};newArithRound();renderArithmetic()}
+function newArithRound(){let a,b,op,ans;const mode=arithState.mode;if(mode==='add10'){a=Math.floor(Math.random()*8)+1;b=Math.floor(Math.random()*(10-a))+1;op='+';ans=a+b}else if(mode==='sub10'){a=Math.floor(Math.random()*8)+2;b=Math.floor(Math.random()*(a-1))+1;op='-';ans=a-b}else{a=Math.floor(Math.random()*14)+2;b=Math.floor(Math.random()*(20-a))+1;op='+';ans=a+b}arithState={...arithState,a,b,op,ans}}
+function renderArithmetic(){const el=document.getElementById('overlayMathGamePlayContent');const emoji='🍎';const aHtml=Array(arithState.a).fill(0).map(()=>`<span class="text-xl">${emoji}</span>`).join('');const bHtml=Array(arithState.b).fill(0).map(()=>`<span class="text-xl">${emoji}</span>`).join('');el.innerHTML=`<div class="text-center"><h3 class="text-xl font-bold mb-4">➕ 简单加减法</h3><div class="flex gap-2 justify-center mb-4 flex-wrap"><button class="filter-btn ${arithState.mode==='add10'?'active':''}" onclick="arithState.mode='add10';newArithRound();renderArithmetic()">10以内加法</button><button class="filter-btn ${arithState.mode==='sub10'?'active':''}" onclick="arithState.mode='sub10';newArithRound();renderArithmetic()">10以内减法</button><button class="filter-btn ${arithState.mode==='add20'?'active':''}" onclick="arithState.mode='add20';newArithRound();renderArithmetic()">20以内加法</button></div><div class="card mb-4"><div class="flex items-center justify-center gap-2 mb-3"><div class="flex flex-wrap gap-1 justify-center" style="max-width:120px">${aHtml}</div><span class="text-2xl font-bold">${arithState.op}</span><div class="flex flex-wrap gap-1 justify-center" style="max-width:120px">${bHtml}</div><span class="text-2xl font-bold">=</span><span class="text-2xl font-bold text-primary">?</span></div><div class="text-2xl font-bold">${arithState.a} ${arithState.op} ${arithState.b} = ?</div></div><div class="grid grid-cols-3 gap-3">${generateArithOptions(arithState.ans).map(o=>`<button class="btn bg-gray-100 text-dark text-xl" onclick="checkArithmetic(${o})">${o}</button>`).join('')}</div></div>`}
+function generateArithOptions(ans){const opts=[ans];while(opts.length<6){const f=ans+Math.floor(Math.random()*7)-3;if(f>0&&!opts.includes(f))opts.push(f)}return opts.sort(()=>Math.random()-.5)}
+function checkArithmetic(val){if(val===arithState.ans){playSound('correct');addStars(3);toast('🎉 正确！+3⭐');completeTask('玩一个数学游戏');setTimeout(()=>{newArithRound();renderArithmetic()},1200)}else{playSound('wrong');toast('再算算～')}}
+
+// ========== MATH ENLIGHTEN ==========
+let enlightenTab='decomp';
+let decompNum=5;
+let decompStep=0;
+let decompTimer=null;
+function renderMathEnlighten(){const el=document.getElementById('overlayMathEnlightenContent');el.innerHTML=`<div class="flex gap-2 mb-4"><button class="filter-btn ${enlightenTab==='decomp'?'active':''}" onclick="enlightenTab='decomp';renderMathEnlighten();playSound('click')">数的分解</button><button class="filter-btn ${enlightenTab==='mul'?'active':''}" onclick="enlightenTab='mul';renderMathEnlighten();playSound('click')">乘法口诀表</button></div><div id="enlightenBody"></div>`;if(enlightenTab==='decomp')renderDecomp();else renderMulTable()}
+
+function renderDecomp(){const body=document.getElementById('enlightenBody');if(!body)return;const decomps=[];for(let i=1;i<decompNum;i++)decomps.push([i,decompNum-i]);
+body.innerHTML=`<div class="text-center mb-4"><div class="flex gap-2 justify-center mb-3">${[3,4,5,6,7,8,9,10].map(n=>`<button class="filter-btn ${decompNum===n?'active':''}" onclick="decompNum=${n};decompStep=0;clearInterval(decompTimer);renderDecomp();playSound('click')">${n}</button>`).join('')}</div><div class="text-5xl font-black text-primary mb-2">${decompNum}</div></div><div class="space-y-3" id="decompList">${decomps.map(([a,b],i)=>`<div class="card flex items-center gap-3 decomp-item" style="opacity:${i<=decompStep?1:.3};transform:translateY(${i<=decompStep?0:20}px);transition:all .4s ease ${i*.15}s"><div class="decomp-bar flex-1"><div class="decomp-block bg-primary" style="height:${a/decompNum*50+10}px;width:${a*8}px"></div></div><div class="text-lg font-bold">${decompNum} = ${a} + ${b}</div><div class="decomp-bar flex-1 justify-end"><div class="decomp-block bg-secondary" style="height:${b/decompNum*50+10}px;width:${b*8}px"></div></div></div>`).join('')}</div><div class="text-center mt-4"><button class="btn btn-primary" onclick="playDecompAnim();playSound('click')"><i class="fas fa-play"></i> 播放动画</button></div>`}
+
+function playDecompAnim(){decompStep=0;clearInterval(decompTimer);const decomps=[];for(let i=1;i<decompNum;i++)decomps.push([i,decompNum-i]);decompTimer=setInterval(()=>{decompStep++;speak(`${decompNum}等于${decomps[decompStep-1][0]}加${decomps[decompStep-1][1]}`,'zh-CN');renderDecomp();if(decompStep>=decomps.length){clearInterval(decompTimer)}},1500)}
+
+function renderMulTable(){const body=document.getElementById('enlightenBody');if(!body)return;let html='<div class="overflow-x-auto"><table class="w-full" style="border-collapse:separate;border-spacing:4px">';for(let i=1;i<=9;i++){html+='<tr>';for(let j=1;j<=i;j++){html+=`<td class="mul-cell bg-white" onclick="speakMul(${j},${i})" title="点击朗读">${j}×${i}=${j*i}</td>`}html+='</tr>'}html+='</table></div><div class="text-center mt-3 text-xs text-gray-400">点击任意口诀可朗读</div>';body.innerHTML=html}
+function speakMul(a,b){playSound('click');speak(`${a}乘${b}等于${a*b}`,'zh-CN')}
+
+// ========== EN SONGS ==========
+let songIdx=0;
+function renderEnSongs(){const el=document.getElementById('overlayEnSongsContent');el.innerHTML=`<div class="space-y-3">${EN_SONGS.map((s,i)=>`<div class="card cursor-pointer" onclick="songIdx=${i};pushOverlay('overlayEnSongDetail');renderEnSongDetail();playSound('click')"><div class="flex items-center gap-3"><span class="text-2xl">${s.i}</span><div class="flex-1 font-bold text-sm">${s.t}</div></div></div>`).join('')}</div>`}
+function renderEnSongDetail(){const s=EN_SONGS[songIdx];const el=document.getElementById('overlayEnSongDetailContent');el.innerHTML=`<div class="text-center mb-4"><span class="text-4xl">${s.i}</span><h3 class="text-lg font-bold mt-2">${s.t}</h3></div><div class="card mb-4"><div class="space-y-2 text-center leading-relaxed">${s.l.map(line=>`<div class="text-base">${line}</div>`).join('')}</div></div><div class="flex gap-3 justify-center"><button class="btn btn-secondary" onclick="speak(\`${s.l.join(' ')}\`,'en-US');playSound('click')"><i class="fas fa-volume-up"></i> 朗读</button></div>`}
+
+// ========== EN BOOKS ==========
+let enBookState={idx:0,page:0};
+function renderEnBookList(){const el=document.getElementById('overlayEnBooksContent');el.innerHTML=`<div class="space-y-3">${EN_BOOKS.map((b,i)=>`<div class="card cursor-pointer flex items-center gap-4" onclick="enBookState={idx:${i},page:0};pushOverlay('overlayEnBookReader');renderEnBookPage();playSound('click')"><span class="text-3xl">${b.i}</span><div class="font-bold">${b.t}</div></div>`).join('')}</div>`}
+function renderEnBookPage(){const b=EN_BOOKS[enBookState.idx];const pg=b.p[enBookState.page];const sc=SCENE_MAP[pg.s];const el=document.getElementById('overlayEnBookReaderContent');el.innerHTML=`<div class="scene-bg mb-4" style="background:${sc?sc.g:'#f5f5f5'};min-height:200px">${sc?sc.e.map((e,i)=>`<span class="scene-emoji" style="top:${20+i*30}px;left:${15+i*25}%">${e}</span>`).join(''):''}</div><div class="text-xl text-center font-bold mb-6">${pg.t}</div><div class="flex justify-between"><button class="btn bg-gray-100 text-dark ${enBookState.page===0?'opacity-30':''}" onclick="enBookState.page--;renderEnBookPage();playSound('page')" ${enBookState.page===0?'disabled':''}>上一页</button><span class="text-sm text-gray-400">${enBookState.page+1}/${b.p.length}</span>${enBookState.page>=b.p.length-1?`<button class="btn btn-primary" onclick="addStars(2);completeTask('读一本绘本');toast('🎉 +2⭐');popOverlay()">完成</button>`:`<button class="btn btn-primary" onclick="enBookState.page++;renderEnBookPage();playSound('page')">下一页</button>`}</div>`}
+
+// ========== EN CARD ==========
+let enCardCat='animals';let enCardIdx=0;
+function renderEnCard(){const el=document.getElementById('overlayEnCardContent');const cats=Object.keys(EN_VOCAB);const catNames={animals:'动物',colors:'颜色',fruits:'水果',body:'身体',numbers:'数字'};el.innerHTML=`<div class="flex gap-2 mb-4 flex-wrap">${cats.map(c=>`<button class="filter-btn ${enCardCat===c?'active':''}" onclick="enCardCat='${c}';enCardIdx=0;updateEnCard();playSound('click')">${catNames[c]}</button>`).join('')}</div><div id="enCardDisplay"></div>`;updateEnCard()}
+function updateEnCard(){const words=EN_VOCAB[enCardCat];const w=words[enCardIdx];const el=document.getElementById('enCardDisplay');if(!el)return;el.innerHTML=`<div class="text-center"><div class="text-5xl mb-3">${w.e}</div><div class="text-3xl font-black text-dark mb-1">${w.w}</div><div class="text-lg text-secondary mb-4">${w.p}</div><div class="flex gap-3 justify-center mb-6"><button class="btn btn-secondary" onclick="speak('${w.w}','en-US');playSound('click')"><i class="fas fa-volume-up"></i> 朗读</button></div><div class="flex justify-between items-center"><button class="btn bg-gray-100 text-dark ${enCardIdx===0?'opacity-30':''}" onclick="enCardIdx=Math.max(0,enCardIdx-1);updateEnCard();playSound('flip')" ${enCardIdx===0?'disabled':''}>上一个</button><span class="text-sm text-gray-400">${enCardIdx+1}/${words.length}</span><button class="btn bg-gray-100 text-dark ${enCardIdx>=words.length-1?'opacity-30':''}" onclick="enCardIdx=Math.min(words.length-1,enCardIdx+1);updateEnCard();playSound('flip')" ${enCardIdx>=words.length-1?'disabled':''}>下一个</button></div></div>`}
+
+// ========== BADGES ==========
+function renderBadges(){const el=document.getElementById('overlayBadgesContent');el.innerHTML=`<div class="grid grid-cols-3 gap-3">${BADGES.map(b=>{const unlocked=S.badges.includes(b.id);return`<div class="card text-center ${unlocked?'':'opacity-40 grayscale'}"><div class="text-3xl mb-1">${b.i}</div><div class="font-bold text-sm">${b.t}</div><div class="text-xs text-gray-400">${b.n}⭐</div>${unlocked?'<span class="badge-tag bg-green-100 text-green-700 mt-1">已解锁</span>':''}</div>`}).join('')}</div>`}
+
+// ========== TAB BAR ==========
+function renderTabBar(){const tabs=[{id:'pageHome',i:'fa-house',t:'首页'},{id:'pageChinese',i:'fa-book-open',t:'语文'},{id:'pageMath',i:'fa-calculator',t:'数学'},{id:'pageEnglish',i:'fa-globe',t:'英语'},{id:'pageParent',i:'fa-shield-halved',t:'家长'}];document.getElementById('tabBar').innerHTML=tabs.map(t=>`<div class="tab-btn ${t.id==='pageHome'?'active':''}" data-page="${t.id}" onclick="switchPage('${t.id}');playSound('click')"><i class="fas ${t.i}"></i><span>${t.t}</span></div>`).join('')}
+
+// ========== OVERLAYS ==========
+function createOverlays(){const container=document.getElementById('overlayContainer');
+const overlays=[
+{id:'overlayBookLib',t:'📖 绘本馆',back:true},
+{id:'overlayBookReader',t:'📖 阅读',back:true},
+{id:'overlayCnCard',t:'🈴 闪卡认字',back:true},
+{id:'overlayCnStory',t:'🎧 有声故事',back:true},
+{id:'overlayCnStoryReader',t:'🎧 故事朗读',back:true},
+{id:'overlayMathStory',t:'📐 数字故事',back:true},
+{id:'overlayMathGame',t:'🎮 数感游戏',back:true},
+{id:'overlayMathGamePlay',t:'🎮 游戏中',back:true},
+{id:'overlayMathEnlighten',t:'🧮 数学启蒙',back:true},
+{id:'overlayEnSongs',t:'🎵 英文儿歌',back:true},
+{id:'overlayEnSongDetail',t:'🎵 歌曲详情',back:true},
+{id:'overlayEnBooks',t:'📗 绘本剧场',back:true},
+{id:'overlayEnBookReader',t:'📗 英文绘本',back:true},
+{id:'overlayEnCard',t:'🔤 闪卡学词',back:true},
+{id:'overlayBadges',t:'🏅 勋章墙',back:true}
+];
+container.innerHTML=overlays.map(o=>`<div class="overlay" id="${o.id}"><div class="overlay-back flex items-center justify-between">${o.back?`<button class="btn bg-gray-100 text-dark" onclick="popOverlay();playSound('click')"><i class="fas fa-arrow-left"></i> 返回</button>`:''}<h3 class="font-bold text-lg">${o.t}</h3><div style="width:60px"></div></div><div class="p-4 pb-24" id="${o.id}Content"></div></div>`).join('')}
+
+// ========== INIT ==========
+function init(){
+loadState();
+createOverlays();
+renderTabBar();
+renderPage('pageHome');
+checkDailyTasks();
+startTimer();
+}
+document.addEventListener('DOMContentLoaded',init);
+</script>
+</body>
+</html>

@@ -1,0 +1,1843 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<script>
+!(function(j,a,g){j.__itrace_conf = {bid: 'f43basl8-6nqu7l3w',rel: '0.0.1', spa: true, uid: '', plugins:['jserror','interface','perf','resource','flow','blank']};var b = a.createElement("script");var d = a.getElementsByTagName("script")[0];b.type = "text/javascript";b.crossorigin = true;b.async = true;b.onload = function(){j.__itrace && j.__itrace.setReady()};d.parentNode.insertBefore(b,d);b.src = g})(window, document, "https://g.alicdn.com/woodpeckerx/itrace-next/itrace.iife.js")
+</script>
+
+<!-- 同站请求保留Referer，跨站请求不发送 -->
+<meta name="referrer" content="same-origin">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>小星星启蒙乐园 v1.0.0</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://cdn.staticfile.net/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+:root {
+  --pink: #FFB5C2; --blue: #B5D8FF; --green: #B5FFD8; --purple: #D8B5FF;
+  --yellow: #FFE8B5; --yellow-deep: #FFD54F; --pink-deep: #FF8FA3;
+  --blue-deep: #64B5F6; --green-deep: #66BB6A; --purple-deep: #AB47BC;
+  --bg: #FFF9F0; --card: #FFFFFF; --text: #3D3D3D; --text-light: #888;
+  --radius: 20px; --radius-sm: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; min-height: 100vh; }
+.btn { border-radius: var(--radius); border: none; cursor: pointer; font-weight: 700; transition: transform 0.15s, box-shadow 0.15s; min-width: 48px; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; padding: 12px 24px; font-size: 16px; }
+.btn:active { transform: scale(0.95); }
+.btn-primary { background: var(--yellow-deep); color: #5D4037; box-shadow: 0 4px 0 #FFB300; }
+.btn-primary:active { box-shadow: 0 1px 0 #FFB300; }
+.btn-pink { background: var(--pink); color: #880E4F; box-shadow: 0 4px 0 var(--pink-deep); }
+.btn-blue { background: var(--blue); color: #0D47A1; box-shadow: 0 4px 0 var(--blue-deep); }
+.btn-green { background: var(--green); color: #1B5E20; box-shadow: 0 4px 0 var(--green-deep); }
+.btn-purple { background: var(--purple); color: #4A148C; box-shadow: 0 4px 0 var(--purple-deep); }
+.card { background: var(--card); border-radius: var(--radius); box-shadow: 0 2px 12px rgba(0,0,0,0.06); padding: 16px; }
+.page { display: none; padding: 16px; padding-bottom: 90px; min-height: calc(100vh - 56px - 70px); animation: fadeIn 0.3s ease; }
+.page.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes bounceIn { 0% { transform: scale(0); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
+@keyframes starBurst { 0% { transform: scale(0) rotate(0); opacity:1; } 100% { transform: scale(2) rotate(180deg); opacity:0; } }
+@keyframes slideRight { from { transform: translateX(100%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+@keyframes slideLeft { from { transform: translateX(-100%); opacity:0; } to { transform: translateX(0); opacity:1; } }
+.float-anim { animation: float 3s ease-in-out infinite; }
+.pulse-anim { animation: pulse 2s ease-in-out infinite; }
+.bounce-in { animation: bounceIn 0.5s ease; }
+.overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; display: none; align-items: center; justify-content: center; }
+.overlay.show { display: flex; }
+.overlay-content { background: var(--card); border-radius: var(--radius); padding: 24px; max-width: 90vw; max-height: 85vh; overflow-y: auto; animation: bounceIn 0.3s ease; }
+.toast { position: fixed; top: 70px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 12px 24px; border-radius: var(--radius); z-index: 200; font-size: 14px; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+.toast.show { opacity: 1; }
+.flip-card { perspective: 800px; cursor: pointer; }
+.flip-card-inner { transition: transform 0.6s; transform-style: preserve-3d; position: relative; }
+.flip-card.flipped .flip-card-inner { transform: rotateY(180deg); }
+.flip-card-front, .flip-card-back { backface-visibility: hidden; position: absolute; inset: 0; border-radius: var(--radius); display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.flip-card-back { transform: rotateY(180deg); }
+.progress-ring { transform: rotate(-90deg); }
+.tab-bar { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card); display: flex; box-shadow: 0 -2px 12px rgba(0,0,0,0.08); z-index: 50; border-radius: 20px 20px 0 0; padding-bottom: env(safe-area-inset-bottom); }
+.tab-item { flex: 1; display: flex; flex-direction: column; align-items: center; padding: 8px 4px 6px; cursor: pointer; transition: color 0.2s; color: var(--text-light); font-size: 11px; border: none; background: none; }
+.tab-item.active { color: var(--yellow-deep); }
+.tab-item i { font-size: 22px; margin-bottom: 2px; }
+.header-bar { position: fixed; top: 0; left: 0; right: 0; height: 56px; background: linear-gradient(135deg, var(--yellow), var(--pink)); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 50; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.star-count { background: rgba(255,255,255,0.85); border-radius: 20px; padding: 4px 14px; font-weight: 700; color: #F57F17; font-size: 15px; display: flex; align-items: center; gap: 6px; }
+.sub-page { position: fixed; inset: 0; background: var(--bg); z-index: 60; display: none; flex-direction: column; overflow-y: auto; }
+.sub-page.show { display: flex; animation: slideRight 0.3s ease; }
+.sub-header { background: linear-gradient(135deg, var(--yellow), var(--pink)); padding: 12px 16px; display: flex; align-items: center; gap: 12px; color: #5D4037; font-weight: 700; font-size: 18px; position: sticky; top: 0; z-index: 5; }
+.sub-header .back-btn { width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.6); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.badge-item { width: 80px; text-align: center; }
+.badge-icon { width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 4px; }
+.badge-locked { background: #e0e0e0; filter: grayscale(1); opacity: 0.5; }
+.badge-unlocked { animation: pulse 2s infinite; box-shadow: 0 0 15px rgba(255,215,0,0.5); }
+.lyric-line { padding: 8px 16px; font-size: 18px; transition: all 0.3s; border-radius: 8px; }
+.lyric-line.active { background: var(--yellow); font-weight: 700; transform: scale(1.05); }
+.draggable { cursor: grab; touch-action: none; user-select: none; }
+.draggable.dragging { opacity: 0.7; z-index: 10; }
+.drop-zone { border: 3px dashed #ccc; border-radius: var(--radius); min-height: 80px; transition: border-color 0.2s, background 0.2s; }
+.drop-zone.hover { border-color: var(--green-deep); background: rgba(102,187,106,0.1); }
+.shape-item { width: 50px; height: 50px; cursor: grab; touch-action: none; }
+.task-card { transition: all 0.3s; }
+.task-card.done { background: linear-gradient(135deg, #E8F5E9, #C8E6C9); }
+.task-card.done .task-check { color: var(--green-deep); }
+@media (max-width: 374px) { .btn { padding: 10px 16px; font-size: 14px; } }
+@media (min-width: 768px) { .page { max-width: 600px; margin: 0 auto; } .overlay-content { max-width: 500px; } }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header-bar">
+  <div style="font-weight:800;font-size:17px;color:#5D4037;">小星星启蒙乐园</div>
+  <div class="star-count"><i class="fas fa-star" style="color:#FFD54F;"></i><span id="headerStars">0</span></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Main Content -->
+<div style="padding-top:56px;">
+  <div class="page active" id="page-home"></div>
+  <div class="page" id="page-chinese"></div>
+  <div class="page" id="page-math"></div>
+  <div class="page" id="page-english"></div>
+  <div class="page" id="page-parent"></div>
+</div>
+
+<!-- Sub Pages Container -->
+<div id="subPages"></div>
+
+<!-- Bottom Tab Bar -->
+<div class="tab-bar">
+  <button class="tab-item active" data-tab="home"><i class="fas fa-home"></i><span>首页</span></button>
+  <button class="tab-item" data-tab="chinese"><i class="fas fa-book-open"></i><span>语文</span></button>
+  <button class="tab-item" data-tab="math"><i class="fas fa-calculator"></i><span>数学</span></button>
+  <button class="tab-item" data-tab="english"><i class="fas fa-font"></i><span>英语</span></button>
+  <button class="tab-item" data-tab="parent"><i class="fas fa-user-shield"></i><span>家长</span></button>
+</div>
+
+<script>
+// ==================== DATA DEFINITIONS ====================
+
+const CHINESE_CHARS = [
+  {c:'一',p:'yī',e:'1️⃣',w:'一个、一起',s:'我有一个苹果。'},
+  {c:'二',p:'èr',e:'2️⃣',w:'二月、第二',s:'我是第二名。'},
+  {c:'三',p:'sān',e:'3️⃣',w:'三月、三个',s:'我有三个好朋友。'},
+  {c:'四',p:'sì',e:'4️⃣',w:'四季、四方',s:'一年有四季。'},
+  {c:'五',p:'wǔ',e:'5️⃣',w:'五月、五个',s:'我有五个手指。'},
+  {c:'六',p:'liù',e:'6️⃣',w:'六月、六一',s:'六一儿童节快乐！'},
+  {c:'七',p:'qī',e:'7️⃣',w:'七天、七个',s:'一周有七天。'},
+  {c:'八',p:'bā',e:'8️⃣',w:'八月、八个',s:'章鱼有八条腿。'},
+  {c:'九',p:'jiǔ',e:'9️⃣',w:'九月、九个',s:'九月开学了。'},
+  {c:'十',p:'shí',e:'🔟',w:'十月、十个',s:'我有十个手指。'},
+  {c:'大',p:'dà',e:'🐘',w:'大家、大小',s:'大象很大。'},
+  {c:'小',p:'xiǎo',e:'🐭',w:'小鸟、小心',s:'小鸟在树上。'},
+  {c:'上',p:'shàng',e:'⬆️',w:'上面、上学',s:'书在桌子上。'},
+  {c:'下',p:'xià',e:'⬇️',w:'下面、下雨',s:'今天下雨了。'},
+  {c:'左',p:'zuǒ',e:'⬅️',w:'左边、左手',s:'我的左边是小明。'},
+  {c:'右',p:'yòu',e:'➡️',w:'右边、右手',s:'我的右边是小红。'},
+  {c:'前',p:'qián',e:'🔜',w:'前面、从前',s:'我走在前面。'},
+  {c:'后',p:'hòu',e:'🔙',w:'后面、以后',s:'小明走在后面。'},
+  {c:'天',p:'tiān',e:'🌤️',w:'天空、今天',s:'今天天气真好。'},
+  {c:'地',p:'dì',e:'🌍',w:'大地、地上',s:'花儿长在地上。'},
+  {c:'人',p:'rén',e:'👤',w:'人们、大人',s:'这里很多人。'},
+  {c:'口',p:'kǒu',e:'👄',w:'开口、门口',s:'请开口说话。'},
+  {c:'手',p:'shǒu',e:'✋',w:'手指、小手',s:'洗手很重要。'},
+  {c:'日',p:'rì',e:'☀️',w:'日出、日子',s:'太阳日出很美。'},
+  {c:'月',p:'yuè',e:'🌙',w:'月亮、月份',s:'月亮圆圆的。'},
+  {c:'水',p:'shuǐ',e:'💧',w:'喝水、水果',s:'我要喝水。'},
+  {c:'火',p:'huǒ',e:'🔥',w:'火车、大火',s:'不要玩火。'},
+  {c:'山',p:'shān',e:'⛰️',w:'高山、山上',s:'山上有很多树。'},
+  {c:'石',p:'shí',e:'🪨',w:'石头、石子',s:'路上有石头。'},
+  {c:'田',p:'tián',e:'🌾',w:'田地、田野',s:'农民在田里工作。'},
+  {c:'花',p:'huā',e:'🌸',w:'花朵、开花',s:'花儿真美丽。'},
+  {c:'草',p:'cǎo',e:'🌱',w:'小草、草地',s:'草地绿绿的。'},
+  {c:'树',p:'shù',e:'🌳',w:'大树、树叶',s:'树上有很多叶子。'},
+  {c:'木',p:'mù',e:'🪵',w:'木头、树木',s:'桌子是木头做的。'},
+  {c:'鸟',p:'niǎo',e:'🐦',w:'小鸟、鸟儿',s:'小鸟在唱歌。'},
+  {c:'鱼',p:'yú',e:'🐟',w:'小鱼、钓鱼',s:'小鱼在水里游。'},
+  {c:'虫',p:'chóng',e:'🐛',w:'小虫、虫子',s:'蝴蝶是小虫。'},
+  {c:'马',p:'mǎ',e:'🐴',w:'小马、马上',s:'小马跑得快。'},
+  {c:'牛',p:'niú',e:'🐮',w:'小牛、牛奶',s:'我爱喝牛奶。'},
+  {c:'羊',p:'yáng',e:'🐑',w:'小羊、山羊',s:'小羊在吃草。'},
+  {c:'红',p:'hóng',e:'🔴',w:'红色、红花',s:'苹果是红色的。'},
+  {c:'黄',p:'huáng',e:'🟡',w:'黄色、黄金',s:'太阳是黄色的。'},
+  {c:'蓝',p:'lán',e:'🔵',w:'蓝色、蓝天',s:'天空是蓝色的。'},
+  {c:'白',p:'bái',e:'⚪',w:'白色、白云',s:'云是白色的。'},
+  {c:'黑',p:'hēi',e:'⚫',w:'黑色、黑夜',s:'天黑了。'},
+  {c:'吃',p:'chī',e:'🍽️',w:'吃饭、好吃',s:'我要吃饭。'},
+  {c:'喝',p:'hē',e:'🥤',w:'喝水、喝奶',s:'我要喝牛奶。'},
+  {c:'走',p:'zǒu',e:'🚶',w:'走路、走开',s:'我们走路去。'},
+  {c:'跑',p:'pǎo',e:'🏃',w:'跑步、快跑',s:'我跑得很快。'},
+  {c:'跳',p:'tiào',e:'🦘',w:'跳绳、跳高',s:'小兔跳跳跳。'}
+];
+
+const ENGLISH_WORDS = {
+  animals: [
+    {w:'cat',e:'🐱',ph:'/kæt/'},{w:'dog',e:'🐶',ph:'/dɒɡ/'},{w:'bird',e:'🐦',ph:'/bɜːd/'},
+    {w:'fish',e:'🐟',ph:'/fɪʃ/'},{w:'cow',e:'🐮',ph:'/kaʊ/'},{w:'pig',e:'🐷',ph:'/pɪɡ/'},
+    {w:'duck',e:'🦆',ph:'/dʌk/'},{w:'horse',e:'🐴',ph:'/hɔːs/'},{w:'rabbit',e:'🐰',ph:'/ˈræbɪt/'},
+    {w:'lion',e:'🦁',ph:'/ˈlaɪən/'}
+  ],
+  colors: [
+    {w:'red',e:'🔴',ph:'/red/'},{w:'blue',e:'🔵',ph:'/bluː/'},{w:'green',e:'🟢',ph:'/ɡriːn/'},
+    {w:'yellow',e:'🟡',ph:'/ˈjeləʊ/'},{w:'pink',e:'🩷',ph:'/pɪŋk/'},{w:'orange',e:'🟠',ph:'/ˈɒrɪndʒ/'},
+    {w:'purple',e:'🟣',ph:'/ˈpɜːpl/'},{w:'white',e:'⚪',ph:'/waɪt/'},{w:'black',e:'⚫',ph:'/blæk/'},
+    {w:'brown',e:'🟤',ph:'/braʊn/'}
+  ],
+  fruits: [
+    {w:'apple',e:'🍎',ph:'/ˈæpl/'},{w:'banana',e:'🍌',ph:'/bəˈnænə/'},{w:'orange',e:'🍊',ph:'/ˈɒrɪndʒ/'},
+    {w:'grape',e:'🍇',ph:'/ɡreɪp/'},{w:'pear',e:'🍐',ph:'/peə/'},{w:'peach',e:'🍑',ph:'/piːtʃ/'},
+    {w:'cherry',e:'🍒',ph:'/ˈtʃeri/'},{w:'lemon',e:'🍋',ph:'/ˈlemən/'},{w:'melon',e:'🍈',ph:'/ˈmelən/'},
+    {w:'berry',e:'🫐',ph:'/ˈberi/'}
+  ],
+  body: [
+    {w:'head',e:'👤',ph:'/hed/'},{w:'eye',e:'👁️',ph:'/aɪ/'},{w:'ear',e:'👂',ph:'/ɪə/'},
+    {w:'nose',e:'👃',ph:'/nəʊz/'},{w:'mouth',e:'👄',ph:'/maʊθ/'},{w:'hand',e:'✋',ph:'/hænd/'},
+    {w:'foot',e:'🦶',ph:'/fʊt/'},{w:'arm',e:'💪',ph:'/ɑːm/'},{w:'leg',e:'🦵',ph:'/leɡ/'},
+    {w:'hair',e:'💇',ph:'/heə/'}
+  ],
+  numbers: [
+    {w:'one',e:'1️⃣',ph:'/wʌn/'},{w:'two',e:'2️⃣',ph:'/tuː/'},{w:'three',e:'3️⃣',ph:'/θriː/'},
+    {w:'four',e:'4️⃣',ph:'/fɔː/'},{w:'five',e:'5️⃣',ph:'/faɪv/'},{w:'six',e:'6️⃣',ph:'/sɪks/'},
+    {w:'seven',e:'7️⃣',ph:'/ˈsevn/'},{w:'eight',e:'8️⃣',ph:'/eɪt/'},{w:'nine',e:'9️⃣',ph:'/naɪn/'},
+    {w:'ten',e:'🔟',ph:'/ten/'}
+  ]
+};
+
+const SONGS = [
+  {title:'Twinkle Twinkle Little Star',icon:'⭐',lyrics:[
+    'Twinkle, twinkle, little star,','How I wonder what you are!',
+    'Up above the world so high,','Like a diamond in the sky.',
+    'Twinkle, twinkle, little star,','How I wonder what you are!'
+  ]},
+  {title:'ABC Song',icon:'🔤',lyrics:[
+    'A B C D E F G,','H I J K L M N O P,',
+    'Q R S T U V,','W X Y and Z!',
+    'Now I know my ABCs,','Next time won\'t you sing with me?'
+  ]},
+  {title:'Old MacDonald Had a Farm',icon:'🌾',lyrics:[
+    'Old MacDonald had a farm, E-I-E-I-O!',
+    'And on that farm he had a cow, E-I-E-I-O!',
+    'With a moo moo here, and a moo moo there,',
+    'Here a moo, there a moo, everywhere a moo moo!',
+    'Old MacDonald had a farm, E-I-E-I-O!'
+  ]},
+  {title:'Head Shoulders Knees and Toes',icon:'🧍',lyrics:[
+    'Head, shoulders, knees and toes, knees and toes!',
+    'Head, shoulders, knees and toes, knees and toes!',
+    'And eyes and ears and mouth and nose,',
+    'Head, shoulders, knees and toes, knees and toes!'
+  ]},
+  {title:'Row Row Row Your Boat',icon:'🚣',lyrics:[
+    'Row, row, row your boat,','Gently down the stream.',
+    'Merrily, merrily, merrily, merrily,','Life is but a dream.'
+  ]},
+  {title:'Mary Had a Little Lamb',icon:'🐑',lyrics:[
+    'Mary had a little lamb,','Little lamb, little lamb.',
+    'Mary had a little lamb,','Its fleece was white as snow.',
+    'Everywhere that Mary went,','Mary went, Mary went,',
+    'Everywhere that Mary went,','The lamb was sure to go.'
+  ]},
+  {title:'Itsy Bitsy Spider',icon:'🕷️',lyrics:[
+    'The itsy bitsy spider went up the water spout.',
+    'Down came the rain and washed the spider out.',
+    'Out came the sun and dried up all the rain.',
+    'And the itsy bitsy spider went up the spout again.'
+  ]},
+  {title:'Five Little Monkeys',icon:'🐒',lyrics:[
+    'Five little monkeys jumping on the bed,',
+    'One fell off and bumped his head!',
+    'Mama called the doctor and the doctor said,',
+    'No more monkeys jumping on the bed!'
+  ]},
+  {title:'Baa Baa Black Sheep',icon:'🐑',lyrics:[
+    'Baa baa black sheep, have you any wool?',
+    'Yes sir, yes sir, three bags full!',
+    'One for the master, one for the dame,',
+    'And one for the little boy who lives down the lane.'
+  ]},
+  {title:'London Bridge Is Falling Down',icon:'🌉',lyrics:[
+    'London Bridge is falling down,','Falling down, falling down.',
+    'London Bridge is falling down,','My fair lady!',
+    'Build it up with iron bars,','Iron bars, iron bars.',
+    'Build it up with iron bars,','My fair lady!'
+  ]}
+];
+
+const CN_BOOKS = [
+  {id:'day',title:'小星的一天',diff:'简单',stars:1,pages:[
+    {text:'太阳升起来了，小星起床刷牙。',scene:'sunrise'},
+    {text:'小星去公园玩，看到红红的苹果。',scene:'park'},
+    {text:'月亮出来了，小星回家睡觉了。晚安！',scene:'night'}
+  ],quiz:[
+    {q:'小星在公园看到了什么？',opts:['苹果','香蕉'],ans:0},
+    {q:'什么时候回家？',opts:['太阳出来','月亮出来'],ans:1}
+  ]},
+  {id:'animal',title:'动物朋友',diff:'中等',stars:2,pages:[
+    {text:'小猫喵喵叫，小狗汪汪叫。',scene:'catdog'},
+    {text:'小鸟天上飞，小鱼水里游。',scene:'birdfish'},
+    {text:'小兔跳跳跳，乌龟慢慢爬。',scene:'rabbitturtle'},
+    {text:'它们都是好朋友，一起真快乐！',scene:'friends'}
+  ],quiz:[
+    {q:'小鸟在哪里飞？',opts:['天上','水里'],ans:0},
+    {q:'谁爬得慢？',opts:['小兔','乌龟'],ans:1}
+  ]},
+  {id:'season',title:'四季歌',diff:'较难',stars:3,pages:[
+    {text:'春天来了，花儿开了，小草绿绿的。',scene:'spring'},
+    {text:'夏天到了，太阳火辣辣，我们去游泳。',scene:'summer'},
+    {text:'秋天来了，树叶黄了，果实成熟了。',scene:'autumn'},
+    {text:'冬天到了，雪花飘飘，我们堆雪人。',scene:'winter'},
+    {text:'一年四季真美丽，大自然的礼物真奇妙！',scene:'fourseasons'}
+  ],quiz:[
+    {q:'哪个季节花儿开了？',opts:['春天','冬天'],ans:0},
+    {q:'冬天我们做什么？',opts:['堆雪人','游泳'],ans:0}
+  ]}
+];
+
+const EN_BOOKS = [
+  {id:'colors',title:'My Colors',pages:[
+    {text:'The apple is red.',scene:'redapple'},{text:'The sky is blue.',scene:'bluesky'},
+    {text:'The grass is green.',scene:'greengrass'},{text:'The sun is yellow.',scene:'yellowsun'}
+  ]},
+  {id:'animals',title:'Animal Sounds',pages:[
+    {text:'The cat says meow.',scene:'cat'},{text:'The dog says woof.',scene:'dog'},
+    {text:'The duck says quack.',scene:'duck'},{text:'The cow says moo.',scene:'cow'}
+  ]},
+  {id:'counting',title:'Counting Fun',pages:[
+    {text:'One little star.',scene:'star1'},{text:'Two little birds.',scene:'bird2'},
+    {text:'Three little fish.',scene:'fish3'},{text:'Four little cats.',scene:'cat4'}
+  ]}
+];
+
+const MATH_STORIES = [
+  {id:'count',title:'数苹果',icon:'🍎',desc:'1-5的数数',theme:'counting'},
+  {id:'compare',title:'谁的多',icon:'⚖️',desc:'比较多少',theme:'compare'},
+  {id:'add',title:'分饼干',icon:'🍪',desc:'简单加法',theme:'add'},
+  {id:'sub',title:'吃掉啦',icon:'😋',desc:'简单减法',theme:'subtract'},
+  {id:'order',title:'排排队',icon:'🐾',desc:'序数学习',theme:'ordinal'}
+];
+
+const BADGES = [
+  {id:'beginner',name:'初学者',stars:10,icon:'🌱',color:'#66BB6A'},
+  {id:'scholar',name:'小学者',stars:50,icon:'📖',color:'#42A5F5'},
+  {id:'doctor',name:'小博士',stars:100,icon:'🎓',color:'#AB47BC'},
+  {id:'genius',name:'小天才',stars:200,icon:'💡',color:'#FFA726'},
+  {id:'superstar',name:'超级星',stars:500,icon:'🌟',color:'#EF5350'}
+];
+
+const TASK_POOL = ['读一本绘本','认5个汉字','玩一个数学游戏','听一首英文歌','学3个英文单词'];
+
+// ==================== UTILITY FUNCTIONS ====================
+
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playSound(type) {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    const t = ctx.currentTime;
+    switch(type) {
+      case 'click':
+        osc.frequency.setValueAtTime(800, t);
+        osc.frequency.exponentialRampToValueAtTime(600, t+0.05);
+        gain.gain.setValueAtTime(0.15, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t+0.08);
+        osc.start(t); osc.stop(t+0.08); break;
+      case 'correct':
+        osc.frequency.setValueAtTime(523, t);
+        osc.frequency.setValueAtTime(659, t+0.1);
+        osc.frequency.setValueAtTime(784, t+0.2);
+        gain.gain.setValueAtTime(0.2, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t+0.4);
+        osc.start(t); osc.stop(t+0.4); break;
+      case 'wrong':
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(200, t);
+        osc.frequency.exponentialRampToValueAtTime(100, t+0.3);
+        gain.gain.setValueAtTime(0.1, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t+0.3);
+        osc.start(t); osc.stop(t+0.3); break;
+      case 'flip':
+        osc.frequency.setValueAtTime(1200, t);
+        osc.frequency.exponentialRampToValueAtTime(800, t+0.06);
+        gain.gain.setValueAtTime(0.1, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t+0.08);
+        osc.start(t); osc.stop(t+0.08); break;
+      case 'page':
+        osc.frequency.setValueAtTime(600, t);
+        osc.frequency.setValueAtTime(900, t+0.05);
+        gain.gain.setValueAtTime(0.12, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t+0.1);
+        osc.start(t); osc.stop(t+0.1); break;
+      case 'star':
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, t);
+        osc.frequency.setValueAtTime(1100, t+0.08);
+        osc.frequency.setValueAtTime(1320, t+0.16);
+        gain.gain.setValueAtTime(0.18, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t+0.35);
+        osc.start(t); osc.stop(t+0.35); break;
+      case 'celebrate':
+        [523,659,784,1047].forEach((f,i) => {
+          const o = ctx.createOscillator(); const g = ctx.createGain();
+          o.connect(g); g.connect(ctx.destination);
+          o.frequency.setValueAtTime(f, t+i*0.12);
+          g.gain.setValueAtTime(0.15, t+i*0.12);
+          g.gain.exponentialRampToValueAtTime(0.001, t+i*0.12+0.2);
+          o.start(t+i*0.12); o.stop(t+i*0.12+0.2);
+        });
+        return;
+    }
+  } catch(e) {}
+}
+
+function speak(text, lang) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = lang === 'en' ? 'en-US' : 'zh-CN';
+  u.rate = 0.8; u.pitch = 1.1;
+  speechSynthesis.speak(u);
+}
+
+function showToast(msg, dur) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), dur || 2000);
+}
+
+function addStars(n) {
+  const s = getState();
+  s.stars += n;
+  saveState(s);
+  document.getElementById('headerStars').textContent = s.stars;
+  playSound('star');
+  checkBadges();
+}
+
+function formatDate() {
+  const d = new Date();
+  return `${d.getFullYear()}年${d.getMonth()+1}月${d.getDate()}日`;
+}
+
+function getDayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+}
+
+// ==================== STATE MANAGEMENT ====================
+
+const DEFAULT_STATE = {
+  stars: 0, badges: [], dailyTasks: {}, dailyTaskDate: '',
+  learnTime: {}, todayTime: 0, timeLimit: 30,
+  moduleSwitch: {cn_book:true,cn_card:true,math_story:true,math_game:true,en_song:true,en_book:true,en_card:true},
+  parentPwd: '1234',
+  cnCardProgress: {}, enCardProgress: {},
+  bookProgress: {}, gameScores: {},
+  weekData: []
+};
+
+function getState() {
+  try {
+    const s = JSON.parse(localStorage.getItem('starLearn'));
+    return s ? {...DEFAULT_STATE, ...s} : {...DEFAULT_STATE};
+  } catch(e) { return {...DEFAULT_STATE}; }
+}
+
+function saveState(s) {
+  localStorage.setItem('starLearn', JSON.stringify(s));
+}
+
+function checkBadges() {
+  const s = getState();
+  let newBadge = false;
+  BADGES.forEach(b => {
+    if (s.stars >= b.stars && !s.badges.includes(b.id)) {
+      s.badges.push(b.id);
+      newBadge = true;
+      showToast(`恭喜获得勋章：${b.name}！`);
+    }
+  });
+  if (newBadge) saveState(s);
+}
+
+// ==================== STAR CHARACTER SVG ====================
+
+function starCharSVG(size) {
+  size = size || 60;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" class="float-anim">
+    <polygon points="50,5 61,35 95,35 68,57 79,90 50,70 21,90 32,57 5,35 39,35" fill="#FFD54F" stroke="#F9A825" stroke-width="2"/>
+    <circle cx="38" cy="42" r="7" fill="white"/><circle cx="38" cy="42" r="4" fill="#333"/>
+    <circle cx="62" cy="42" r="7" fill="white"/><circle cx="62" cy="42" r="4" fill="#333"/>
+    <circle cx="40" cy="40" r="1.5" fill="white"/><circle cx="64" cy="40" r="1.5" fill="white"/>
+    <path d="M40 58 Q50 68 60 58" stroke="#E65100" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <circle cx="30" cy="52" r="5" fill="#FFB5C2" opacity="0.5"/>
+    <circle cx="70" cy="52" r="5" fill="#FFB5C2" opacity="0.5"/>
+  </svg>`;
+}
+
+// ==================== SCENE ILLUSTRATIONS ====================
+
+function getSceneHTML(sceneId) {
+  const scenes = {
+    sunrise: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(180deg,#87CEEB 40%,#90EE90 40%);">
+      <div style="position:absolute;top:20px;right:30px;width:60px;height:60px;background:#FFD54F;border-radius:50%;box-shadow:0 0 30px #FFD54F;"></div>
+      <div style="position:absolute;bottom:10px;left:30px;font-size:50px;">${starCharSVG(50)}</div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:60px;background:#90EE90;"></div>
+      <div style="position:absolute;bottom:30px;left:80px;font-size:24px;">🪥</div>
+    </div>`,
+    park: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(180deg,#87CEEB 50%,#90EE90 50%);">
+      <div style="position:absolute;top:20px;right:30px;width:50px;height:50px;background:#FFD54F;border-radius:50%;"></div>
+      <div style="position:absolute;bottom:40px;left:50px;font-size:40px;">🌳</div>
+      <div style="position:absolute;bottom:40px;right:60px;font-size:40px;">🍎</div>
+      <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:36px;">${starCharSVG(40)}</div>
+    </div>`,
+    night: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(180deg,#1a1a3e 50%,#2d2d5e 50%);">
+      <div style="position:absolute;top:15px;right:25px;width:45px;height:45px;background:#F5F5DC;border-radius:50%;box-shadow:0 0 20px rgba(245,245,220,0.5);"></div>
+      <div style="position:absolute;top:10px;left:20px;color:#fff;font-size:8px;">✨⭐✨</div>
+      <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:36px;">${starCharSVG(40)}</div>
+      <div style="position:absolute;bottom:5px;left:30px;font-size:28px;">🏠</div>
+    </div>`,
+    catdog: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(180deg,#B5D8FF 40%,#B5FFD8 40%);">
+      <div style="position:absolute;top:50%;left:25%;transform:translateY(-50%);font-size:60px;">🐱</div>
+      <div style="position:absolute;top:50%;right:25%;transform:translateY(-50%);font-size:60px;">🐶</div>
+    </div>`,
+    birdfish: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(180deg,#87CEEB 45%,#4FC3F7 45%);">
+      <div style="position:absolute;top:20px;left:30%;font-size:50px;">🐦</div>
+      <div style="position:absolute;bottom:20px;right:30%;font-size:50px;">🐟</div>
+      <div style="position:absolute;bottom:0;left:0;right:0;height:40%;background:linear-gradient(180deg,#4FC3F7,#0288D1);opacity:0.3;"></div>
+    </div>`,
+    rabbitturtle: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(180deg,#B5D8FF 40%,#B5FFD8 40%);">
+      <div style="position:absolute;top:30%;left:20%;font-size:55px;">🐰</div>
+      <div style="position:absolute;bottom:15%;right:20%;font-size:50px;">🐢</div>
+    </div>`,
+    friends: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(180deg,#FFE8B5 40%,#B5FFD8 40%);">
+      <div style="display:flex;justify-content:center;gap:8px;padding-top:50px;font-size:36px;">🐱🐶🐦🐟🐰🐢</div>
+      <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);font-size:24px;">❤️</div>
+    </div>`,
+    spring: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(180deg,#E1F5FE 40%,#C8E6C9 40%);">
+      <div style="position:absolute;top:15px;right:20px;font-size:30px;">☀️</div>
+      <div style="position:absolute;bottom:20px;left:20px;font-size:40px;">🌸</div>
+      <div style="position:absolute;bottom:20px;left:50%;font-size:35px;">🌷</div>
+      <div style="position:absolute;bottom:15px;right:20px;font-size:30px;">🌱</div>
+    </div>`,
+    summer: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(180deg,#FF8A65 30%,#4FC3F7 60%,#B5FFD8 60%);">
+      <div style="position:absolute;top:10px;right:15px;font-size:40px;">☀️</div>
+      <div style="position:absolute;bottom:20px;left:40%;font-size:45px;">🏊</div>
+    </div>`,
+    autumn: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(180deg,#FFE0B2 40%,#D7CCC8 40%);">
+      <div style="position:absolute;top:20px;left:20px;font-size:30px;">🍂</div>
+      <div style="position:absolute;top:30px;right:30px;font-size:28px;">🍁</div>
+      <div style="position:absolute;bottom:20px;left:30%;font-size:40px;">🍎</div>
+      <div style="position:absolute;bottom:20px;right:25%;font-size:35px;">🍐</div>
+    </div>`,
+    winter: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(180deg,#B3E5FC 40%,#ECEFF1 40%);">
+      <div style="position:absolute;top:10px;left:20px;font-size:20px;">❄️</div>
+      <div style="position:absolute;top:15px;right:30px;font-size:18px;">❄️</div>
+      <div style="position:absolute;bottom:15px;left:40%;font-size:50px;">⛄</div>
+    </div>`,
+    fourseasons: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:#fff;display:grid;grid-template-columns:1fr 1fr;gap:2px;">
+      <div style="background:#E8F5E9;display:flex;align-items:center;justify-content:center;font-size:28px;">🌸</div>
+      <div style="background:#FFF3E0;display:flex;align-items:center;justify-content:center;font-size:28px;">☀️</div>
+      <div style="background:#FBE9E7;display:flex;align-items:center;justify-content:center;font-size:28px;">🍂</div>
+      <div style="background:#E3F2FD;display:flex;align-items:center;justify-content:center;font-size:28px;">❄️</div>
+    </div>`,
+    redapple: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:#FFF3E0;display:flex;align-items:center;justify-content:center;">
+      <div style="font-size:80px;">🍎</div></div>`,
+    bluesky: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(180deg,#42A5F5,#90CAF9);display:flex;align-items:center;justify-content:center;">
+      <div style="font-size:40px;color:#fff;font-weight:700;">☁️ ☁️ ☁️</div></div>`,
+    greengrass: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(180deg,#81C784,#A5D6A8);display:flex;align-items:center;justify-content:center;">
+      <div style="font-size:50px;">🌿</div></div>`,
+    yellowsun: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(180deg,#FFF9C4,#FFE082);display:flex;align-items:center;justify-content:center;">
+      <div style="font-size:70px;">☀️</div></div>`,
+    cat: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:var(--pink);display:flex;align-items:center;justify-content:center;">
+      <div style="font-size:80px;">🐱</div></div>`,
+    dog: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:var(--blue);display:flex;align-items:center;justify-content:center;">
+      <div style="font-size:80px;">🐶</div></div>`,
+    duck: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:var(--yellow);display:flex;align-items:center;justify-content:center;">
+      <div style="font-size:80px;">🦆</div></div>`,
+    cow: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:var(--green);display:flex;align-items:center;justify-content:center;">
+      <div style="font-size:80px;">🐮</div></div>`,
+    star1: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(135deg,#1a1a3e,#2d2d5e);display:flex;align-items:center;justify-content:center;">
+      <div style="font-size:60px;">⭐</div></div>`,
+    bird2: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(180deg,#87CEEB,#B5D8FF);display:flex;align-items:center;justify-content:center;gap:10px;">
+      <div style="font-size:50px;">🐦</div><div style="font-size:50px;">🐦</div></div>`,
+    fish3: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:linear-gradient(180deg,#4FC3F7,#0288D1);display:flex;align-items:center;justify-content:center;gap:5px;">
+      <div style="font-size:40px;">🐟</div><div style="font-size:40px;">🐟</div><div style="font-size:40px;">🐟</div></div>`,
+    cat4: `<div style="width:100%;height:180px;border-radius:16px;overflow:hidden;position:relative;background:var(--pink);display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap;">
+      <div style="font-size:36px;">🐱</div><div style="font-size:36px;">🐱</div><div style="font-size:36px;">🐱</div><div style="font-size:36px;">🐱</div></div>`
+  };
+  return scenes[sceneId] || `<div style="width:100%;height:180px;border-radius:16px;background:var(--yellow);display:flex;align-items:center;justify-content:center;font-size:50px;">📖</div>`;
+}
+
+// ==================== APP NAVIGATION ====================
+
+let currentTab = 'home';
+let subPageStack = [];
+
+function switchTab(tab) {
+  playSound('click');
+  currentTab = tab;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + tab).classList.add('active');
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.tab-item[data-tab="${tab}"]`).classList.add('active');
+  renderPage(tab);
+}
+
+function openSubPage(id, html, opts) {
+  opts = opts || {};
+  const container = document.getElementById('subPages');
+  const div = document.createElement('div');
+  div.className = 'sub-page show';
+  div.id = id;
+  div.innerHTML = `<div class="sub-header">
+    <button class="back-btn" onclick="closeSubPage('${id}')"><i class="fas fa-arrow-left"></i></button>
+    <span>${opts.title || ''}</span>
+    ${opts.extra || ''}
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:16px;padding-bottom:30px;">${html}</div>`;
+  container.appendChild(div);
+  subPageStack.push(id);
+  if (opts.onMount) setTimeout(() => opts.onMount(), 50);
+}
+
+function closeSubPage(id) {
+  playSound('click');
+  const el = document.getElementById(id);
+  if (el) { el.style.animation = 'slideLeft 0.2s ease reverse'; setTimeout(() => el.remove(), 200); }
+  subPageStack = subPageStack.filter(s => s !== id);
+}
+
+// ==================== PAGE RENDERERS ====================
+
+function renderPage(tab) {
+  switch(tab) {
+    case 'home': renderHome(); break;
+    case 'chinese': renderChinese(); break;
+    case 'math': renderMath(); break;
+    case 'english': renderEnglish(); break;
+    case 'parent': renderParent(); break;
+  }
+}
+
+// ---- HOME PAGE ----
+function renderHome() {
+  const s = getState();
+  const dk = getDayKey();
+  let tasks = s.dailyTasks;
+  if (s.dailyTaskDate !== dk) {
+    const shuffled = [...TASK_POOL].sort(() => Math.random() - 0.5);
+    tasks = shuffled.slice(0, 3).map(t => ({text: t, done: false}));
+    s.dailyTasks = tasks; s.dailyTaskDate = dk; saveState(s);
+  }
+  const doneCount = tasks.filter(t => t.done).length;
+  const timeLimit = s.timeLimit || 30;
+  const todayMin = Math.min((s.todayTime || 0) / 60, timeLimit);
+  const pct = Math.round((todayMin / timeLimit) * 100);
+
+  const el = document.getElementById('page-home');
+  el.innerHTML = `
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:22px;font-weight:800;color:#5D4037;">你好，小朋友！</div>
+      <div style="font-size:14px;color:var(--text-light);margin-top:4px;">${formatDate()}</div>
+    </div>
+    <div style="text-align:center;margin-bottom:20px;">${starCharSVG(90)}</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:10px;color:#5D4037;">今日任务</div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;">
+      ${tasks.map((t, i) => `
+        <div class="card task-card ${t.done ? 'done' : ''}" style="display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="toggleTask(${i})">
+          <div class="task-check" style="font-size:24px;${t.done ? 'color:var(--green-deep)' : 'color:#ccc'}">
+            <i class="fas ${t.done ? 'fa-check-circle' : 'fa-circle'}"></i>
+          </div>
+          <span style="flex:1;font-size:15px;${t.done ? 'text-decoration:line-through;color:var(--text-light)' : ''}">${t.text}</span>
+          <span style="font-size:12px;color:#F57F17;">+5⭐</span>
+        </div>
+      `).join('')}
+    </div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:10px;color:#5D4037;">快捷入口</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;">
+      <div style="text-align:center;cursor:pointer;" onclick="switchTab('chinese')">
+        <div style="width:60px;height:60px;border-radius:50%;background:var(--pink);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 4px;">📖</div>
+        <div style="font-size:12px;">语文乐园</div>
+      </div>
+      <div style="text-align:center;cursor:pointer;" onclick="switchTab('math')">
+        <div style="width:60px;height:60px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 4px;">🔢</div>
+        <div style="font-size:12px;">数感乐园</div>
+      </div>
+      <div style="text-align:center;cursor:pointer;" onclick="switchTab('english')">
+        <div style="width:60px;height:60px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 4px;">🔤</div>
+        <div style="font-size:12px;">英语乐园</div>
+      </div>
+      <div style="text-align:center;cursor:pointer;" onclick="openBadgeWall()">
+        <div style="width:60px;height:60px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 4px;">🏅</div>
+        <div style="font-size:12px;">勋章墙</div>
+      </div>
+    </div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:10px;color:#5D4037;">今日学习进度</div>
+    <div class="card" style="display:flex;align-items:center;gap:20px;">
+      <svg width="100" height="100" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="40" fill="none" stroke="#eee" stroke-width="8"/>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="var(--yellow-deep)" stroke-width="8"
+          stroke-dasharray="${2*Math.PI*40}" stroke-dashoffset="${2*Math.PI*40*(1-pct/100)}"
+          stroke-linecap="round" class="progress-ring" style="transition:stroke-dashoffset 0.5s;"/>
+        <text x="50" y="50" text-anchor="middle" dy="0.35em" font-size="18" font-weight="700" fill="#5D4037">${pct}%</text>
+      </svg>
+      <div>
+        <div style="font-size:14px;color:var(--text-light);">已学习</div>
+        <div style="font-size:22px;font-weight:700;color:#5D4037;">${Math.floor(todayMin)} 分钟</div>
+        <div style="font-size:13px;color:var(--text-light);">目标 ${timeLimit} 分钟</div>
+      </div>
+    </div>
+  `;
+}
+
+function toggleTask(i) {
+  const s = getState();
+  if (s.dailyTasks[i].done) return;
+  s.dailyTasks[i].done = true;
+  saveState(s);
+  addStars(5);
+  playSound('correct');
+  if (typeof confetti !== 'undefined') confetti({particleCount:50,spread:60,origin:{y:0.7}});
+  renderHome();
+}
+
+function openBadgeWall() {
+  const s = getState();
+  const html = `<div style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center;">
+    ${BADGES.map(b => {
+      const unlocked = s.badges.includes(b.id);
+      return `<div class="badge-item" onclick="showBadgeInfo('${b.id}')" style="cursor:pointer;">
+        <div class="badge-icon ${unlocked ? 'badge-unlocked' : 'badge-locked'}" style="background:${unlocked ? b.color : '#e0e0e0'};font-size:30px;">
+          ${unlocked ? b.icon : '🔒'}
+        </div>
+        <div style="font-size:12px;font-weight:600;${unlocked ? '' : 'color:#aaa'}">${b.name}</div>
+        <div style="font-size:10px;color:var(--text-light);">${b.stars}⭐</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+  openSubPage('badgeWall', html, {title: '勋章墙'});
+}
+
+function showBadgeInfo(id) {
+  const b = BADGES.find(x => x.id === id);
+  const s = getState();
+  const unlocked = s.badges.includes(id);
+  showToast(`${b.name}：需要${b.stars}颗星星（当前${s.stars}颗）${unlocked ? ' ✅已获得' : ''}`);
+}
+
+// ---- CHINESE PAGE ----
+function renderChinese() {
+  const s = getState();
+  const el = document.getElementById('page-chinese');
+  el.innerHTML = `
+    <div style="text-align:center;margin-bottom:8px;">${starCharSVG(50)}</div>
+    <div style="font-size:20px;font-weight:800;text-align:center;margin-bottom:16px;color:#5D4037;">语文乐园</div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card" style="cursor:pointer;display:flex;align-items:center;gap:16px;${!s.moduleSwitch.cn_book?'opacity:0.4;pointer-events:none;':''}" onclick="openCNBooks()">
+        <div style="width:56px;height:56px;border-radius:16px;background:var(--pink);display:flex;align-items:center;justify-content:center;font-size:30px;">📚</div>
+        <div><div style="font-weight:700;font-size:16px;">故事绘本馆</div><div style="font-size:12px;color:var(--text-light);">3本精美绘本等你读</div></div>
+      </div>
+      <div class="card" style="cursor:pointer;display:flex;align-items:center;gap:16px;${!s.moduleSwitch.cn_card?'opacity:0.4;pointer-events:none;':''}" onclick="openCNCards()">
+        <div style="width:56px;height:56px;border-radius:16px;background:var(--purple);display:flex;align-items:center;justify-content:center;font-size:30px;">🃏</div>
+        <div><div style="font-weight:700;font-size:16px;">闪卡认字</div><div style="font-size:12px;color:var(--text-light);">50个基础汉字轻松学</div></div>
+      </div>
+    </div>
+  `;
+}
+
+function openCNBooks() {
+  const html = `<div style="display:flex;flex-direction:column;gap:14px;">
+    ${CN_BOOKS.map(b => `
+      <div class="card" style="cursor:pointer;" onclick="openCNBook('${b.id}')">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="width:70px;height:90px;border-radius:12px;background:linear-gradient(135deg,var(--pink),var(--yellow));display:flex;align-items:center;justify-content:center;font-size:36px;">📖</div>
+          <div style="flex:1;">
+            <div style="font-weight:700;font-size:16px;">${b.title}</div>
+            <div style="font-size:12px;color:var(--text-light);margin-top:4px;">难度：${'⭐'.repeat(b.stars)}</div>
+            <div style="font-size:12px;color:var(--text-light);">${b.pages.length}页</div>
+          </div>
+          <i class="fas fa-chevron-right" style="color:#ccc;"></i>
+        </div>
+      </div>
+    `).join('')}
+  </div>`;
+  openSubPage('cnBooks', html, {title: '故事绘本馆'});
+}
+
+function openCNBook(id) {
+  closeSubPage('cnBooks');
+  const book = CN_BOOKS.find(b => b.id === id);
+  let pageIdx = 0;
+  const pid = 'cnBook_' + id;
+
+  function render() {
+    const pg = book.pages[pageIdx];
+    const isLast = pageIdx === book.pages.length - 1;
+    const html = `
+      <div style="margin-bottom:16px;">${getSceneHTML(pg.scene)}</div>
+      <div class="card" style="text-align:center;padding:20px;cursor:pointer;" onclick="speak('${pg.text.replace(/'/g,"\\'")}','zh')">
+        <ruby style="font-size:24px;line-height:2.2;font-weight:600;">
+          ${pg.text.split('').map(ch => {
+            const cd = CHINESE_CHARS.find(c => c.c === ch);
+            return cd ? `<ruby>${ch}<rp>(</rp><rt style="font-size:12px;color:var(--pink-deep);">${cd.p}</rt><rp>)</rp></ruby>` : ch;
+          }).join('')}
+        </ruby>
+        <div style="font-size:12px;color:var(--text-light);margin-top:8px;">点击文字可朗读</div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:16px;">
+        <button class="btn btn-primary" ${pageIdx===0?'disabled style="opacity:0.4"':''} onclick="cnBookPage('${id}',${pageIdx-1})"><i class="fas fa-arrow-left"></i> 上一页</button>
+        <span style="font-size:14px;color:var(--text-light);align-self:center;">${pageIdx+1} / ${book.pages.length}</span>
+        ${isLast ? `<button class="btn btn-green" onclick="cnBookQuiz('${id}')">开始答题 <i class="fas fa-check"></i></button>` :
+          `<button class="btn btn-primary" onclick="cnBookPage('${id}',${pageIdx+1})">下一页 <i class="fas fa-arrow-right"></i></button>`}
+      </div>
+      <div style="position:fixed;bottom:80px;right:20px;">${starCharSVG(40)}</div>
+    `;
+    const el = document.getElementById(pid);
+    if (el) {
+      const content = el.querySelector('div[style*="overflow-y:auto"]') || el.lastElementChild;
+      if (content) content.innerHTML = html;
+    }
+  }
+
+  window.cnBookPage = function(bookId, idx) {
+    playSound('page');
+    pageIdx = idx;
+    render();
+  };
+
+  window.cnBookQuiz = function(bookId) {
+    const bk = CN_BOOKS.find(b => b.id === bookId);
+    let qi = 0;
+    function renderQuiz() {
+      if (qi >= bk.quiz.length) {
+        addStars(5);
+        if (typeof confetti !== 'undefined') confetti({particleCount:100,spread:80});
+        playSound('celebrate');
+        const content = document.querySelector(`#${pid} div[style*="overflow-y:auto"]`) || document.querySelector(`#${pid} > div:last-child`);
+        if (content) content.innerHTML = `
+          <div style="text-align:center;padding:40px 0;">
+            <div style="font-size:60px;margin-bottom:16px;">🎉</div>
+            <div style="font-size:22px;font-weight:800;color:var(--green-deep);">太棒了！</div>
+            <div style="font-size:16px;color:var(--text-light);margin-top:8px;">获得5颗星星</div>
+            <button class="btn btn-primary" style="margin-top:20px;" onclick="closeSubPage('${pid}')">返回</button>
+          </div>`;
+        return;
+      }
+      const q = bk.quiz[qi];
+      const content = document.querySelector(`#${pid} div[style*="overflow-y:auto"]`) || document.querySelector(`#${pid} > div:last-child`);
+      if (content) content.innerHTML = `
+        <div style="text-align:center;padding:20px 0;">
+          <div style="font-size:16px;font-weight:700;margin-bottom:20px;">第${qi+1}题</div>
+          <div style="font-size:18px;margin-bottom:24px;">${q.q}</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            ${q.opts.map((o, oi) => `<button class="btn ${oi===0?'btn-pink':'btn-blue'}" style="width:100%;font-size:18px;" onclick="answerCNQuiz('${bookId}',${qi},${oi})">${o}</button>`).join('')}
+          </div>
+        </div>`;
+    }
+    window.answerCNQuiz = function(bid, qidx, aidx) {
+      const bk2 = CN_BOOKS.find(b => b.id === bid);
+      if (aidx === bk2.quiz[qidx].ans) {
+        playSound('correct');
+        showToast('回答正确！');
+        qi++;
+        setTimeout(renderQuiz, 600);
+      } else {
+        playSound('wrong');
+        showToast('再想想哦～');
+      }
+    };
+    renderQuiz();
+  };
+
+  openSubPage(pid, '', {title: book.title, onMount: render});
+}
+
+function openCNCards() {
+  const html = `
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+      <button class="btn btn-pink" onclick="startCNCardMode('learn')">认识模式</button>
+      <button class="btn btn-purple" onclick="startCNCardMode('review')">复习模式</button>
+      <button class="btn btn-blue" onclick="startCNCardMode('test')">测试模式</button>
+    </div>
+    <div style="font-size:13px;color:var(--text-light);text-align:center;">共50个基础汉字</div>
+  `;
+  openSubPage('cnCards', html, {title: '闪卡认字'});
+}
+
+function startCNCardMode(mode) {
+  closeSubPage('cnCards');
+  const pid = 'cnCardPlay';
+  let cards = [...CHINESE_CHARS];
+  let idx = 0;
+  let flipped = false;
+  let score = 0;
+
+  if (mode === 'review') cards = cards.sort(() => Math.random() - 0.5);
+  if (mode === 'test') cards = cards.sort(() => Math.random() - 0.5).slice(0, 10);
+
+  function render() {
+    const card = cards[idx];
+    let content = '';
+    if (mode === 'test') {
+      const opts = [card.p];
+      while (opts.length < 4) {
+        const rp = CHINESE_CHARS[Math.floor(Math.random()*50)].p;
+        if (!opts.includes(rp)) opts.push(rp);
+      }
+      opts.sort(() => Math.random() - 0.5);
+      content = `
+        <div style="text-align:center;">
+          <div style="font-size:100px;font-weight:800;color:#5D4037;margin:20px 0;">${card.c}</div>
+          <div style="font-size:40px;margin-bottom:20px;">${card.e}</div>
+          <div style="font-size:14px;color:var(--text-light);margin-bottom:16px;">选择正确的拼音</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            ${opts.map(o => `<button class="btn btn-primary" style="font-size:20px;" onclick="answerCNTest('${o}','${card.p}')">${o}</button>`).join('')}
+          </div>
+          <div style="margin-top:16px;font-size:14px;color:var(--text-light);">得分：${score} / ${idx}</div>
+        </div>`;
+    } else {
+      content = `
+        <div class="flip-card ${flipped?'flipped':''}" style="width:240px;height:300px;margin:0 auto;" onclick="flipCNCard()">
+          <div class="flip-card-inner" style="width:100%;height:100%;">
+            <div class="flip-card-front" style="background:linear-gradient(135deg,var(--yellow),var(--pink));padding:20px;">
+              <div style="font-size:80px;font-weight:800;color:#5D4037;">${card.c}</div>
+              <div style="font-size:20px;color:var(--pink-deep);margin-top:8px;">${card.p}</div>
+              <div style="font-size:50px;margin-top:12px;">${card.e}</div>
+            </div>
+            <div class="flip-card-back" style="background:linear-gradient(135deg,var(--purple),var(--blue));padding:20px;color:#fff;">
+              <div style="font-size:18px;margin-top:20px;">组词</div>
+              <div style="font-size:22px;font-weight:700;margin:8px 0;">${card.w}</div>
+              <div style="font-size:18px;margin-top:16px;">例句</div>
+              <div style="font-size:18px;font-weight:700;margin:8px 0;">${card.s}</div>
+            </div>
+          </div>
+        </div>
+        <div style="text-align:center;margin-top:16px;">
+          <button class="btn btn-green" onclick="speak('${card.c}','zh')"><i class="fas fa-volume-up"></i> 朗读</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:20px;">
+          <button class="btn btn-primary" ${idx===0?'disabled style="opacity:0.4"':''} onclick="cnCardPrev()"><i class="fas fa-arrow-left"></i></button>
+          <span style="font-size:14px;color:var(--text-light);align-self:center;">${idx+1} / ${cards.length}</span>
+          <button class="btn btn-primary" onclick="cnCardNext()"><i class="fas fa-arrow-right"></i></button>
+        </div>
+        ${mode==='review'?'<div style="text-align:center;margin-top:12px;font-size:13px;color:var(--text-light);">点击卡片翻转查看答案</div>':''}
+      `;
+    }
+    const el = document.getElementById(pid);
+    if (el) {
+      const c = el.querySelector('div[style*="overflow-y:auto"]') || el.lastElementChild;
+      if (c) c.innerHTML = content;
+    }
+  }
+
+  window.flipCNCard = function() {
+    flipped = !flipped;
+    playSound('flip');
+    render();
+  };
+  window.cnCardPrev = function() { if (idx > 0) { idx--; flipped = false; playSound('page'); render(); } };
+  window.cnCardNext = function() {
+    if (idx < cards.length - 1) { idx++; flipped = false; playSound('page'); render(); }
+    else { addStars(mode==='learn'?3:5); showToast('完成！获得星星'); closeSubPage(pid); }
+  };
+  window.answerCNTest = function(sel, ans) {
+    if (sel === ans) { score++; playSound('correct'); }
+    else { playSound('wrong'); }
+    idx++;
+    if (idx >= cards.length) {
+      addStars(5);
+      if (typeof confetti !== 'undefined') confetti({particleCount:60,spread:60});
+      showToast(`测试完成！得分 ${score}/${cards.length}`);
+      setTimeout(() => closeSubPage(pid), 1500);
+    } else { render(); }
+  };
+
+  openSubPage(pid, '', {title: mode==='learn'?'认识模式':mode==='review'?'复习模式':'测试模式', onMount: render});
+}
+
+// ---- MATH PAGE ----
+function renderMath() {
+  const s = getState();
+  const el = document.getElementById('page-math');
+  el.innerHTML = `
+    <div style="text-align:center;margin-bottom:8px;">${starCharSVG(50)}</div>
+    <div style="font-size:20px;font-weight:800;text-align:center;margin-bottom:16px;color:#5D4037;">数感乐园</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:10px;color:#5D4037;">数字故事</div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px;">
+      ${MATH_STORIES.filter((_,i)=>i<5).map(st => `
+        <div class="card" style="text-align:center;cursor:pointer;padding:12px;${!s.moduleSwitch.math_story?'opacity:0.4;pointer-events:none;':''}" onclick="openMathStory('${st.id}')">
+          <div style="font-size:36px;">${st.icon}</div>
+          <div style="font-size:13px;font-weight:600;margin-top:4px;">${st.title}</div>
+          <div style="font-size:11px;color:var(--text-light);">${st.desc}</div>
+        </div>
+      `).join('')}
+    </div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:10px;color:#5D4037;">数数游戏</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div class="card" style="text-align:center;cursor:pointer;padding:14px;${!s.moduleSwitch.math_game?'opacity:0.4;pointer-events:none;':''}" onclick="openMathGame('match')">
+        <div style="font-size:30px;">🎯</div><div style="font-size:13px;font-weight:600;margin-top:4px;">点数匹配</div>
+      </div>
+      <div class="card" style="text-align:center;cursor:pointer;padding:14px;${!s.moduleSwitch.math_game?'opacity:0.4;pointer-events:none;':''}" onclick="openMathGame('compare')">
+        <div style="font-size:30px;">⚖️</div><div style="font-size:13px;font-weight:600;margin-top:4px;">比大小</div>
+      </div>
+      <div class="card" style="text-align:center;cursor:pointer;padding:14px;${!s.moduleSwitch.math_game?'opacity:0.4;pointer-events:none;':''}" onclick="openMathGame('shape')">
+        <div style="font-size:30px;">🔷</div><div style="font-size:13px;font-weight:600;margin-top:4px;">图形分类</div>
+      </div>
+      <div class="card" style="text-align:center;cursor:pointer;padding:14px;${!s.moduleSwitch.math_game?'opacity:0.4;pointer-events:none;':''}" onclick="openMathGame('pattern')">
+        <div style="font-size:30px;">🔄</div><div style="font-size:13px;font-weight:600;margin-top:4px;">找规律</div>
+      </div>
+    </div>
+  `;
+}
+
+function openMathStory(id) {
+  const stories = {
+    count: {title:'数苹果',steps:[
+      {text:'果园里有一棵苹果树。',action:'start'},
+      {text:'树上出现了1个苹果！',count:1},
+      {text:'又长出1个，现在有2个苹果！',count:2},
+      {text:'继续长，3个苹果啦！',count:3},
+      {text:'越来越多，4个苹果！',count:4},
+      {text:'最后1个，5个苹果！一起来数吧！',count:5}
+    ]},
+    compare: {title:'谁的多',steps:[
+      {text:'小兔和小熊在捡果子。',left:0,right:0},
+      {text:'小兔捡了3个果子。',left:3,right:0},
+      {text:'小熊捡了5个果子。',left:3,right:5},
+      {text:'谁捡的果子多呢？',left:3,right:5,quiz:true}
+    ]},
+    add: {title:'分饼干',steps:[
+      {text:'妈妈烤了饼干。',a:0,b:0},
+      {text:'给小明2块饼干。',a:2,b:0},
+      {text:'给小红3块饼干。',a:2,b:3},
+      {text:'一共分了几块饼干？',a:2,b:3,quiz:true}
+    ]},
+    subtract: {title:'吃掉啦',steps:[
+      {text:'盘子里有5块饼干。',total:5},
+      {text:'吃掉了1块，还剩几块？',total:4,eaten:1},
+      {text:'又吃掉1块！',total:3,eaten:2},
+      {text:'再吃掉1块！',total:2,eaten:3},
+      {text:'还剩几块饼干呢？',total:2,eaten:3,quiz:true}
+    ]},
+    order: {title:'排排队',steps:[
+      {text:'小动物们来排队啦！',animals:['🐰','🐻','🦊','🐸','🐼']},
+      {text:'谁排第1？',animals:['🐰','🐻','🦊','🐸','🐼'],quiz:1},
+      {text:'谁排第3？',animals:['🐰','🐻','🦊','🐸','🐼'],quiz:3},
+      {text:'谁排最后？',animals:['🐰','🐻','🦊','🐸','🐼'],quiz:5}
+    ]}
+  };
+  const story = stories[id];
+  let step = 0;
+
+  function render() {
+    const s = story.steps[step];
+    let visual = '';
+    if (id === 'count') {
+      visual = `<div style="text-align:center;padding:20px;">
+        <div style="font-size:60px;margin-bottom:10px;">🌳</div>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+          ${Array(s.count||0).fill(0).map((_,i)=>`<div style="font-size:36px;animation:bounceIn 0.3s ease ${i*0.1}s both;">🍎</div>`).join('')}
+        </div>
+        ${s.count?`<div style="font-size:24px;font-weight:700;margin-top:12px;color:var(--green-deep);">${s.count}个苹果！</div>`:''}
+      </div>`;
+    } else if (id === 'compare') {
+      visual = `<div style="display:flex;justify-content:space-around;padding:20px;">
+        <div style="text-align:center;"><div style="font-size:40px;">🐰</div><div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-top:8px;">${Array(s.left||0).fill('🍒').join('')}</div></div>
+        <div style="text-align:center;"><div style="font-size:40px;">🐻</div><div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin-top:8px;">${Array(s.right||0).fill('🍒').join('')}</div></div>
+      </div>`;
+    } else if (id === 'add') {
+      visual = `<div style="display:flex;justify-content:space-around;padding:20px;">
+        <div style="text-align:center;"><div style="font-size:16px;font-weight:700;">小明</div><div style="font-size:30px;margin-top:4px;">${Array(s.a||0).fill('🍪').join('')}</div></div>
+        <div style="font-size:30px;align-self:center;">+</div>
+        <div style="text-align:center;"><div style="font-size:16px;font-weight:700;">小红</div><div style="font-size:30px;margin-top:4px;">${Array(s.b||0).fill('🍪').join('')}</div></div>
+      </div>`;
+    } else if (id === 'subtract') {
+      visual = `<div style="text-align:center;padding:20px;">
+        <div style="font-size:40px;margin-bottom:10px;">🍽️</div>
+        <div style="display:flex;gap:6px;justify-content:center;">${Array(s.total||0).fill('🍪').map((_,i)=>`<div style="font-size:36px;">🍪</div>`).join('')}${Array(s.eaten||0).fill(0).map(()=>`<div style="font-size:36px;opacity:0.2;">🍪</div>`).join('')}</div>
+      </div>`;
+    } else if (id === 'order') {
+      visual = `<div style="display:flex;justify-content:center;gap:8px;padding:20px;flex-wrap:wrap;">
+        ${(s.animals||[]).map((a,i)=>`<div style="text-align:center;"><div style="font-size:40px;">${a}</div><div style="font-size:12px;color:var(--text-light);">第${i+1}</div></div>`).join('')}
+      </div>`;
+    }
+
+    let quizHTML = '';
+    if (s.quiz) {
+      if (id === 'compare') {
+        quizHTML = `<div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
+          <button class="btn btn-pink" onclick="mathStoryAns('left')">🐰多</button>
+          <button class="btn btn-primary" onclick="mathStoryAns('same')">一样多</button>
+          <button class="btn btn-blue" onclick="mathStoryAns('right')">🐻多</button>
+        </div>`;
+      } else if (id === 'add') {
+        quizHTML = `<div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap;">
+          ${[3,4,5,6].map(n=>`<button class="btn btn-primary" onclick="mathStoryAns(${n})">${n}</button>`).join('')}
+        </div>`;
+      } else if (id === 'subtract') {
+        quizHTML = `<div style="display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap;">
+          ${[1,2,3,4].map(n=>`<button class="btn btn-primary" onclick="mathStoryAns(${n})">${n}</button>`).join('')}
+        </div>`;
+      } else if (id === 'order') {
+        quizHTML = `<div style="display:flex;gap:8px;justify-content:center;margin-top:16px;flex-wrap:wrap;">
+          ${(s.animals||[]).map((a,i)=>`<button class="btn btn-green" onclick="mathStoryAns(${i+1})">${a} 第${i+1}</button>`).join('')}
+        </div>`;
+      }
+    }
+
+    const content = `
+      ${visual}
+      <div class="card" style="text-align:center;margin-top:12px;cursor:pointer;" onclick="speak('${s.text.replace(/'/g,"\\'")}','zh')">
+        <div style="font-size:18px;font-weight:600;">${s.text}</div>
+      </div>
+      ${quizHTML}
+      <div style="display:flex;justify-content:space-between;margin-top:16px;">
+        <button class="btn btn-primary" ${step===0?'disabled style="opacity:0.4"':''} onclick="mathStoryPrev()"><i class="fas fa-arrow-left"></i></button>
+        <span style="font-size:14px;color:var(--text-light);align-self:center;">${step+1}/${story.steps.length}</span>
+        ${step<story.steps.length-1?`<button class="btn btn-primary" onclick="mathStoryNext()">下一页 <i class="fas fa-arrow-right"></i></button>`:`<button class="btn btn-green" onclick="closeSubPage('mathStory_${id}')">完成</button>`}
+      </div>
+    `;
+    const el = document.getElementById('mathStory_'+id);
+    if (el) { const c = el.querySelector('div[style*="overflow-y:auto"]')||el.lastElementChild; if(c) c.innerHTML=content; }
+  }
+
+  window.mathStoryNext = function() { step++; playSound('page'); render(); };
+  window.mathStoryPrev = function() { if(step>0){step--;playSound('page');render();} };
+  window.mathStoryAns = function(ans) {
+    let correct = false;
+    if (id==='compare') correct = (ans==='right');
+    else if (id==='add') correct = (ans===5);
+    else if (id==='subtract') correct = (ans===2);
+    else if (id==='order') correct = true;
+    if (correct) { playSound('correct'); addStars(5); showToast('回答正确！+5⭐'); if(typeof confetti!=='undefined')confetti({particleCount:50,spread:50}); }
+    else { playSound('wrong'); showToast('再想想哦～'); }
+  };
+
+  openSubPage('mathStory_'+id, '', {title: story.title, onMount: render});
+}
+
+function openMathGame(type) {
+  const pid = 'mathGame_'+type;
+  let score = 0, round = 0, maxRounds = 5;
+
+  function genRound() {
+    if (type === 'match') {
+      const num = Math.floor(Math.random()*9)+1;
+      return {num, dots: Array(num).fill(0).map((_,i)=>({id:i,placed:false}))};
+    } else if (type === 'compare') {
+      const l = Math.floor(Math.random()*5)+1, r = Math.floor(Math.random()*5)+1;
+      return {left:l, right:r, ans: l>r?'left':l<r?'right':'same'};
+    } else if (type === 'shape') {
+      const shapes = [];
+      const types = ['circle','square','triangle'];
+      for(let i=0;i<6;i++){
+        const t = types[Math.floor(Math.random()*3)];
+        const colors = ['#FFB5C2','#B5D8FF','#B5FFD8'];
+        shapes.push({type:t, color:colors[types.indexOf(t)], placed:false, id:i});
+      }
+      return {shapes};
+    } else if (type === 'pattern') {
+      const colors = ['#FFB5C2','#B5D8FF','#B5FFD8','#D8B5FF','#FFE8B5'];
+      const c1 = colors[Math.floor(Math.random()*5)];
+      let c2 = colors.filter(c=>c!==c1)[Math.floor(Math.random()*4)];
+      const seq = [];
+      for(let i=0;i<5;i++) seq.push(i%2===0?c1:c2);
+      const correctNext = seq.length%2===0?c1:c2;
+      const opts = [correctNext];
+      while(opts.length<3){const rc=colors[Math.floor(Math.random()*5)];if(!opts.includes(rc))opts.push(rc);}
+      opts.sort(()=>Math.random()-0.5);
+      return {seq, opts, ans:correctNext};
+    }
+  }
+
+  let data = genRound();
+
+  function render() {
+    let html = `<div style="text-align:center;margin-bottom:12px;font-size:14px;color:var(--text-light);">第${round+1}轮 | 得分：${score}</div>`;
+
+    if (type === 'match') {
+      html += `<div style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:60px;font-weight:800;color:var(--blue-deep);">${data.num}</div>
+        <div style="font-size:14px;color:var(--text-light);margin-top:4px;">拖拽圆点到框里</div>
+      </div>
+      <div id="matchDrop" class="drop-zone" style="min-height:80px;margin-bottom:16px;display:flex;gap:6px;flex-wrap:wrap;justify-content:center;padding:12px;">
+        ${Array(data.num).fill(0).map((_,i)=>`<div style="width:40px;height:40px;border-radius:50%;border:2px dashed #ccc;"></div>`).join('')}
+      </div>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+        ${data.dots.map((d,i)=>`<div class="draggable" data-idx="${i}" style="width:40px;height:40px;border-radius:50%;background:var(--yellow-deep);cursor:grab;touch-action:none;" ${d.placed?'style="opacity:0.3"':''}></div>`).join('')}
+      </div>`;
+    } else if (type === 'compare') {
+      html += `<div style="display:flex;justify-content:space-around;margin:20px 0;">
+        <div style="text-align:center;"><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;">${Array(data.left).fill('🍎').map(a=>`<span style="font-size:32px;">${a}</span>`).join('')}</div><div style="font-size:14px;margin-top:4px;">左边</div></div>
+        <div style="text-align:center;"><div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;">${Array(data.right).fill('🍎').map(a=>`<span style="font-size:32px;">${a}</span>`).join('')}</div><div style="font-size:14px;margin-top:4px;">右边</div></div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        <button class="btn btn-pink" onclick="compareAns('left')">左边多</button>
+        <button class="btn btn-primary" onclick="compareAns('same')">一样多</button>
+        <button class="btn btn-blue" onclick="compareAns('right')">右边多</button>
+      </div>`;
+    } else if (type === 'shape') {
+      html += `<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:20px;">
+        ${data.shapes.map((s,i)=>`<div class="draggable" data-shape-idx="${i}" style="width:50px;height:50px;touch-action:none;cursor:grab;">
+          ${s.type==='circle'?`<div style="width:50px;height:50px;border-radius:50%;background:${s.color};"></div>`:
+            s.type==='square'?`<div style="width:50px;height:50px;border-radius:4px;background:${s.color};"></div>`:
+            `<div style="width:0;height:0;border-left:25px solid transparent;border-right:25px solid transparent;border-bottom:50px solid ${s.color};"></div>`}
+        </div>`).join('')}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+        <div class="drop-zone" data-bucket="circle" style="text-align:center;padding:12px;"><div style="font-size:24px;">⭕</div><div style="font-size:12px;">圆形</div></div>
+        <div class="drop-zone" data-bucket="square" style="text-align:center;padding:12px;"><div style="font-size:24px;">🟦</div><div style="font-size:12px;">方形</div></div>
+        <div class="drop-zone" data-bucket="triangle" style="text-align:center;padding:12px;"><div style="font-size:24px;">🔺</div><div style="font-size:12px;">三角</div></div>
+      </div>`;
+    } else if (type === 'pattern') {
+      html += `<div style="display:flex;gap:8px;justify-content:center;margin:20px 0;flex-wrap:wrap;">
+        ${data.seq.map(c=>`<div style="width:40px;height:40px;border-radius:8px;background:${c};"></div>`).join('')}
+        <div style="width:40px;height:40px;border-radius:8px;border:3px dashed #999;display:flex;align-items:center;justify-content:center;font-size:20px;">?</div>
+      </div>
+      <div style="font-size:14px;text-align:center;color:var(--text-light);margin-bottom:16px;">下一个是什么颜色？</div>
+      <div style="display:flex;gap:10px;justify-content:center;">
+        ${data.opts.map(c=>`<button class="btn" style="background:${c};width:60px;height:60px;border-radius:12px;" onclick="patternAns('${c}')"></button>`).join('')}
+      </div>`;
+    }
+
+    const el = document.getElementById(pid);
+    if (el) { const c = el.querySelector('div[style*="overflow-y:auto"]')||el.lastElementChild; if(c) c.innerHTML=html; }
+
+    // Setup drag for match game
+    if (type === 'match') setupMatchDrag();
+    if (type === 'shape') setupShapeDrag();
+  }
+
+  function setupMatchDrag() {
+    setTimeout(() => {
+      const draggables = document.querySelectorAll('#'+pid+' .draggable');
+      const dropZone = document.getElementById('matchDrop');
+      if (!dropZone) return;
+      let placedCount = 0;
+      draggables.forEach(d => {
+        const handler = (e) => {
+          e.preventDefault();
+          d.style.opacity = '0.4';
+          placedCount++;
+          playSound('click');
+          if (placedCount >= data.num) {
+            playSound('correct');
+            score++;
+            showToast('正确！');
+            setTimeout(nextRound, 800);
+          }
+        };
+        d.addEventListener('click', handler);
+        d.addEventListener('touchend', handler);
+      });
+    }, 100);
+  }
+
+  function setupShapeDrag() {
+    setTimeout(() => {
+      const items = document.querySelectorAll('#'+pid+' .draggable');
+      const buckets = document.querySelectorAll('#'+pid+' .drop-zone');
+      items.forEach(item => {
+        const idx = parseInt(item.dataset.shapeIdx);
+        if (isNaN(idx)) return;
+        const handler = () => {
+          const shape = data.shapes[idx];
+          if (shape.placed) return;
+          // Simple click-to-select then click-bucket approach for mobile
+          showToast('请点击下方的分类筐', 1000);
+          buckets.forEach(b => {
+            b.onclick = () => {
+              const bucket = b.dataset.bucket;
+              if (shape.type === bucket) {
+                shape.placed = true;
+                score++;
+                playSound('correct');
+                item.style.opacity = '0.3';
+                item.style.pointerEvents = 'none';
+                b.style.background = 'rgba(102,187,106,0.2)';
+                b.style.borderColor = 'var(--green-deep)';
+                const allPlaced = data.shapes.every(s => s.placed);
+                if (allPlaced) { showToast('全部分类正确！'); setTimeout(nextRound, 800); }
+              } else {
+                playSound('wrong');
+                showToast('再试试～');
+              }
+            };
+          });
+        };
+        item.addEventListener('click', handler);
+      });
+    }, 100);
+  }
+
+  window.compareAns = function(ans) {
+    if (ans === data.ans) { score++; playSound('correct'); showToast('正确！'); }
+    else { playSound('wrong'); showToast('再想想～'); }
+    setTimeout(nextRound, 600);
+  };
+
+  window.patternAns = function(c) {
+    if (c === data.ans) { score++; playSound('correct'); showToast('正确！'); }
+    else { playSound('wrong'); showToast('再想想～'); }
+    setTimeout(nextRound, 600);
+  };
+
+  function nextRound() {
+    round++;
+    if (round >= maxRounds) {
+      addStars(5);
+      if (typeof confetti !== 'undefined') confetti({particleCount:80,spread:70});
+      showToast(`游戏结束！得分 ${score}/${maxRounds}，获得5⭐`);
+      setTimeout(() => closeSubPage(pid), 1500);
+    } else {
+      data = genRound();
+      render();
+    }
+  }
+
+  const titles = {match:'点数匹配',compare:'比大小',shape:'图形分类',pattern:'找规律'};
+  openSubPage(pid, '', {title: titles[type], onMount: render});
+}
+
+// ---- ENGLISH PAGE ----
+function renderEnglish() {
+  const s = getState();
+  const el = document.getElementById('page-english');
+  el.innerHTML = `
+    <div style="text-align:center;margin-bottom:8px;">${starCharSVG(50)}</div>
+    <div style="font-size:20px;font-weight:800;text-align:center;margin-bottom:16px;color:#5D4037;">英语乐园</div>
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="card" style="cursor:pointer;display:flex;align-items:center;gap:16px;${!s.moduleSwitch.en_song?'opacity:0.4;pointer-events:none;':''}" onclick="openSongs()">
+        <div style="width:56px;height:56px;border-radius:16px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:30px;">🎵</div>
+        <div><div style="font-weight:700;font-size:16px;">磨耳朵</div><div style="font-size:12px;color:var(--text-light);">10首经典英文儿歌</div></div>
+      </div>
+      <div class="card" style="cursor:pointer;display:flex;align-items:center;gap:16px;${!s.moduleSwitch.en_book?'opacity:0.4;pointer-events:none;':''}" onclick="openENBooks()">
+        <div style="width:56px;height:56px;border-radius:16px;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:30px;">📗</div>
+        <div><div style="font-weight:700;font-size:16px;">绘本剧场</div><div style="font-size:12px;color:var(--text-light);">3本英文互动绘本</div></div>
+      </div>
+      <div class="card" style="cursor:pointer;display:flex;align-items:center;gap:16px;${!s.moduleSwitch.en_card?'opacity:0.4;pointer-events:none;':''}" onclick="openENCards()">
+        <div style="width:56px;height:56px;border-radius:16px;background:var(--purple);display:flex;align-items:center;justify-content:center;font-size:30px;">🃏</div>
+        <div><div style="font-weight:700;font-size:16px;">闪卡学词</div><div style="font-size:12px;color:var(--text-light);">50个单词5个主题</div></div>
+      </div>
+    </div>
+  `;
+}
+
+function openSongs() {
+  const html = `<div style="display:flex;flex-direction:column;gap:10px;">
+    ${SONGS.map((s,i)=>`
+      <div class="card" style="cursor:pointer;display:flex;align-items:center;gap:14px;" onclick="openSong(${i})">
+        <div style="width:50px;height:50px;border-radius:14px;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:26px;">${s.icon}</div>
+        <div style="flex:1;font-weight:600;font-size:14px;">${s.title}</div>
+        <i class="fas fa-play" style="color:var(--green-deep);"></i>
+      </div>
+    `).join('')}
+  </div>`;
+  openSubPage('enSongs', html, {title: '磨耳朵'});
+}
+
+function openSong(idx) {
+  closeSubPage('enSongs');
+  const song = SONGS[idx];
+  const pid = 'song_'+idx;
+  let playing = false, lineIdx = -1, timer = null;
+
+  function render() {
+    const html = `
+      <div style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:50px;margin-bottom:8px;">${song.icon}</div>
+        <div style="font-size:18px;font-weight:700;">${song.title}</div>
+      </div>
+      <div id="lyricsBox" style="margin-bottom:20px;">
+        ${song.lyrics.map((l,i)=>`<div class="lyric-line ${i===lineIdx?'active':''}" style="cursor:pointer;" onclick="speakLine(${i})">${l}</div>`).join('')}
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:12px;">
+        <button class="btn btn-green" id="playBtn" onclick="togglePlay()"><i class="fas ${playing?'fa-pause':'fa-play'}"></i> ${playing?'暂停':'播放'}</button>
+        <button class="btn btn-primary" onclick="replaySong()"><i class="fas fa-redo"></i> 重播</button>
+      </div>
+      <div style="text-align:center;font-size:13px;color:var(--text-light);">点击任意歌词行可单独朗读</div>
+    `;
+    const el = document.getElementById(pid);
+    if (el) { const c = el.querySelector('div[style*="overflow-y:auto"]')||el.lastElementChild; if(c) c.innerHTML=html; }
+  }
+
+  window.togglePlay = function() {
+    playing = !playing;
+    if (playing) {
+      lineIdx = -1;
+      nextLine();
+    } else {
+      if (timer) clearTimeout(timer);
+      speechSynthesis.cancel();
+    }
+    render();
+  };
+
+  window.replaySong = function() {
+    playing = false;
+    if (timer) clearTimeout(timer);
+    speechSynthesis.cancel();
+    lineIdx = -1;
+    playing = true;
+    nextLine();
+    render();
+  };
+
+  window.speakLine = function(i) {
+    speak(song.lyrics[i], 'en');
+  };
+
+  function nextLine() {
+    lineIdx++;
+    if (lineIdx >= song.lyrics.length) {
+      playing = false;
+      addStars(2);
+      showToast('听完一首歌 +2⭐');
+      render();
+      return;
+    }
+    render();
+    speak(song.lyrics[lineIdx], 'en');
+    timer = setTimeout(nextLine, 2500);
+  }
+
+  openSubPage(pid, '', {title: song.title, onMount: render});
+}
+
+function openENBooks() {
+  const html = `<div style="display:flex;flex-direction:column;gap:14px;">
+    ${EN_BOOKS.map(b=>`
+      <div class="card" style="cursor:pointer;display:flex;align-items:center;gap:14px;" onclick="openENBook('${b.id}')">
+        <div style="width:70px;height:90px;border-radius:12px;background:linear-gradient(135deg,var(--blue),var(--green));display:flex;align-items:center;justify-content:center;font-size:30px;">📗</div>
+        <div><div style="font-weight:700;font-size:16px;">${b.title}</div><div style="font-size:12px;color:var(--text-light);">${b.pages.length}页</div></div>
+      </div>
+    `).join('')}
+  </div>`;
+  openSubPage('enBooks', html, {title: '绘本剧场'});
+}
+
+function openENBook(id) {
+  closeSubPage('enBooks');
+  const book = EN_BOOKS.find(b => b.id === id);
+  let pageIdx = 0;
+  const pid = 'enBook_'+id;
+
+  function render() {
+    const pg = book.pages[pageIdx];
+    const isLast = pageIdx === book.pages.length - 1;
+    const html = `
+      <div style="margin-bottom:16px;">${getSceneHTML(pg.scene)}</div>
+      <div class="card" style="text-align:center;padding:20px;cursor:pointer;" onclick="speak('${pg.text}','en')">
+        <div style="font-size:26px;font-weight:700;color:#1565C0;line-height:1.6;">${pg.text}</div>
+        <div style="font-size:12px;color:var(--text-light);margin-top:8px;">点击文字朗读</div>
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;margin-top:16px;">
+        <button class="btn btn-blue" onclick="speak('${pg.text}','en')"><i class="fas fa-volume-up"></i> 再听一次</button>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:16px;">
+        <button class="btn btn-primary" ${pageIdx===0?'disabled style="opacity:0.4"':''} onclick="enBookPage('${id}',${pageIdx-1})"><i class="fas fa-arrow-left"></i></button>
+        <span style="font-size:14px;color:var(--text-light);align-self:center;">${pageIdx+1}/${book.pages.length}</span>
+        ${isLast?`<button class="btn btn-green" onclick="finishENBook('${id}')">完成 <i class="fas fa-check"></i></button>`:
+          `<button class="btn btn-primary" onclick="enBookPage('${id}',${pageIdx+1})">下一页 <i class="fas fa-arrow-right"></i></button>`}
+      </div>
+    `;
+    const el = document.getElementById(pid);
+    if (el) { const c = el.querySelector('div[style*="overflow-y:auto"]')||el.lastElementChild; if(c) c.innerHTML=html; }
+  }
+
+  window.enBookPage = function(bid, idx) { pageIdx=idx; playSound('page'); render(); };
+  window.finishENBook = function(bid) { addStars(5); if(typeof confetti!=='undefined')confetti({particleCount:60,spread:60}); showToast('完成绘本！+5⭐'); setTimeout(()=>closeSubPage(pid),1200); };
+
+  openSubPage(pid, '', {title: book.title, onMount: render});
+}
+
+function openENCards() {
+  const categories = ['animals','colors','fruits','body','numbers'];
+  const catNames = {animals:'动物',colors:'颜色',fruits:'水果',body:'身体',numbers:'数字'};
+  let curCat = 'animals';
+  let idx = 0;
+  const pid = 'enCards';
+
+  function render() {
+    const words = ENGLISH_WORDS[curCat];
+    const w = words[idx];
+    const html = `
+      <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;">
+        ${categories.map(c=>`<button class="btn ${c===curCat?'btn-green':'btn-primary'}" style="font-size:13px;padding:8px 14px;" onclick="switchEnCat('${c}')">${catNames[c]}</button>`).join('')}
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:80px;margin:16px 0;">${w.e}</div>
+        <div style="font-size:32px;font-weight:800;color:#1565C0;margin-bottom:8px;">${w.w}</div>
+        <div style="font-size:18px;color:var(--text-light);margin-bottom:16px;">${w.ph}</div>
+        <button class="btn btn-blue" onclick="speak('${w.w}','en')"><i class="fas fa-volume-up"></i> 发音</button>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:20px;">
+          <button class="btn btn-green" onclick="markEnWord('${curCat}',${idx},true)"><i class="fas fa-check"></i> 认识</button>
+          <button class="btn btn-pink" onclick="markEnWord('${curCat}',${idx},false)"><i class="fas fa-times"></i> 不认识</button>
+        </div>
+        <div style="display:flex;justify-content:space-between;margin-top:20px;">
+          <button class="btn btn-primary" ${idx===0?'disabled style="opacity:0.4"':''} onclick="enCardPrev()"><i class="fas fa-arrow-left"></i></button>
+          <span style="font-size:14px;color:var(--text-light);align-self:center;">${idx+1}/${words.length}</span>
+          <button class="btn btn-primary" onclick="enCardNext()"><i class="fas fa-arrow-right"></i></button>
+        </div>
+      </div>
+    `;
+    const el = document.getElementById(pid);
+    if (el) { const c = el.querySelector('div[style*="overflow-y:auto"]')||el.lastElementChild; if(c) c.innerHTML=html; }
+  }
+
+  window.switchEnCat = function(cat) { curCat=cat; idx=0; playSound('click'); render(); };
+  window.enCardPrev = function() { if(idx>0){idx--;playSound('page');render();} };
+  window.enCardNext = function() {
+    const words = ENGLISH_WORDS[curCat];
+    if(idx<words.length-1){idx++;playSound('page');render();}
+    else { addStars(2); showToast('完成！+2⭐'); closeSubPage(pid); }
+  };
+  window.markEnWord = function(cat, i, known) {
+    const s = getState();
+    if (!s.enCardProgress) s.enCardProgress = {};
+    const key = cat+'_'+i;
+    s.enCardProgress[key] = known;
+    saveState(s);
+    playSound(known?'correct':'click');
+    enCardNext();
+  };
+
+  openSubPage(pid, '', {title: '闪卡学词', onMount: render});
+}
+
+// ---- PARENT PAGE ----
+function renderParent() {
+  const el = document.getElementById('page-parent');
+  el.innerHTML = `
+    <div style="text-align:center;margin-bottom:16px;">
+      <div style="font-size:20px;font-weight:800;color:#5D4037;">家长控制面板</div>
+      <div style="font-size:13px;color:var(--text-light);margin-top:4px;">请输入密码进入</div>
+    </div>
+    <div class="card" style="max-width:300px;margin:0 auto;">
+      <div style="display:flex;gap:8px;justify-content:center;margin-bottom:16px;" id="pwdDots">
+        <div style="width:16px;height:16px;border-radius:50%;border:2px solid #ccc;" data-dot="0"></div>
+        <div style="width:16px;height:16px;border-radius:50%;border:2px solid #ccc;" data-dot="1"></div>
+        <div style="width:16px;height:16px;border-radius:50%;border:2px solid #ccc;" data-dot="2"></div>
+        <div style="width:16px;height:16px;border-radius:50%;border:2px solid #ccc;" data-dot="3"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;">
+        ${[1,2,3,4,5,6,7,8,9,'',0,'⌫'].map(n=>
+          n===''?'<div></div>':
+          `<button class="btn btn-primary" style="font-size:20px;" onclick="pwdInput('${n}')">${n}</button>`
+        ).join('')}
+      </div>
+    </div>
+  `;
+}
+
+let pwdInput_val = '';
+window.pwdInput = function(n) {
+  playSound('click');
+  if (n === '⌫') { pwdInput_val = pwdInput_val.slice(0,-1); }
+  else if (pwdInput_val.length < 4) { pwdInput_val += n; }
+  document.querySelectorAll('#pwdDots div').forEach((d,i) => {
+    d.style.background = i < pwdInput_val.length ? 'var(--yellow-deep)' : 'transparent';
+    d.style.borderColor = i < pwdInput_val.length ? 'var(--yellow-deep)' : '#ccc';
+  });
+  if (pwdInput_val.length === 4) {
+    const s = getState();
+    if (pwdInput_val === s.parentPwd) {
+      pwdInput_val = '';
+      openParentPanel();
+    } else {
+      showToast('密码错误');
+      pwdInput_val = '';
+      document.querySelectorAll('#pwdDots div').forEach(d => { d.style.background='transparent'; d.style.borderColor='#ccc'; });
+    }
+  }
+};
+
+function openParentPanel() {
+  const s = getState();
+  const pid = 'parentPanel';
+  const html = `
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="card">
+        <div style="font-weight:700;font-size:16px;margin-bottom:12px;">学习时长限制</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          ${[15,30,45,60].map(m=>`<button class="btn ${s.timeLimit===m?'btn-green':'btn-primary'}" style="font-size:14px;" onclick="setTimeLimit(${m})">${m}分钟</button>`).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-weight:700;font-size:16px;margin-bottom:12px;">模块开关</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          ${Object.entries(s.moduleSwitch).map(([k,v])=>{
+            const names={cn_book:'语文-绘本',cn_card:'语文-认字',math_story:'数学-故事',math_game:'数学-游戏',en_song:'英语-儿歌',en_book:'英语-绘本',en_card:'英语-学词'};
+            return `<div style="display:flex;justify-content:space-between;align-items:center;">
+              <span style="font-size:14px;">${names[k]||k}</span>
+              <label style="position:relative;width:48px;height:28px;cursor:pointer;">
+                <input type="checkbox" ${v?'checked':''} onchange="toggleModule('${k}')" style="opacity:0;position:absolute;">
+                <div style="position:absolute;inset:0;border-radius:14px;background:${v?'var(--green-deep)':'#ccc'};transition:background 0.2s;"></div>
+                <div style="position:absolute;top:2px;left:${v?'22px':'2px'};width:24px;height:24px;border-radius:50%;background:#fff;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.2);"></div>
+              </label>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-weight:700;font-size:16px;margin-bottom:12px;">学习报告</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+          <div style="text-align:center;padding:10px;background:var(--yellow);border-radius:12px;">
+            <div style="font-size:24px;font-weight:800;">${Math.floor((s.todayTime||0)/60)}</div>
+            <div style="font-size:12px;color:var(--text-light);">今日时长(分)</div>
+          </div>
+          <div style="text-align:center;padding:10px;background:var(--pink);border-radius:12px;">
+            <div style="font-size:24px;font-weight:800;">${s.stars}</div>
+            <div style="font-size:12px;color:var(--text-light);">获得星星</div>
+          </div>
+        </div>
+        <div style="font-size:14px;font-weight:600;margin-bottom:8px;">各模块学习占比</div>
+        <canvas id="pieChart" width="250" height="200" style="display:block;margin:0 auto;"></canvas>
+        <div style="font-size:14px;font-weight:600;margin:12px 0 8px;">最近7天学习趋势</div>
+        <canvas id="barChart" width="280" height="160" style="display:block;margin:0 auto;"></canvas>
+      </div>
+      <div class="card">
+        <div style="font-weight:700;font-size:16px;margin-bottom:12px;">数据管理</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <button class="btn btn-blue" style="width:100%;" onclick="exportData()"><i class="fas fa-download"></i> 导出学习数据</button>
+          <div style="font-size:12px;color:var(--text-light);">下载此文件，在新设备上导入即可同步所有数据</div>
+          <button class="btn btn-green" style="width:100%;" onclick="document.getElementById('importFile').click()"><i class="fas fa-upload"></i> 导入学习数据</button>
+          <input type="file" id="importFile" accept=".json" style="display:none;" onchange="importData(event)">
+          <button class="btn btn-pink" style="width:100%;" onclick="resetData()"><i class="fas fa-trash"></i> 重置所有数据</button>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-weight:700;font-size:16px;margin-bottom:12px;">修改密码</div>
+        <div style="display:flex;gap:8px;">
+          <input type="password" id="newPwd" maxlength="4" placeholder="输入新密码(4位数字)" style="flex:1;padding:10px;border-radius:12px;border:2px solid #eee;font-size:16px;">
+          <button class="btn btn-primary" onclick="changePwd()">确认</button>
+        </div>
+      </div>
+    </div>
+  `;
+  openSubPage(pid, html, {title: '家长控制面板', onMount: () => { drawCharts(); }});
+}
+
+function drawCharts() {
+  const s = getState();
+  // Pie chart - module usage
+  const pieCanvas = document.getElementById('pieChart');
+  if (pieCanvas) {
+    const ctx = pieCanvas.getContext('2d');
+    const data = [
+      {label:'语文',value:s.moduleSwitch.cn_book||s.moduleSwitch.cn_card?35:0,color:'#FFB5C2'},
+      {label:'数学',value:s.moduleSwitch.math_story||s.moduleSwitch.math_game?30:0,color:'#B5D8FF'},
+      {label:'英语',value:s.moduleSwitch.en_song||s.moduleSwitch.en_book||s.moduleSwitch.en_card?35:0,color:'#B5FFD8'}
+    ];
+    const total = data.reduce((a,d)=>a+d.value,0) || 1;
+    let startAngle = -Math.PI/2;
+    const cx = 125, cy = 90, r = 70;
+    data.forEach(d => {
+      const slice = (d.value/total)*2*Math.PI;
+      ctx.beginPath();
+      ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,r,startAngle,startAngle+slice);
+      ctx.fillStyle = d.color;
+      ctx.fill();
+      const mid = startAngle+slice/2;
+      ctx.fillStyle = '#333';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(d.label, cx+Math.cos(mid)*(r*0.6), cy+Math.sin(mid)*(r*0.6)+4);
+      startAngle += slice;
+    });
+  }
+  // Bar chart - 7 days
+  const barCanvas = document.getElementById('barChart');
+  if (barCanvas) {
+    const ctx = barCanvas.getContext('2d');
+    const days = [];
+    for(let i=6;i>=0;i--){
+      const d = new Date(); d.setDate(d.getDate()-i);
+      const key = `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+      days.push({label:['日','一','二','三','四','五','六'][d.getDay()], val: (s.weekData&&s.weekData[key])||0});
+    }
+    const maxVal = Math.max(...days.map(d=>d.val),1);
+    const bw = 28, gap = 12, startX = 20, baseY = 140;
+    days.forEach((d,i) => {
+      const x = startX + i*(bw+gap);
+      const h = Math.max((d.val/maxVal)*110, 2);
+      ctx.fillStyle = i===6?'#FFD54F':'#B5D8FF';
+      ctx.beginPath();
+      ctx.roundRect(x, baseY-h, bw, h, [4,4,0,0]);
+      ctx.fill();
+      ctx.fillStyle = '#888';
+      ctx.font = '11px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(d.label, x+bw/2, baseY+14);
+      if(d.val>0) ctx.fillText(d.val+'分', x+bw/2, baseY-h-4);
+    });
+  }
+}
+
+window.setTimeLimit = function(m) {
+  const s = getState(); s.timeLimit = m; saveState(s);
+  playSound('click'); showToast('已设置'+m+'分钟');
+  closeSubPage('parentPanel'); openParentPanel();
+};
+
+window.toggleModule = function(k) {
+  const s = getState();
+  s.moduleSwitch[k] = !s.moduleSwitch[k];
+  saveState(s);
+  playSound('click');
+};
+
+window.exportData = function() {
+  const s = getState();
+  const blob = new Blob([JSON.stringify(s,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '小星星启蒙乐园_数据_'+getDayKey()+'.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  showToast('数据已导出');
+};
+
+window.importData = function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      saveState({...DEFAULT_STATE, ...data});
+      showToast('数据导入成功');
+      document.getElementById('headerStars').textContent = data.stars || 0;
+      closeSubPage('parentPanel');
+    } catch(err) { showToast('文件格式错误'); }
+  };
+  reader.readAsText(file);
+};
+
+window.resetData = function() {
+  // Use a custom confirmation instead of confirm()
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay show';
+  overlay.innerHTML = `<div class="overlay-content" style="text-align:center;max-width:300px;">
+    <div style="font-size:18px;font-weight:700;margin-bottom:12px;">确认重置？</div>
+    <div style="font-size:14px;color:var(--text-light);margin-bottom:20px;">所有学习数据将被清除，此操作不可恢复。</div>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button class="btn btn-pink" onclick="doReset(this)">确认重置</button>
+      <button class="btn btn-primary" onclick="this.closest('.overlay').remove()">取消</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+};
+
+window.doReset = function(btn) {
+  localStorage.removeItem('starLearn');
+  document.getElementById('headerStars').textContent = '0';
+  btn.closest('.overlay').remove();
+  showToast('数据已重置');
+  closeSubPage('parentPanel');
+  renderParent();
+};
+
+window.changePwd = function() {
+  const np = document.getElementById('newPwd');
+  if (!np || np.value.length !== 4) { showToast('请输入4位数字密码'); return; }
+  const s = getState(); s.parentPwd = np.value; saveState(s);
+  showToast('密码已修改');
+};
+
+// ==================== LEARNING TIME TRACKER ====================
+
+let learnTimer = null;
+function startLearnTimer() {
+  if (learnTimer) return;
+  learnTimer = setInterval(() => {
+    const s = getState();
+    s.todayTime = (s.todayTime || 0) + 1;
+    const dk = getDayKey();
+    if (!s.weekData) s.weekData = {};
+    s.weekData[dk] = Math.floor(s.todayTime / 60);
+    // Clean old week data
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate()-8);
+    Object.keys(s.weekData).forEach(k => {
+      const parts = k.split('-');
+      const d = new Date(parts[0],parts[1]-1,parts[2]);
+      if (d < cutoff) delete s.weekData[k];
+    });
+    saveState(s);
+    // Check time limit
+    const limit = s.timeLimit || 30;
+    if (Math.floor(s.todayTime/60) >= limit && Math.floor(s.todayTime/60) === limit) {
+      showToast('今日学习时间已到，休息一下吧！');
+      playSound('wrong');
+    }
+  }, 1000);
+}
+
+// ==================== INITIALIZATION ====================
+
+function init() {
+  const s = getState();
+  document.getElementById('headerStars').textContent = s.stars;
+  checkBadges();
+
+  // Tab navigation
+  document.querySelectorAll('.tab-item').forEach(tab => {
+    tab.addEventListener('click', () => switchTab(tab.dataset.tab));
+  });
+
+  // Add click sound to all buttons
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('.btn') || e.target.closest('.card[onclick]') || e.target.closest('[onclick]')) {
+      // Sound is played in individual handlers
+    }
+  });
+
+  // Touch swipe support for card pages
+  let touchStartX = 0;
+  document.addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, {passive:true});
+  document.addEventListener('touchend', (e) => {
+    const dx = e.changedTouches[0].clientX - touchStartX;
+    if (Math.abs(dx) > 60) {
+      const tabs = ['home','chinese','math','english','parent'];
+      const ci = tabs.indexOf(currentTab);
+      if (dx < 0 && ci < 4) switchTab(tabs[ci+1]);
+      else if (dx > 0 && ci > 0) switchTab(tabs[ci-1]);
+    }
+  }, {passive:true});
+
+  renderHome();
+  startLearnTimer();
+}
+
+// Canvas roundRect polyfill
+if (!CanvasRenderingContext2D.prototype.roundRect) {
+  CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r) {
+    if (!Array.isArray(r)) r = [r,r,r,r];
+    this.moveTo(x+r[0],y);
+    this.lineTo(x+w-r[1],y);
+    this.quadraticCurveTo(x+w,y,x+w,y+r[1]);
+    this.lineTo(x+w,y+h-r[2]);
+    this.quadraticCurveTo(x+w,y+h,x+w-r[2],y+h);
+    this.lineTo(x+r[3],y+h);
+    this.quadraticCurveTo(x,y+h,x,y+h-r[3]);
+    this.lineTo(x,y+r[0]);
+    this.quadraticCurveTo(x,y,x+r[0],y);
+    this.closePath();
+  };
+}
+
+init();
+</script>
+</body>
+</html>
