@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>烧脑数学 · 三年级上册（北师大版）</title>
+<title>烧脑数学·玩中有学</title>
 <style>
 :root{
   --primary:#ff7a2f; --primary-dark:#e85d04; --primary-light:#ffe8d6;
@@ -640,7 +640,7 @@ main{padding:14px 14px 92px}
 <!-- ===================== 顶部 ===================== -->
 <header class="app-header">
   <div class="header-top">
-    <div class="logo"><span class="flame">🔥</span>烧脑数学 <small id="verTag">v1.0.0</small></div>
+    <div class="logo"><span class="flame">🔥</span>烧脑数学·玩中有学 <small id="verTag">v1.0.0</small></div>
     <div style="display:flex;gap:8px;align-items:center">
       <button class="icon-btn" id="btnUser" title="切换用户">🦊</button>
       <button class="icon-btn" id="btnVersionLog" title="版本日志">📜</button>
@@ -810,17 +810,24 @@ main{padding:14px 14px 92px}
     </div>
   </div>
 </div>
-<noscript><p style="text-align:center;padding:40px">烧脑数学需要开启 JavaScript 才能使用哦～</p></noscript>
+<noscript><p style="text-align:center;padding:40px">烧脑数学·玩中有学 需要开启 JavaScript 才能使用哦～</p></noscript>
 <script>
 /* =====================================================================
  * 烧脑数学 · 教材内容数据（北师大版 2024 新课标版 三年级上册）
  * ===================================================================== */
 window.MD = {
-  version: "4.2.0",
+  version: "4.3.0",
   textbook: { grade: "三年级", term: "上册", edition: "北师大版（新课标）" },
 
   /* ---------------- 版本日志（应用内展示） ---------------- */
   changelog: [
+    { ver: "v4.3.0", date: "2026-08-25", items: [
+      "恢复部署：修复 GitHub Pages 被其他项目覆盖的问题，烧脑数学重新上线",
+      "应用更名为「烧脑数学·玩中有学」",
+      "思维题库新增4个主题：行程问题(8种变体)、浓度问题(6种变体)、利润问题(7种变体)、工程问题(6种变体)",
+      "奥数专题新增2个专题：最值问题(5种变体)、不定方程(4种变体)",
+      "母题精讲新增3组：追及问题、牛吃草问题、容斥原理"
+    ]},
     { ver: "v4.2.0", date: "2026-08-22", items: [
       "紧急修复：有思维/奥数习题无法提交的 bug（按钮 ID 冲突，事件绑错位置）",
       "口算速练自动提交：答对自动跳下一题，答错提示重做",
@@ -12475,7 +12482,7 @@ window.THINK = (function () {
         { tag: "例题 · 相遇", q: "甲乙相距 100 米,相向而行,甲每分走 12 米,乙每分走 8 米。几分后相遇?", steps: ["速度和:12+8=20", "相遇时间:100÷20=5"], explain: "第一步:相向而行→两人越走越近,每分钟两人合走12+8=20米(速度和)。第二步:总共要走100米,每分钟走20米→100÷20=5分钟相遇。核心:相向=速度相加。" }
       ],
       gen: function () {
-        var kind = R(1, 7);
+        var kind = R(1, 12);
         if (kind === 1) {
           var v = R(40, 80), t = R(2, 12);
           return { type: "tiankong", q: "一辆汽车每小时行 " + v + " 千米," + t + " 小时行多少千米?", input: "num", ans: String(v * t),
@@ -12487,10 +12494,61 @@ window.THINK = (function () {
           return { type: "tiankong", q: "甲乙从相距 " + total + " 米的两地同时相向出发,甲每分走 " + v1 + " 米,乙每分走 " + v2 + " 米。几分钟后相遇?", input: "num", ans: String(tt),
             explain: "第一步:相向而行→两人面对面走,每分钟两人合走 " + v1 + "+" + v2 + "=" + (v1 + v2) + " 米(速度和)。第二步:总距离 " + total + " 米,每分钟两人合走 " + (v1 + v2) + " 米。第三步:相遇时间=" + total + "÷" + (v1 + v2) + "=" + tt + "(分钟)。核心:相向而行用速度和。" };
         }
-        var tc = R(2, 12), vf = R(60, 90), vs = vf - R(10, 50);
-        var gap = tc * (vf - vs);
-        return { type: "tiankong", q: "弟弟先走,领先哥哥 " + gap + " 米。哥哥每分走 " + vf + " 米,弟弟每分走 " + vs + " 米。哥哥几分钟追上弟弟?", input: "num", ans: String(tc),
-          explain: "第一步:同向追及→两人同方向走,哥哥快,每分钟多走 " + vf + "-" + vs + "=" + (vf - vs) + " 米(速度差)。第二步:哥哥落后 " + gap + " 米,每分钟追回 " + (vf - vs) + " 米。第三步:追及时间=" + gap + "÷" + (vf - vs) + "=" + tc + "(分钟)。核心:追及=速度相减。" };
+        if (kind === 3) {
+          var tc = R(2, 12), vf = R(60, 90), vs = vf - R(10, 50);
+          var gap = tc * (vf - vs);
+          return { type: "tiankong", q: "弟弟先走,领先哥哥 " + gap + " 米。哥哥每分走 " + vf + " 米,弟弟每分走 " + vs + " 米。哥哥几分钟追上弟弟?", input: "num", ans: String(tc),
+            explain: "第一步:同向追及→两人同方向走,哥哥快,每分钟多走 " + vf + "-" + vs + "=" + (vf - vs) + " 米(速度差)。第二步:哥哥落后 " + gap + " 米,每分钟追回 " + (vf - vs) + " 米。第三步:追及时间=" + gap + "÷" + (vf - vs) + "=" + tc + "(分钟)。核心:追及=速度相减。" };
+        }
+        if (kind === 4) {
+          var bridgeLen = R(100, 400), trainLen = R(80, 250), vTrain = R(10, 40);
+          var totalDist = bridgeLen + trainLen;
+          return { type: "tiankong", q: "一列火车长 " + trainLen + " 米,以每秒 " + vTrain + " 米的速度通过一座 " + bridgeLen + " 米长的桥。从车头上桥到车尾离桥需要几秒?", input: "num", ans: String(totalDist / vTrain),
+            explain: "第一步:火车完全通过桥,走的距离=桥长+车长=" + bridgeLen + "+" + trainLen + "=" + totalDist + "米(不能只算桥长!)。第二步:时间=距离÷速度=" + totalDist + "÷" + vTrain + "=" + (totalDist / vTrain) + "秒。易错点:过桥距离=桥长+车长!" };
+        }
+        if (kind === 5) {
+          var ringLen = R(200, 600), v1r = R(4, 9), v2r = R(2, v1r - 1);
+          return { type: "tiankong", q: "环形跑道周长 " + ringLen + " 米,甲每秒跑 " + v1r + " 米,乙每秒跑 " + v2r + " 米。同时同地同向出发,甲第一次追上乙需要几秒?", input: "num", ans: String(ringLen / (v1r - v2r)),
+            explain: "第一步:环形追及→甲要追上乙,必须比乙多跑一整圈=" + ringLen + "米。第二步:速度差=" + v1r + "-" + v2r + "=" + (v1r - v2r) + "米/秒。第三步:时间=" + ringLen + "÷" + (v1r - v2r) + "=" + (ringLen / (v1r - v2r)) + "秒。关键:环形追及=多跑一圈!" };
+        }
+        if (kind === 6) {
+          var boatV = R(15, 35), waterV = R(2, 8), dist3 = R(60, 240);
+          var downV = boatV + waterV;
+          return { type: "tiankong", q: "船在静水中速度 " + boatV + " 千米/时,水流速度 " + waterV + " 千米/时。顺流而下 " + dist3 + " 千米需要几小时?", input: "num", ans: String(dist3 / downV),
+            explain: "第一步:顺流→船速加水速=" + boatV + "+" + waterV + "=" + downV + "千米/时(水推船更快)。第二步:时间=" + dist3 + "÷" + downV + "=" + (dist3 / downV) + "小时。记住:顺流=船速+水速,逆流=船速-水速。" };
+        }
+        if (kind === 7) {
+          var boatV2 = R(18, 40), waterV2 = R(2, 7), dist4 = R(80, 240);
+          var upV = boatV2 - waterV2;
+          return { type: "tiankong", q: "船在静水中速度 " + boatV2 + " 千米/时,水流速度 " + waterV2 + " 千米/时。逆流而上 " + dist4 + " 千米需要几小时?", input: "num", ans: String(dist4 / upV),
+            explain: "第一步:逆流→船速减水速=" + boatV2 + "-" + waterV2 + "=" + upV + "千米/时(水阻挡船)。第二步:时间=" + dist4 + "÷" + upV + "=" + (dist4 / upV) + "小时。" };
+        }
+        if (kind === 8) {
+          var d5 = R(60, 200), tGo = R(2, 6), tBack = R(2, 8);
+          var avgV = Math.round(2 * d5 / (tGo + tBack) * 100) / 100;
+          return { type: "tiankong", q: "从A到B距离 " + d5 + " 千米,去时用了 " + tGo + " 小时,回来用了 " + tBack + " 小时。往返平均速度是多少千米/时?", input: "num", ans: String(avgV),
+            explain: "第一步:平均速度≠速度平均值!正确算法:总路程÷总时间。第二步:往返总路程=" + d5 + "×2=" + (2 * d5) + "千米。第三步:总时间=" + tGo + "+" + tBack + "=" + (tGo + tBack) + "小时。第四步:平均速度=" + (2 * d5) + "÷" + (tGo + tBack) + "=" + avgV + "千米/时。易错点:不能用(去速+回速)÷2!" };
+        }
+        if (kind === 9) {
+          var dAB = R(100, 500), vA = R(30, 80), vB = R(30, 80), meetH = R(1, 6);
+          return { type: "tiankong", q: "甲乙同时从两地相向出发," + meetH + " 小时后相遇。甲速 " + vA + " 千米/时,乙速 " + vB + " 千米/时。两地相距多少千米?", input: "num", ans: String((vA + vB) * meetH),
+            explain: "第一步:相向→用速度和=" + vA + "+" + vB + "=" + (vA + vB) + "千米/时。第二步:路程=速度和×时间=" + (vA + vB) + "×" + meetH + "=" + ((vA + vB) * meetH) + "千米。" };
+        }
+        if (kind === 10) {
+          var headStart = R(2, 8), vFast = R(150, 300), vSlow = R(80, vFast - 20);
+          var gapDist = vSlow * headStart;
+          return { type: "tiankong", q: "乙先跑了 " + headStart + " 分钟后甲出发。甲每分钟跑 " + vFast + " 米,乙每分钟跑 " + vSlow + " 米。甲几分钟追上乙?", input: "num", ans: String(gapDist / (vFast - vSlow)),
+            explain: "第一步:乙先跑距离=" + vSlow + "×" + headStart + "=" + gapDist + "米。第二步:速度差=" + vFast + "-" + vSlow + "=" + (vFast - vSlow) + "米/分钟。第三步:追及时间=" + gapDist + "÷" + (vFast - vSlow) + "=" + (gapDist / (vFast - vSlow)) + "分钟。" };
+        }
+        if (kind === 11) {
+          var spd1 = R(40, 80), t1 = R(2, 5), spd2 = R(30, 70), t2 = R(2, 5);
+          var totalD = spd1 * t1 + spd2 * t2;
+          return { type: "tiankong", q: "小明先以 " + spd1 + " 千米/时骑了 " + t1 + " 小时,再以 " + spd2 + " 千米/时骑了 " + t2 + " 小时。一共骑了多少千米?", input: "num", ans: String(totalD),
+            explain: "第一段路程=" + spd1 + "×" + t1 + "=" + (spd1 * t1) + "千米。第二段路程=" + spd2 + "×" + t2 + "=" + (spd2 * t2) + "千米。总路程=" + (spd1 * t1) + "+" + (spd2 * t2) + "=" + totalD + "千米。分段求和!" };
+        }
+        var dRing2 = R(300, 800), vA2 = R(3, 8), vB2 = R(2, vA2 - 1), nLaps = R(2, 5);
+        return { type: "tiankong", q: "环形跑道周长 " + dRing2 + " 米,甲速 " + vA2 + " 米/秒,乙速 " + vB2 + " 米/秒,同时同地反向出发。第 " + nLaps + " 次相遇是几秒后?", input: "num", ans: String(dRing2 * nLaps / (vA2 + vB2)),
+          explain: "反向→速度和=" + vA2 + "+" + vB2 + "=" + (vA2 + vB2) + "米/秒。每次相遇两人合走一圈=" + dRing2 + "米。第" + nLaps + "次相遇=" + dRing2 + "×" + nLaps + "÷" + (vA2 + vB2) + "=" + (dRing2 * nLaps / (vA2 + vB2)) + "秒。" };
       }
     },
 
@@ -12506,15 +12564,69 @@ window.THINK = (function () {
         { tag: "例题", q: "工人每天加工 30 个零件，5 天加工多少个？", steps: ["30×5", "= 150"], explain: "第一步：效率=每天30个，时间=5天。第二步：工作总量=效率×时间=30×5=150个。基本公式：总量=效率×时间，和行程问题的「路程=速度×时间」完全一样。" }
       ],
       gen: function () {
-        var kind = R(1, 6);
+        var kind = R(1, 10);
         if (kind === 1) {
           var rate = R(10, 50), t = R(3, 14);
           return { type: "tiankong", q: "工人每天加工 " + rate + " 个零件，" + t + " 天一共加工多少个？", input: "num", ans: String(rate * t),
             explain: "第一步：效率=" + rate + "个/天，时间=" + t + "天。第二步：工作总量=效率×时间=" + rate + "×" + t + "=" + (rate * t) + "个。核心公式：总量=效率×时间，记住这个关系就能解所有工程问题。" };
         }
-        var days = R(6, 12);
-        return { type: "tiankong", q: "一项工程，甲队单独做 " + days + " 天完成。甲队每天完成这项工程的几分之几？（填分数，如 1/5）", input: "text", ans: "1/" + days,
-          explain: "第一步：把整个工程看作单位\"1\"。第二步：甲队 " + days + " 天做完\"1\"，说明每天做 1÷" + days + "=1/" + days + "。第三步：甲队每天完成工程的 1/" + days + "。核心：把总量看作\"1\"，用除法求每天的效率。" };
+        if (kind === 2) {
+          var days = R(6, 12);
+          return { type: "tiankong", q: "一项工程，甲队单独做 " + days + " 天完成。甲队每天完成这项工程的几分之几？（填分数，如 1/5）", input: "text", ans: "1/" + days,
+            explain: "第一步：把整个工程看作单位\"1\"。第二步：甲队 " + days + " 天做完\"1\"，说明每天做 1÷" + days + "=1/" + days + "。第三步：甲队每天完成工程的 1/" + days + "。核心：把总量看作\"1\"，用除法求每天的效率。" };
+        }
+        if (kind === 3) {
+          var a = R(3, 15), b = R(3, 15);
+          var coopTime = Math.round(a * b / (a + b) * 100) / 100;
+          return { type: "tiankong", q: "一项工程，甲单独做 " + a + " 天完成，乙单独做 " + b + " 天完成。两人合作几天完成？", input: "num", ans: String(coopTime),
+            explain: "第一步：甲效率=1/" + a + "，乙效率=1/" + b + "。第二步：合作效率=1/" + a + "+1/" + b + "=" + (a + b) + "/" + (a * b) + "。第三步：合作时间=1÷(" + (a + b) + "/" + (a * b) + ")=" + (a * b) + "÷" + (a + b) + "=" + coopTime + "天。核心：合作效率=各自效率相加。" };
+        }
+        if (kind === 4) {
+          var a4 = R(6, 20), coopDays = R(2, Math.floor(a4 / 2));
+          var bEff = 1 / coopDays - 1 / a4;
+          var bAlone = Math.round(1 / bEff * 100) / 100;
+          return { type: "tiankong", q: "甲单独做 " + a4 + " 天完成，甲乙合作 " + coopDays + " 天完成。乙单独做几天完成？", input: "num", ans: String(bAlone),
+            explain: "第一步：合作效率=1/" + coopDays + "。第二步：甲效率=1/" + a4 + "。第三步：乙效率=1/" + coopDays + "-1/" + a4 + "。第四步：乙单独=1÷乙效率=" + bAlone + "天。关键：从合作效率减去已知效率，求另一个。" };
+        }
+        if (kind === 5) {
+          var total = R(100, 500), rateA = R(10, 40), rateB = R(10, 40);
+          var time5 = Math.round(total / (rateA + rateB) * 100) / 100;
+          return { type: "tiankong", q: "修一条 " + total + " 米的路，甲队每天修 " + rateA + " 米，乙队每天修 " + rateB + " 米。两队合修几天完成？", input: "num", ans: String(time5),
+            explain: "第一步：合修效率=" + rateA + "+" + rateB + "=" + (rateA + rateB) + "米/天。第二步：时间=总量÷效率=" + total + "÷" + (rateA + rateB) + "=" + time5 + "天。" };
+        }
+        if (kind === 6) {
+          var fillRate = R(5, 20), drainRate = R(2, fillRate - 1), poolSize = R(50, 200);
+          var netRate = fillRate - drainRate;
+          var fillTime = Math.round(poolSize / netRate * 100) / 100;
+          return { type: "tiankong", q: "水池容量 " + poolSize + " 升，进水管每分钟进 " + fillRate + " 升，排水管每分钟排 " + drainRate + " 升。同时开两管，几分钟注满？", input: "num", ans: String(fillTime),
+            explain: "第一步：净进水速度=进水-排水=" + fillRate + "-" + drainRate + "=" + netRate + "升/分钟。第二步：注满时间=" + poolSize + "÷" + netRate + "=" + fillTime + "分钟。注意：同时开关时只看净速度!" };
+        }
+        if (kind === 7) {
+          var a7 = R(4, 12), b7 = R(4, 12), c7 = R(4, 12);
+          var effSum = 1 / a7 + 1 / b7 + 1 / c7;
+          var coopTime7 = Math.round(1 / effSum * 100) / 100;
+          return { type: "tiankong", q: "甲 " + a7 + " 天、乙 " + b7 + " 天、丙 " + c7 + " 天分别完成同一工程。三人合作几天完成？", input: "num", ans: String(coopTime7),
+            explain: "第一步：甲效率=1/" + a7 + "，乙=1/" + b7 + "，丙=1/" + c7 + "。第二步：合作效率=三者相加。第三步：合作时间=1÷合作效率=" + coopTime7 + "天。" };
+        }
+        if (kind === 8) {
+          var a8 = R(5, 20), daysWorked = R(2, Math.floor(a8 / 2));
+          var remain = Math.round((1 - daysWorked / a8) * 100) / 100;
+          return { type: "tiankong", q: "甲单独做 " + a8 + " 天完成，做了 " + daysWorked + " 天后还剩几分之几？（用小数表示）", input: "num", ans: String(remain),
+            explain: "第一步：已完成=" + daysWorked + "/" + a8 + "=" + (daysWorked / a8) + "。第二步：剩余=1-" + (daysWorked / a8) + "=" + remain + "。核心：先求完成比例，再用1减。" };
+        }
+        if (kind === 9) {
+          var totalP = R(100, 500), done = R(30, totalP - 20), daysSpent = R(2, 8);
+          var dailyRate = done / daysSpent;
+          var remainP = totalP - done;
+          var daysLeft = Math.round(remainP / dailyRate * 100) / 100;
+          return { type: "tiankong", q: "加工 " + totalP + " 个零件，" + daysSpent + " 天做了 " + done + " 个。照这个速度，剩下的还要几天？", input: "num", ans: String(daysLeft),
+            explain: "第一步：每天做=" + done + "÷" + daysSpent + "=" + dailyRate + "个/天。第二步：剩余=" + totalP + "-" + done + "=" + remainP + "个。第三步：天数=" + remainP + "÷" + dailyRate + "=" + daysLeft + "天。" };
+        }
+        var a10 = R(4, 10), b10 = R(4, 10), daysA = R(1, Math.floor(a10 / 2));
+        var remainFrac = Math.round((1 - daysA / a10) * 100) / 100;
+        var coopTime10 = Math.round(remainFrac / (1 / a10 + 1 / b10) * 100) / 100;
+        return { type: "tiankong", q: "一项工程，甲单独做 " + a10 + " 天完成，乙单独做 " + b10 + " 天完成。甲先做了 " + daysA + " 天后乙加入合作，还要几天完成？", input: "num", ans: String(coopTime10),
+          explain: "第一步：甲做" + daysA + "天完成" + daysA + "/" + a10 + "=" + (daysA / a10) + "。第二步：剩余=1-" + (daysA / a10) + "=" + remainFrac + "。第三步：合作效率=1/" + a10 + "+1/" + b10 + "。第四步：合作时间=" + remainFrac + "÷合作效率=" + coopTime10 + "天。" };
       }
     },
 
@@ -13092,24 +13204,83 @@ window.THINK = (function () {
     /* ---------------- 浓度问题(奥数) ---------------- */
     { id: "nongdu2", name: "浓度问题", icon: "🧪", color: "#0a7fa0", level: "高年级",
       desc: "浓度 = 溶质 ÷ 溶液。",
-      points: [ { t: "浓度公式", html: "浓度 = 溶质 ÷ 溶液 ×100%。溶液 = 溶质 + 溶剂。" } ],
+      points: [ { t: "浓度公式", html: "浓度 = 溶质 ÷ 溶液 ×100%。溶液 = 溶质 + 溶剂。<br><b>加水稀释:</b>溶质不变,溶液增大→浓度降低<br><b>加盐增浓:</b>溶质和溶液都增大<br><b>混合:</b>混合后溶质=两种溶质之和" } ],
       examples: [ { tag: "例题", q: "20 克盐溶在 80 克水里,浓度?", steps: ["20÷(20+80)", "=20%"], explain: "盐÷盐水。" } ],
       gen: function () {
-        var salt = P([10, 20, 25, 30]), water = P([70, 80, 120, 170]);
-        var pct = Math.round(salt / (salt + water) * 100);
-        return { type: "text", q: "把 " + salt + " 克盐溶在 " + water + " 克水中,盐水浓度是(____)%。(填百分数)", input: "text", ans: pct + "%", accept: [pct + "%", String(pct)], explain: salt + "÷(" + salt + "+" + water + ")×100% = " + pct + "%。" };
+        var kind = R(1, 8);
+        if (kind === 1) {
+          var salt = R(10, 60), water = R(60, 200);
+          var pct = Math.round(salt / (salt + water) * 100);
+          return { type: "text", q: "把 " + salt + " 克盐溶在 " + water + " 克水中,盐水浓度是(____)%。(填百分数)", input: "text", ans: pct + "%", accept: [pct + "%", String(pct)], explain: "浓度=溶质÷溶液=" + salt + "÷(" + salt + "+" + water + ")×100%=" + salt + "÷" + (salt + water) + "×100%=" + pct + "%。" };
+        }
+        if (kind === 2) {
+          var sol = R(100, 500), c1 = R(10, 30), addW = R(50, 300);
+          var saltMass = sol * c1 / 100;
+          var newC = Math.round(saltMass / (sol + addW) * 10000) / 100;
+          return { type: "tiankong", q: sol + "克浓度为" + c1 + "%的盐水,加入" + addW + "克水后,新浓度是百分之几?", input: "num", ans: String(newC),
+            explain: "第一步:原溶质=" + sol + "×" + c1 + "%=" + saltMass + "克(加水溶质不变!)。第二步:新溶液=" + sol + "+" + addW + "=" + (sol + addW) + "克。第三步:新浓度=" + saltMass + "÷" + (sol + addW) + "×100%=" + newC + "%。" };
+        }
+        if (kind === 3) {
+          var s1 = R(100, 300), c1v = R(10, 25), s2 = R(100, 300), c2v = R(25, 45);
+          var mixSalt = s1 * c1v / 100 + s2 * c2v / 100;
+          var mixSol = s1 + s2;
+          var mixConc = Math.round(mixSalt / mixSol * 10000) / 100;
+          return { type: "tiankong", q: s1 + "克" + c1v + "%的盐水和" + s2 + "克" + c2v + "%的盐水混合,混合后浓度是百分之几?", input: "num", ans: String(mixConc),
+            explain: "第一步:溶质1=" + s1 + "×" + c1v + "%=" + (s1 * c1v / 100) + "克。第二步:溶质2=" + s2 + "×" + c2v + "%=" + (s2 * c2v / 100) + "克。第三步:总溶质=" + mixSalt + "克,总溶液=" + mixSol + "克。第四步:浓度=" + mixSalt + "÷" + mixSol + "×100%=" + mixConc + "%。" };
+        }
+        if (kind === 4) {
+          var evapSol = R(300, 600), evapC = R(8, 20), evapAmt = R(50, 200);
+          var evapSalt = evapSol * evapC / 100;
+          var newSol = evapSol - evapAmt;
+          var newC2 = Math.round(evapSalt / newSol * 10000) / 100;
+          return { type: "tiankong", q: evapSol + "克" + evapC + "%的盐水蒸发掉" + evapAmt + "克水后,浓度变为百分之几?", input: "num", ans: String(newC2),
+            explain: "蒸发只减少水,溶质不变=" + evapSalt + "克。新溶液=" + evapSol + "-" + evapAmt + "=" + newSol + "克。新浓度=" + evapSalt + "÷" + newSol + "×100%=" + newC2 + "%。蒸发后浓度一定变大!" };
+        }
+        if (kind === 5) {
+          var sol5 = R(200, 500), c5 = R(5, 20), targetC = R(c5 + 5, 40);
+          var saltNow = sol5 * c5 / 100;
+          var needSalt = Math.round((targetC * sol5 / 100 - saltNow) / (1 - targetC / 100) * 100) / 100;
+          return { type: "tiankong", q: sol5 + "克" + c5 + "%的盐水,要变成" + targetC + "%的盐水,需加盐多少克?", input: "num", ans: String(needSalt),
+            explain: "设加盐x克:(" + saltNow + "+x)÷(" + sol5 + "+x)=" + targetC + "%。解方程得x=" + needSalt + "克。" };
+        }
+        if (kind === 6) {
+          var sol6 = R(100, 400), c6 = R(15, 35);
+          var salt6 = sol6 * c6 / 100;
+          return { type: "tiankong", q: "配制" + c6 + "%的盐水" + sol6 + "克,需要盐多少克?", input: "num", ans: String(salt6),
+            explain: "盐=溶液×浓度=" + sol6 + "×" + c6 + "%=" + salt6 + "克。水=" + sol6 + "-" + salt6 + "=" + (sol6 - salt6) + "克。" };
+        }
+        if (kind === 7) {
+          var sA = R(200, 400), cA = R(10, 20), sB = R(200, 400), cB = R(30, 50);
+          var targetC2 = R(cA + 5, cB - 5);
+          var totalSalt = sA * cA / 100 + sB * cB / 100;
+          var totalSol = sA + sB;
+          return { type: "tiankong", q: sA + "克" + cA + "%的盐水和" + sB + "克" + cB + "%的盐水全部混合,混合后浓度是百分之几?", input: "num", ans: String(Math.round(totalSalt / totalSol * 10000) / 100),
+            explain: "总溶质=" + (sA * cA / 100) + "+" + (sB * cB / 100) + "=" + totalSalt + "克。总溶液=" + totalSol + "克。浓度=" + totalSalt + "÷" + totalSol + "×100%=" + (Math.round(totalSalt / totalSol * 10000) / 100) + "%。" };
+        }
+        var s8 = R(100, 300), c8 = R(20, 40), diluteC = R(5, c8 - 5);
+        var saltConst = s8 * c8 / 100;
+        var needWater = Math.round(saltConst / (diluteC / 100) - s8);
+        return { type: "tiankong", q: s8 + "克" + c8 + "%的盐水,要稀释成" + diluteC + "%,需要加多少克水?", input: "num", ans: String(needWater),
+          explain: "稀释时溶质不变=" + saltConst + "克。新溶液=溶质÷新浓度=" + saltConst + "÷" + (diluteC / 100) + "=" + (saltConst / (diluteC / 100)) + "克。加水=" + (saltConst / (diluteC / 100)) + "-" + s8 + "=" + needWater + "克。" };
       } },
 
     /* ---------------- 利润问题(奥数) ---------------- */
     { id: "lirun2", name: "利润与折扣", icon: "💹", color: "#06d6a0", level: "高年级",
       desc: "利润 = 售价 - 成本;折扣 = 现价 ÷ 原价。",
-      points: [ { t: "利润与折扣", html: "利润 = 售价 - 成本。折扣 = 现价 ÷ 原价。打几折就是原价的百分之几十。" } ],
+      points: [ { t: "利润与折扣", html: "利润 = 售价 - 成本。利润率 = 利润÷成本×100%。<br>售价 = 成本×(1+利润率)<br>折扣 = 现价÷原价。打几折就是原价的百分之几十。<br><b>涨价后再打折≠原价!</b>" } ],
       examples: [ { tag: "例题", q: "成本 80 元,卖 100 元,利润率?", steps: ["利润 100-80=20", "20÷80=25%"], explain: "利润÷成本。" } ],
       gen: function () {
-        var kind = R(1, 6);
-        if (kind === 1) { var cost = P([50, 80, 100]), sell = cost + P([20, 25, 50]); var pct = Math.round((sell - cost) / cost * 100); return { type: "text", q: "商品成本 " + cost + " 元,卖 " + sell + " 元。利润率是(____)%。", input: "text", ans: pct + "%", accept: [pct + "%", String(pct)], explain: "(" + sell + "-" + cost + ")÷" + cost + "×100% = " + pct + "%。" }; }
-        var price = P([80, 100, 200]), z = P([7, 8, 9]);
-        return { type: "num", q: "一件衣服原价 " + price + " 元,打 " + z + " 折。现价多少元?", input: "num", ans: String(price * z / 10), explain: price + "×" + (z * 10) + "% = " + (price * z / 10) + "(元)。" };
+        var kind = R(1, 10);
+        if (kind === 1) { var cost = R(50, 300), sell = cost + R(20, 200); var pct = Math.round((sell - cost) / cost * 100); return { type: "text", q: "商品成本 " + cost + " 元,卖 " + sell + " 元。利润率是(____)%。", input: "text", ans: pct + "%", accept: [pct + "%", String(pct)], explain: "(" + sell + "-" + cost + ")÷" + cost + "×100% = " + pct + "%。" }; }
+        if (kind === 2) { var price = R(80, 500), z = R(5, 9); return { type: "num", q: "一件衣服原价 " + price + " 元,打 " + z + " 折。现价多少元?", input: "num", ans: String(price * z / 10), explain: price + "×" + (z * 10) + "% = " + (price * z / 10) + "(元)。" }; }
+        if (kind === 3) { var cost3 = R(80, 400), rate3 = R(15, 60); var price3 = cost3 * (1 + rate3 / 100); return { type: "tiankong", q: "商品成本" + cost3 + "元,要获得" + rate3 + "%的利润,应定价多少元?", input: "num", ans: String(price3), explain: "售价=成本×(1+利润率)=" + cost3 + "×(1+" + rate3 + "%)=" + cost3 + "×" + (1 + rate3 / 100) + "=" + price3 + "元。" }; }
+        if (kind === 4) { var cost4 = R(100, 400), markup = R(30, 80), disc4 = R(6, 9); var tag4 = cost4 * (1 + markup / 100); var sale4 = tag4 * disc4 / 10; var profitRate4 = Math.round((sale4 - cost4) / cost4 * 10000) / 100; return { type: "tiankong", q: "商品成本" + cost4 + "元,加价" + markup + "%标价后再打" + disc4 + "折出售,实际利润率是百分之几?", input: "num", ans: String(profitRate4), explain: "标价=" + cost4 + "×(1+" + markup + "%)=" + tag4 + "元。售价=" + tag4 + "×" + (disc4 / 10) + "=" + sale4 + "元。利润率=(" + sale4 + "-" + cost4 + ")÷" + cost4 + "×100%=" + profitRate4 + "%。注意:加价后再打折不一定赚钱!" }; }
+        if (kind === 5) { var sell5 = R(100, 500), lossRate = R(5, 30); var cost5 = Math.round(sell5 / (1 - lossRate / 100) * 100) / 100; return { type: "tiankong", q: "商品卖" + sell5 + "元亏损了" + lossRate + "%,成本是多少元?", input: "num", ans: String(cost5), explain: "亏损" + lossRate + "%意味着售价=成本×(1-" + lossRate + "%)。成本=售价÷(1-" + lossRate + "%)=" + sell5 + "÷" + (1 - lossRate / 100) + "=" + cost5 + "元。" }; }
+        if (kind === 6) { var buy6a = R(50, 150), buy6b = R(50, 150), sell6 = R(120, 350); var totalCost6 = buy6a + buy6b; var profitRate6 = Math.round((sell6 * 2 - totalCost6) / totalCost6 * 10000) / 100; return { type: "tiankong", q: "两件商品分别以" + buy6a + "元和" + buy6b + "元买入,都以" + sell6 + "元卖出。总利润率是百分之几?", input: "num", ans: String(profitRate6), explain: "总成本=" + totalCost6 + "元。总售价=" + sell6 + "×2=" + (sell6 * 2) + "元。总利润=" + (sell6 * 2 - totalCost6) + "元。利润率=" + (sell6 * 2 - totalCost6) + "÷" + totalCost6 + "×100%=" + profitRate6 + "%。" }; }
+        if (kind === 7) { var origPrice = R(200, 600), risePct = R(10, 30), fallPct = R(10, 30); var after = origPrice * (1 + risePct / 100) * (1 - fallPct / 100); var finalDiff = Math.round((after - origPrice) * 100) / 100; return { type: "tiankong", q: "原价" + origPrice + "元,先涨价" + risePct + "%再降价" + fallPct + "%,现价是多少元?", input: "num", ans: String(after), explain: "涨价后=" + origPrice + "×(1+" + risePct + "%)=" + (origPrice * (1 + risePct / 100)) + "元。再降价=" + (origPrice * (1 + risePct / 100)) + "×(1-" + fallPct + "%)=" + after + "元。先涨后降≠原价(基数不同)!" }; }
+        if (kind === 8) { var cost8 = R(100, 500), qty = R(5, 20), unitSell = R(15, 50); var totalRev = qty * unitSell; var totalProfit = totalRev - cost8; return { type: "tiankong", q: "进货花了" + cost8 + "元买了" + qty + "件商品,每件卖" + unitSell + "元全部卖完。总利润是多少元?", input: "num", ans: String(totalProfit), explain: "总收入=" + qty + "×" + unitSell + "=" + totalRev + "元。总利润=收入-成本=" + totalRev + "-" + cost8 + "=" + totalProfit + "元。" }; }
+        if (kind === 9) { var tagP = R(200, 800), discP = R(6, 9); var saleP = tagP * discP / 10; var profitP = R(10, 30); var costP = saleP / (1 + profitP / 100); costP = Math.round(costP * 100) / 100; return { type: "tiankong", q: "商品标价" + tagP + "元,打" + discP + "折后获得" + profitP + "%利润,成本是多少元?", input: "num", ans: String(costP), explain: "售价=" + tagP + "×" + (discP / 10) + "=" + saleP + "元。利润" + profitP + "%→售价=成本×(1+" + profitP + "%)。成本=" + saleP + "÷(1+" + profitP + "%)=" + costP + "元。" }; }
+        var cost10 = R(100, 300), profit10 = R(20, 50), numItems = R(3, 10); var sellP10 = cost10 * (1 + profit10 / 100); var totalP10 = numItems * sellP10; return { type: "tiankong", q: "每件商品成本" + cost10 + "元,按" + profit10 + "%利润定价,卖出" + numItems + "件。总收入是多少元?", input: "num", ans: String(totalP10), explain: "每件售价=" + cost10 + "×(1+" + profit10 + "%)=" + sellP10 + "元。总收入=" + sellP10 + "×" + numItems + "=" + totalP10 + "元。" };
       } },
 
     /* ---------------- 计数原理(奥数) ---------------- */
@@ -13139,10 +13310,44 @@ window.THINK = (function () {
     /* ---------------- 牛吃草(奥数进阶) ---------------- */
     { id: "niuchi2", name: "牛吃草问题", icon: "🐮", color: "#06d6a0", level: "高年级",
       desc: "草在长,牛在吃,用方程思想。",
-      points: [ { t: "牛吃草", html: "草匀速生长。设每头牛每天吃 1 份,草每天长 x 份,原有 y 份,列式求解。" } ],
-      examples: [ { tag: "例题", q: "草可供 10 头牛吃 20 天,或 15 头牛吃 10 天。供 25 头牛吃几天?", steps: ["列式求生长量", "供25头吃5天"], explain: "牛吃草模型。" } ],
+      points: [ { t: "牛吃草模型", html: "草匀速生长。设每头牛每天吃1份,草每天长x份,原有y份。<br><b>关键等式:</b>牛吃的总量 = 原有草 + 新长草<br>n头牛吃t天: n×t = y + x×t<br>两组条件联立求解x和y。" } ],
+      examples: [ { tag: "例题", q: "草可供10头牛吃20天,或供15头牛吃10天。供25头牛吃几天?", steps: ["10×20=y+20x→200=y+20x", "15×10=y+10x→150=y+10x", "相减:50=10x→x=5", "y=200-100=100", "25t=100+5t→20t=100→t=5"], explain: "用两组条件列方程,相减求出草的生长速度。" } ],
       gen: function () {
-        return { type: "num", q: "牧场草匀速生长。可供 10 头牛吃 20 天,或供 15 头牛吃 10 天。那么可供 25 头牛吃几天?", input: "num", ans: "5", explain: "设每牛每天吃1份,草每天长5份、原有100份:100÷(25-5)=5(天)。" };
+        var kind = R(1, 6);
+        if (kind === 1) {
+          var x = R(3, 8), y = R(60, 200);
+          var n1 = R(8, 15), t1 = Math.round(y / (n1 - x));
+          var n2 = n1 + R(3, 8), t2 = Math.round(y / (n2 - x));
+          var n3 = n2 + R(3, 10), t3 = Math.round(y / (n3 - x) * 100) / 100;
+          if (t1 <= 0 || t2 <= 0 || t3 <= 0 || t1 !== Math.round(t1) || t2 !== Math.round(t2)) {
+            return { type: "num", q: "牧场草匀速生长。可供10头牛吃20天,或供15头牛吃10天。供25头牛吃几天?", input: "num", ans: "5", explain: "设每牛每天吃1份,草每天长5份、原有100份:100÷(25-5)=5(天)。" };
+          }
+          return { type: "tiankong", q: "牧场草匀速生长。可供" + n1 + "头牛吃" + t1 + "天,或供" + n2 + "头牛吃" + t2 + "天。那么可供" + n3 + "头牛吃几天?", input: "num", ans: String(t3),
+            explain: "第一步:列方程——" + n1 + "×" + t1 + "=y+" + t1 + "x→" + (n1 * t1) + "=y+" + t1 + "x。" + n2 + "×" + t2 + "=y+" + t2 + "x→" + (n2 * t2) + "=y+" + t2 + "x。第二步:相减求出x=" + x + "。第三步:y=" + y + "。第四步:" + n3 + "头牛:" + n3 + "t=" + y + "+" + x + "t→t=" + y + "÷(" + n3 + "-" + x + ")=" + t3 + "天。" };
+        }
+        if (kind === 2) {
+          var grassX = R(4, 10), origY = R(80, 200);
+          var cows = R(15, 30), daysEat = Math.round(origY / (cows - grassX) * 100) / 100;
+          return { type: "tiankong", q: "牧场原有草" + origY + "份,每天新长" + grassX + "份。" + cows + "头牛来吃(每头每天1份),几天吃完?", input: "num", ans: String(daysEat),
+            explain: "每天净减少=" + cows + "-" + grassX + "=" + (cows - grassX) + "份(牛吃减去新长)。吃完天数=" + origY + "÷" + (cows - grassX) + "=" + daysEat + "天。关键:牛数必须大于生长速度才能吃完!" };
+        }
+        if (kind === 3) {
+          var pumpFill = R(3, 8), pumpInit = R(100, 300);
+          var pumps = R(8, 15), hours = Math.round(pumpInit / (pumps - pumpFill) * 100) / 100;
+          return { type: "tiankong", q: "水池每分钟进水" + pumpFill + "升,原有水" + pumpInit + "升。开" + pumps + "台抽水机(每台每分钟抽1升),几分钟抽完?", input: "num", ans: String(hours),
+            explain: "这是牛吃草的变形!每分钟净抽出=" + pumps + "-" + pumpFill + "=" + (pumps - pumpFill) + "升。时间=" + pumpInit + "÷" + (pumps - pumpFill) + "=" + hours + "分钟。" };
+        }
+        if (kind === 4) {
+          var autoGrow = R(2, 6), initRes = R(50, 150);
+          var users = R(8, 20), useDays = Math.round(initRes / (users - autoGrow) * 100) / 100;
+          return { type: "tiankong", q: "水库每天自然补水" + autoGrow + "吨,原有存水" + initRes + "吨。每天" + users + "吨的用水量,几天用完?", input: "num", ans: String(useDays),
+            explain: "每天净减少=" + users + "-" + autoGrow + "=" + (users - autoGrow) + "吨。天数=" + initRes + "÷" + (users - autoGrow) + "=" + useDays + "天。" };
+        }
+        var grassConst = R(5, 12), initGrass = R(100, 250);
+        var cowA = R(10, 20), daysA = Math.round(initGrass / (cowA - grassConst));
+        if (daysA <= 0 || daysA !== Math.round(daysA)) daysA = 20;
+        return { type: "tiankong", q: "草场原有草" + initGrass + "份,每天长" + grassConst + "份。" + cowA + "头牛吃(" + cowA + "份/天),几天吃完?", input: "num", ans: String(Math.round(initGrass / (cowA - grassConst))),
+          explain: "每天净减少=" + cowA + "-" + grassConst + "=" + (cowA - grassConst) + "份。天数=" + initGrass + "÷" + (cowA - grassConst) + "=" + Math.round(initGrass / (cowA - grassConst)) + "天。" };
       } },
 
     /* ---------------- 小学几何八大模型 ---------------- */
@@ -13304,7 +13509,22 @@ window.THINK = (function () {
       mu: "甲乙同时从A地出发去B地,甲每小时走5km,乙每小时走3km。甲到B地后立即返回,在距B地4km处遇到乙。AB相距多少km?",
       steps: ["相遇时甲走了全程+4km,乙走了全程-4km", "甲比乙多走了4+4=8km", "甲比乙每小时快5-3=2km", "相遇时间=8÷2=4小时", "乙走了3×4=12km", "AB=12+4=16km"],
       key: "行程问题核心:路程=速度×时间,抓住路程差或路程和。",
-      tip: "画线段图,标出关键位置" }
+      tip: "画线段图,标出关键位置" },
+    { id: "zhuiji", icon: "🏃", name: "追及问题", level: "高年级",
+      mu: "甲每分钟跑 250m,乙每分钟跑 200m,乙先跑了 4 分钟后甲出发。甲几分钟追上乙?",
+      steps: ["乙先跑距离=200×4=800m", "速度差=250-200=50m/min", "追及时间=800÷50=16分钟"],
+      key: "追及时间=路程差÷速度差",
+      tip: "画图标注起点差距,用速度差追赶" },
+    { id: "niuchiM", icon: "🐄", name: "牛吃草问题", level: "高年级",
+      mu: "牧场上的草匀速生长。10头牛20天吃完,15头牛10天吃完。25头牛几天吃完?",
+      steps: ["设每头牛每天吃1份草,草每天长x份,原有y份", "10×20=y+20x → y+20x=200", "15×10=y+10x → y+10x=150", "两式相减:10x=50 → x=5", "代入得y=200-100=100", "25头牛:25t=100+5t → 20t=100 → t=5天"],
+      key: "设草的生长速度和初始量,列方程组求解。",
+      tip: "牛吃草=原有草+新长草,抓住两个不变量" },
+    { id: "rongchi", icon: "⭕", name: "容斥原理", level: "中年级",
+      mu: "全班40人,喜欢数学的有28人,喜欢语文的有25人,两科都喜欢的有多少人?",
+      steps: ["设两科都喜欢=x人", "只喜欢数学=28-x,只喜欢语文=25-x", "(28-x)+(25-x)+x=40", "53-x=40 → x=13"],
+      key: "|A∪B|=|A|+|B|-|A∩B|,总数=只A+只B+都+都不",
+      tip: "画韦恩图,标出重叠部分" }
   ];
   return { topics: topics, MUTI: MUTI };
 })();
@@ -13506,6 +13726,87 @@ window.OLYMPIAD = (function () {
         var min = Math.ceil(items / drawers);
         return { type: "tiankong", q: "把 " + items + " 个球放进 " + drawers + " 个盒子，至少有一个盒子放了几个球？", input: "num", ans: String(min),
           explain: "抽屉原理：" + items + "÷" + drawers + " = " + Math.floor(items/drawers) + "..." + (items%drawers) + "，至少有一个盒子放了 " + min + " 个球。" };
+      }
+    },
+
+    /* ---------------- 最值问题 ---------------- */
+    {
+      id: "maxmin", name: "最值问题", icon: "📊", level: "高年级",
+      desc: "在约束条件下找最大值或最小值。",
+      points: [
+        { t: "极端原理", html: "要找最大值，就让某些量尽可能大；要找最小值，就让某些量尽可能小。<br>关键是找到<b>约束条件</b>下的边界。" },
+        { t: "常见策略", html: "① 枚举法：把所有可能列出来比较<br>② 不等式法：和一定差越小积越大<br>③ 构造法：构造一个满足条件的例子证明可达" }
+      ],
+      examples: [
+        { tag: "例题", q: "用一根 20cm 的铁丝围成一个长方形，面积最大是多少？", steps: ["周长=20→长+宽=10", "当长=宽=5时面积最大", "最大面积=5×5=25cm²"], explain: "周长固定时，正方形面积最大（和一定差越小积越大）。" }
+      ],
+      gen: function () {
+        var kind = R(1, 6);
+        if (kind === 1) { var peri = R(12, 40); if (peri % 2 !== 0) peri++; var side = peri / 4; var maxArea = side * side;
+          return { type: "tiankong", q: "用 " + peri + "cm 的铁丝围成长方形，最大面积是多少cm²？", input: "num", ans: String(maxArea),
+            explain: "周长=" + peri + "→长+宽=" + (peri/2) + "。当长=宽=" + side + "（正方形）时面积最大=" + maxArea + "cm²。原理：和一定，差越小积越大。" }; }
+        if (kind === 2) { var n = R(5, 15), total = R(n * 3, n * 10);
+          var maxVal = total - (n - 1);
+          return { type: "tiankong", q: n + " 个正整数之和为 " + total + "，其中最大的数最大是多少？", input: "num", ans: String(maxVal),
+            explain: "要让一个数最大，其余 " + (n-1) + " 个数取最小值 1。最大数=" + total + "-" + (n-1) + "×1=" + maxVal + "。" }; }
+        if (kind === 3) { var sum3 = R(20, 50);
+          var maxProd = 1, threes = Math.floor(sum3 / 3), rem = sum3 % 3;
+          if (rem === 0) maxProd = Math.pow(3, threes);
+          else if (rem === 1) maxProd = Math.pow(3, threes - 1) * 4;
+          else maxProd = Math.pow(3, threes) * 2;
+          return { type: "tiankong", q: "把 " + sum3 + " 拆成若干个正整数之和，使乘积最大。最大乘积是？", input: "num", ans: String(maxProd),
+            explain: "拆分原则：尽量拆成3，余1时把一个3+1改成2+2。" + sum3 + "的最优拆分乘积=" + maxProd + "。" }; }
+        if (kind === 4) { var a = R(3, 12), b = R(3, 12); var sumAB = a + b;
+          var maxSquare = Math.floor(sumAB / 2) * Math.ceil(sumAB / 2);
+          return { type: "tiankong", q: "两个正整数之和为 " + sumAB + "，它们的乘积最大是多少？", input: "num", ans: String(maxSquare),
+            explain: "和一定差越小积越大。" + sumAB + "拆成" + Math.floor(sumAB/2) + "和" + Math.ceil(sumAB/2) + "时乘积最大=" + maxSquare + "。" }; }
+        var n5 = R(4, 12), weights = []; for (var wi = 0; wi < n5; wi++) weights.push(R(1, 20));
+        weights.sort(function(a,b){return a-b;});
+        return { type: "tiankong", q: n5 + " 个数中最大值与最小值之差(极差)是多少？数据：" + weights.join(", "), input: "num", ans: String(weights[n5-1] - weights[0]),
+          explain: "极差=最大值-最小值=" + weights[n5-1] + "-" + weights[0] + "=" + (weights[n5-1] - weights[0]) + "。" };
+      }
+    },
+
+    /* ---------------- 不定方程 ---------------- */
+    {
+      id: "indefeq", name: "不定方程", icon: "⚖️", level: "高年级",
+      desc: "未知数多于方程个数，利用整数条件缩小解的范围。",
+      points: [
+        { t: "什么是不定方程", html: "未知数的个数多于方程个数，通常有无穷多组解。<br>但加上<b>正整数</b>等限制后，解往往有限。" },
+        { t: "解题方法", html: "① 用一个未知数表示另一个<br>② 利用整除性缩小范围<br>③ 枚举验证" }
+      ],
+      examples: [
+        { tag: "例题", q: "买钢笔(5元)和铅笔(2元)共花 29 元，各买了几支？(都至少1支)", steps: ["设钢笔x支，铅笔y支", "5x+2y=29", "y=(29-5x)/2，需为正整数", "x=1→y=12✓ x=3→y=7✓ x=5→y=2✓"], explain: "枚举x的值，检查y是否为正整数。" }
+      ],
+      gen: function () {
+        var kind = R(1, 6);
+        if (kind === 1) {
+          var pa = R(3, 8), pb = R(2, pa - 1);
+          var xa = R(2, 8), xb = R(2, 10);
+          var total = pa * xa + pb * xb;
+          return { type: "tiankong", q: "买A物品(每个" + pa + "元)和B物品(每个" + pb + "元)共花 " + total + " 元。已知A买了 " + xa + " 个，B买了几个？", input: "num", ans: String(xb),
+            explain: "设B买了y个：" + pa + "×" + xa + "+" + pb + "×y=" + total + "。" + pb + "y=" + total + "-" + (pa*xa) + "=" + (total-pa*xa) + "。y=" + (total-pa*xa) + "÷" + pb + "=" + xb + "。" }; }
+        if (kind === 2) {
+          var big = R(5, 10), small = R(2, big - 1);
+          var nb = R(2, 6), ns = R(3, 10);
+          var cap = big * nb + small * ns;
+          return { type: "tiankong", q: "大盒装 " + big + " 个球，小盒装 " + small + " 个球。共装了 " + cap + " 个球，用了 " + nb + " 个大盒和几个小盒？", input: "num", ans: String(ns),
+            explain: big + "×" + nb + "+" + small + "×小盒数=" + cap + "。小盒数=(" + cap + "-" + (big*nb) + ")÷" + small + "=" + ns + "。" }; }
+        if (kind === 3) {
+          var adultP = R(30, 60), childP = R(10, adultP - 5);
+          var adults = R(5, 20), children = R(10, 30);
+          var rev = adultP * adults + childP * children;
+          return { type: "tiankong", q: "成人票 " + adultP + " 元，儿童票 " + childP + " 元。总收入 " + rev + " 元，卖了 " + adults + " 张成人票。卖了多少张儿童票？", input: "num", ans: String(children),
+            explain: adultP + "×" + adults + "+" + childP + "×儿童票=" + rev + "。儿童票=(" + rev + "-" + (adultP*adults) + ")÷" + childP + "=" + children + "张。" }; }
+        if (kind === 4) {
+          var coin5 = R(2, 8), coin2 = R(3, 12), coin1 = R(1, 10);
+          var totalVal = coin5 * 5 + coin2 * 2 + coin1;
+          return { type: "tiankong", q: "有5角、2角、1角硬币若干，总值 " + totalVal + " 角。已知5角有 " + coin5 + " 枚，2角有 " + coin2 + " 枚。1角有几枚？", input: "num", ans: String(coin1),
+            explain: "5×" + coin5 + "+2×" + coin2 + "+1×一角=" + totalVal + "。一角=" + totalVal + "-" + (coin5*5) + "-" + (coin2*2) + "=" + coin1 + "枚。" }; }
+        var price1 = R(3, 7), price2 = R(2, price1 - 1), qty1 = R(2, 6), qty2 = R(3, 10);
+        var totalCost = price1 * qty1 + price2 * qty2;
+        return { type: "tiankong", q: "甲种商品每件" + price1 + "元，乙种每件" + price2 + "元。花了" + totalCost + "元买了" + qty1 + "件甲种，买了几件乙种？", input: "num", ans: String(qty2),
+          explain: price1 + "×" + qty1 + "+" + price2 + "×乙=" + totalCost + "。乙=(" + totalCost + "-" + (price1*qty1) + ")÷" + price2 + "=" + qty2 + "件。" };
       }
     }
   ];
