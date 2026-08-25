@@ -816,11 +816,23 @@ main{padding:14px 14px 92px}
  * 烧脑数学 · 教材内容数据（北师大版 2024 新课标版 三年级上册）
  * ===================================================================== */
 window.MD = {
-  version: "4.3.0",
+  version: "4.4.0",
   textbook: { grade: "三年级", term: "上册", edition: "北师大版（新课标）" },
 
   /* ---------------- 版本日志（应用内展示） ---------------- */
   changelog: [
+    { ver: "v4.4.0", date: "2026-08-25", items: [
+      "玩一把大优化：9个游戏模块全面升级",
+      "数感大冒险：从7种题型扩到18种（新增估算/数位值/倍数/近似数/排列/拆分/比大小进阶/读法等）",
+      "逻辑推理关：从3种扩到12种（新增四人排序/三人真假/三人三物对应/职业推理/座位推理/日期推理/数论推理等）",
+      "分数综合训练：合并约分化简+分数化小数+分数比大小+平方根为一个入口",
+      "积木搭搭乐：修复判错逻辑（改为逐块精确比较），布局压缩为一屏看全",
+      "面积小达人：新增三角形/平行四边形/梯形/圆的面积+周长，含阴影面积和组合面积，每题配SVG图示",
+      "速算秘籍+大比拼合并：先看技巧再挑战",
+      "几何小达人：从20题扩到40题（新增内角和/三角形分类/三边关系/面积反推/钟表角度/正方体拼合等真题风格）",
+      "七巧板：修复判错逻辑，新增2个图形+知识点讲解，错题显示正确答案",
+      "圈重点和生活应用：题库扩充至28+题"
+    ]},
     { ver: "v4.3.0", date: "2026-08-25", items: [
       "恢复部署：修复 GitHub Pages 被其他项目覆盖的问题，烧脑数学重新上线",
       "应用更名为「烧脑数学·玩中有学」",
@@ -1983,58 +1995,64 @@ window.BLOCKS = (function () {
     }
     function resetHeights() { for (var i = 0; i < N; i++) heights[i] = [0, 0, 0]; }
 
+    function cubesKey(cubes) {
+      return cubes.map(function (c) { return c[0] + "," + c[1] + "," + c[2]; }).sort().join(";");
+    }
+
     function render() {
       var cubes = cubesOf(heights);
+      /* 紧凑布局：左右并排，一屏看全 */
       var html = '<div class="back-row"><button class="back-btn" id="bbBack">‹</button>' +
         '<div class="page-title">🧊 积木搭搭乐</div></div>';
 
       /* 模式切换 */
-      html += '<div class="lv-tabs">' +
+      html += '<div class="lv-tabs" style="margin-bottom:6px">' +
         '<button class="lv-tab' + (mode === 'free' ? ' sel' : '') + '" id="bbModeFree">🆓 自由搭</button>' +
         '<button class="lv-tab' + (mode === 'copy' ? ' sel' : '') + '" id="bbModeCopy">🎯 照样子搭</button></div>';
 
       if (mode === 'copy') {
-        html += '<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">' +
-          '<div style="font-weight:800">🎯 照着这个样子搭一搭</div>' +
-          '<button class="btn" id="bbNext" style="padding:6px 14px;font-size:13px">🔄 换一组</button></div>' +
-          '<div style="text-align:center">' + (targetCubes().length ? isoSVG(targetCubes(), 26) : '<div style="color:var(--ink-2)">（空）</div>') + '</div>' +
-          '<div id="bbStatus" style="text-align:center;font-size:13.5px;font-weight:700;margin-top:6px">' +
-          (solved ? '🎉 太棒了！搭得一模一样！点「换一组」继续挑战～' : '') + '</div></div>';
+        html += '<div style="display:flex;gap:8px;align-items:flex-start">' +
+          '<div style="flex:1;min-width:0"><div style="font-weight:800;font-size:13px;margin-bottom:4px">🎯 目标</div>' +
+          '<div style="text-align:center;background:#fffaf2;border-radius:10px;padding:6px">' + (targetCubes().length ? isoSVG(targetCubes(), 20) : '（空）') + '</div>' +
+          '<div style="text-align:center;margin-top:4px"><button class="btn" id="bbNext" style="padding:4px 12px;font-size:12px">🔄 换一组</button></div></div>' +
+          '<div style="flex:1;min-width:0"><div style="font-weight:800;font-size:13px;margin-bottom:4px">🧱 你搭的</div>' +
+          '<div style="text-align:center;background:#f0f7ff;border-radius:10px;padding:6px">' + (cubes.length ? isoSVG(cubes, 20) : '<div style="color:#a8a9b5;font-size:12px;padding:10px">点下方格子搭积木</div>') + '</div></div></div>' +
+          '<div id="bbStatus" style="text-align:center;font-size:13px;font-weight:700;margin:6px 0;min-height:18px">' +
+          (solved ? '🎉 太棒了！搭得一模一样！' : '') + '</div>';
       } else {
-        html += '<div class="card" style="font-size:13px;color:var(--ink-2)">👇 点一点格子搭积木：点一下加高一块，再点会越来越高，到顶后再点就拆掉。搭好后看看它的正面、上面、侧面吧！</div>';
+        html += '<div style="text-align:center;background:#f0f7ff;border-radius:10px;padding:6px;margin-bottom:6px">' +
+          (cubes.length ? isoSVG(cubes, 24) : '<div style="color:#a8a9b5;font-size:12px;padding:8px">点下方格子搭积木</div>') + '</div>';
       }
 
-      html += '<div class="card"><div style="font-weight:800;margin-bottom:8px">🧱 搭建区（点格子搭积木）</div><div class="bb-grid">';
+      /* 搭建区：更紧凑的格子 */
+      html += '<div style="font-weight:800;margin-bottom:4px;font-size:13px">🧱 搭建区（点格子加高，到顶再点拆掉）</div><div class="bb-grid" style="gap:4px">';
       for (var y = 0; y < N; y++) {
         for (var x2 = 0; x2 < N; x2++) {
           var h = heights[x2][y];
           var stack = '';
           for (var z = 0; z < h; z++) stack += '<span class="bb-cube"></span>';
-          html += '<button class="bb-cell" data-x="' + x2 + '" data-y="' + y + '">' +
+          html += '<button class="bb-cell" data-x="' + x2 + '" data-y="' + y + '" style="min-width:36px;min-height:36px">' +
             '<span class="bb-stack">' + stack + '</span>' +
             '<span class="bb-h">' + (h > 0 ? h : '') + '</span></button>';
         }
       }
       html += '</div>' +
-        '<div style="display:flex;gap:8px;margin-top:12px">' +
-        '<button class="btn ghost" id="bbClear" style="flex:1;padding:9px;font-size:14px">🗑️ 清空</button>' +
-        (mode === 'copy' ? '<button class="btn" id="bbCheck" style="flex:1;padding:9px;font-size:14px">✅ 检查对不对</button>' : '') +
-        '</div></div>';
+        '<div style="display:flex;gap:6px;margin-top:8px">' +
+        '<button class="btn ghost" id="bbClear" style="flex:1;padding:7px;font-size:13px">🗑️ 清空</button>' +
+        (mode === 'copy' ? '<button class="btn" id="bbCheck" style="flex:1;padding:7px;font-size:13px">✅ 检查</button>' : '') +
+        '</div>';
 
-      html += '<div class="card"><div style="font-weight:800;margin-bottom:8px">👀 观察一下（你的积木长这样）</div>';
+      /* 三视图（折叠显示，更紧凑） */
       if (cubes.length) {
-        html += '<div style="text-align:center;margin-bottom:8px">' + isoSVG(cubes, 30) + '</div>' +
-          '<div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">' +
+        html += '<div style="margin-top:8px"><div style="font-weight:800;font-size:13px;margin-bottom:4px">👀 三视图</div>' +
+          '<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">' +
           ['front', 'right', 'top'].map(function (dir) {
             var name = dir === 'front' ? '正面' : (dir === 'right' ? '右面' : '上面');
-            return '<div style="text-align:center;background:#fffaf2;border-radius:12px;padding:8px 12px">' +
-              '<div style="font-size:12px;font-weight:800;color:#8a5a20;margin-bottom:4px">从' + name + '看</div>' +
-              viewSVG(cubes, dir, 20) + '</div>';
-          }).join("") + '</div>';
-      } else {
-        html += '<div style="text-align:center;color:var(--ink-2);padding:16px 0">还没搭积木哦，快点上面的格子吧～</div>';
+            return '<div style="text-align:center;background:#fffaf2;border-radius:8px;padding:4px 8px">' +
+              '<div style="font-size:11px;font-weight:800;color:#8a5a20">' + name + '</div>' +
+              viewSVG(cubes, dir, 16) + '</div>';
+          }).join("") + '</div></div>';
       }
-      html += '</div>';
 
       container.innerHTML = html;
       container.querySelector('#bbBack').onclick = function () { onExit(); };
@@ -2056,9 +2074,10 @@ window.BLOCKS = (function () {
           render();
         };
         container.querySelector('#bbCheck').onclick = function () {
-          var ok = ['front', 'right', 'top'].every(function (d) {
-            return viewKey(cubesOf(heights), d) === viewKey(targetCubes(), d);
-          });
+          /* 改为逐块比较（相同位置的积木数量一致才算对） */
+          var userKey = cubesKey(cubesOf(heights));
+          var targetKey = cubesKey(targetCubes());
+          var ok = userKey === targetKey;
           var st = container.querySelector('#bbStatus');
           if (ok) {
             solved = true;
@@ -8160,8 +8179,8 @@ window.GAMES = (function () {
     }
     stage.innerHTML =
       '<div class="game-over">' + html +
-      '<div class="go-score">得分：' + score + '</div>' +
-      '<div style="font-size:13px;color:#a8a9b5;margin-bottom:6px">历史最佳：' + score + '（含本次）</div>' +
+      '<div class="go-score">得分:' + score + '</div>' +
+      '<div style="font-size:13px;color:#a8a9b5;margin-bottom:6px">历史最佳:' + score + '(含本次)</div>' +
       (gBonus > 0 ? '<div style="font-size:13px;color:#06a37c;margin-bottom:12px">🌟 +' + gBonus + ' 积分</div>' : '<div style="margin-bottom:12px"></div>') +
       '<div class="result-btns" style="max-width:320px;margin:0 auto">' +
       '<button class="btn ghost" id="gExit">返回</button>' +
@@ -8186,7 +8205,7 @@ window.GAMES = (function () {
   window.confetti = confetti; /* 供家园庆祝使用 */
 
   /* =====================================================
-   * 游戏一：乘法口诀大闯关
+   * 游戏一:乘法口诀大闯关
    * ===================================================== */
   function gameChengkou() {
     stage.innerHTML =
@@ -8203,7 +8222,7 @@ window.GAMES = (function () {
 
     function run(mode) {
       var lvl = 1, hearts = 3, qi = 0, score = 0, cur = null, locked = false;
-      function QN() { return Math.min(50, 5 + lvl * 5); } /* 第1关10题，每关+5，封顶50 */
+      function QN() { return Math.min(50, 5 + lvl * 5); } /* 第1关10题,每关+5,封顶50 */
       function hiF() { return Math.min(9, 3 + lvl); }
       function genQ() {
         var useDiv = mode === "div" || (mode === "mix" && Math.random() < 0.5);
@@ -8263,10 +8282,10 @@ window.GAMES = (function () {
         stage.innerHTML =
           '<div class="game-over" style="text-align:center;padding-top:40px">' +
           '<div style="font-size:50px">🎉</div>' +
-          '<div style="font-size:18px;font-weight:800;color:#06a37c;margin-top:8px">第 ' + lvl + ' 关通过！</div>' +
+          '<div style="font-size:18px;font-weight:800;color:#06a37c;margin-top:8px">第 ' + lvl + ' 关通过!</div>' +
           '<div style="font-size:13px;color:#6b6e7f;margin-top:6px">口诀越来越熟 · 累计 ' + score + ' 分</div>' +
           '<div class="result-btns" style="max-width:300px;margin:20px auto 0;display:flex;flex-direction:column;gap:10px">' +
-          '<button class="btn block" id="nextLv">🚀 挑战第 ' + (lvl + 1) + ' 关（数字更大）</button>' +
+          '<button class="btn block" id="nextLv">🚀 挑战第 ' + (lvl + 1) + ' 关(数字更大)</button>' +
           '<button class="btn ghost block" id="exitG">退出</button></div></div>';
         stage.querySelector("#nextLv").onclick = function () { lvl++; qi = 0; hearts = 3; nextQ(); };
         stage.querySelector("#exitG").onclick = exitGame;
@@ -8304,7 +8323,7 @@ window.GAMES = (function () {
 
     function run(mode) {
       var lvl = 1, hearts = 3, qi = 0, score = 0, ans = 0, locked = false;
-      function QN() { return Math.min(50, 5 + lvl * 5); } /* 第1关10题，每关+5，封顶50 */
+      function QN() { return Math.min(50, 5 + lvl * 5); } /* 第1关10题,每关+5,封顶50 */
       function hiRange() {
         if (mode === "20") return Math.min(20, 8 + lvl * 3);
         if (mode === "100") return Math.min(99, 30 + lvl * 15);
@@ -8317,12 +8336,12 @@ window.GAMES = (function () {
         if (mode === "lian") {
           var k = rnd(1, 3), x, y, z;
           if (k === 1) { x = rnd(2, H); y = rnd(2, H); z = rnd(2, H); txt = x + " + " + y + " + " + z; ans = x + y + z; }
-          else if (k === 2) { x = rnd(Math.floor(H * 0.6), H + 40); y = rnd(2, Math.floor(x / 3)); z = rnd(2, Math.floor((x - y) / 2)); txt = x + " − " + y + " − " + z; ans = x - y - z; }
-          else { x = rnd(2, H); y = rnd(2, H); z = rnd(2, x + y - 1); txt = x + " + " + y + " − " + z; ans = x + y - z; }
+          else if (k === 2) { x = rnd(Math.floor(H * 0.6), H + 40); y = rnd(2, Math.floor(x / 3)); z = rnd(2, Math.floor((x - y) / 2)); txt = x + " - " + y + " - " + z; ans = x - y - z; }
+          else { x = rnd(2, H); y = rnd(2, H); z = rnd(2, x + y - 1); txt = x + " + " + y + " - " + z; ans = x + y - z; }
           return txt;
         }
         if (add) { a = rnd(1, Math.floor(H / 2)); b = rnd(1, Math.max(1, H - a)); ans = a + b; txt = a + " + " + b; }
-        else { a = rnd(2, H); b = rnd(1, a - 1); ans = a - b; txt = a + " − " + b; }
+        else { a = rnd(2, H); b = rnd(1, a - 1); ans = a - b; txt = a + " - " + b; }
         return txt;
       }
       function hud() {
@@ -8358,7 +8377,7 @@ window.GAMES = (function () {
             stage.querySelector(".game-q").style.color = "#ef476f";
             setTimeout(function () {
               if (hearts <= 0) stageFail();
-              else { toast("正确答案是 " + ans + "，再试一次！"); nextQ(); }
+              else { toast("正确答案是 " + ans + ",再试一次!"); nextQ(); }
             }, 700);
           }
         }
@@ -8374,10 +8393,10 @@ window.GAMES = (function () {
         stage.innerHTML =
           '<div class="game-over" style="text-align:center;padding-top:40px">' +
           '<div style="font-size:50px">🎉</div>' +
-          '<div style="font-size:18px;font-weight:800;color:#06a37c;margin-top:8px">第 ' + lvl + ' 关通过！</div>' +
+          '<div style="font-size:18px;font-weight:800;color:#06a37c;margin-top:8px">第 ' + lvl + ' 关通过!</div>' +
           '<div style="font-size:13px;color:#6b6e7f;margin-top:6px">本关答对 ' + qi + ' 题 · 累计 ' + score + ' 分</div>' +
           '<div class="result-btns" style="max-width:300px;margin:20px auto 0;display:flex;flex-direction:column;gap:10px">' +
-          '<button class="btn block" id="nextLv">🚀 挑战第 ' + (lvl + 1) + ' 关（更难）</button>' +
+          '<button class="btn block" id="nextLv">🚀 挑战第 ' + (lvl + 1) + ' 关(更难)</button>' +
           '<button class="btn ghost block" id="exitG">退出</button></div></div>';
         stage.querySelector("#nextLv").onclick = function () { lvl++; qi = 0; hearts = 3; nextQ(); };
         stage.querySelector("#exitG").onclick = exitGame;
@@ -8399,7 +8418,7 @@ window.GAMES = (function () {
     }
   }
   /* =====================================================
-   * 游戏三：凑十好朋友
+   * 游戏三:凑十好朋友
    * ===================================================== */
   function gameCushi() {
     var score = 0, streak = 0, roundNum = 0;
@@ -8426,7 +8445,7 @@ window.GAMES = (function () {
         '<span class="hud-item">🔥 连对 ' + streak + '</span>' +
         '<span class="hud-item"><button id="gBack" style="color:#a8a9b5;font-size:12px">退出</button></span>' +
         '</div>' +
-        '<div style="text-align:center;font-size:14px;color:#6b6e7f">十格阵还差几个就满了？</div>' +
+        '<div style="text-align:center;font-size:14px;color:#6b6e7f">十格阵还差几个就满了?</div>' +
         '<div class="ten-frame">' + frame + '</div>' +
         '<div class="game-q" style="font-size:28px">' + a + ' + ? = 10</div>' +
         '<div class="game-opts">' + opts.map(function (o) {
@@ -8452,7 +8471,7 @@ window.GAMES = (function () {
   }
 
   /* =====================================================
-   * 游戏四：破十小达人
+   * 游戏四:破十小达人
    * ===================================================== */
   function gamePoshi() {
     var score = 0, roundNum = 0;
@@ -8468,12 +8487,12 @@ window.GAMES = (function () {
         '<span class="hud-item"><button id="gBack" style="color:#a8a9b5;font-size:12px">退出</button></span>' +
         '</div>' +
         '<div style="text-align:center;font-size:14px;color:#6b6e7f;line-height:1.8">' +
-        '用<b style="color:#e85d04">破十法</b>计算：把 ' + M + ' 拆成 <b>10</b> 和 <b>' + ones + '</b><br>' +
-        '先用 10 减，再把剩下的加回来～</div>' +
-        '<div class="game-q" style="font-size:30px">' + M + ' − ' + S + ' = ?</div>' +
+        '用<b style="color:#e85d04">破十法</b>计算:把 ' + M + ' 拆成 <b>10</b> 和 <b>' + ones + '</b><br>' +
+        '先用 10 减,再把剩下的加回来~</div>' +
+        '<div class="game-q" style="font-size:30px">' + M + ' - ' + S + ' = ?</div>' +
         '<div class="card" style="box-shadow:none;background:#fffaf2">' +
-        '<p style="font-size:16px;margin-bottom:10px">第 1 步：先算 10 − ' + S + ' = <span class="step-blank"><input id="s1" inputmode="numeric" maxlength="2"></span></p>' +
-        '<p style="font-size:16px">第 2 步：再算 <span class="step-blank" style="border-color:#06d6a0;color:#059e76" id="midShow">?</span> + ' + ones + ' = <span class="step-blank"><input id="s2" inputmode="numeric" maxlength="2"></span></p>' +
+        '<p style="font-size:16px;margin-bottom:10px">第 1 步:先算 10 - ' + S + ' = <span class="step-blank"><input id="s1" inputmode="numeric" maxlength="2"></span></p>' +
+        '<p style="font-size:16px">第 2 步:再算 <span class="step-blank" style="border-color:#06d6a0;color:#059e76" id="midShow">?</span> + ' + ones + ' = <span class="step-blank"><input id="s2" inputmode="numeric" maxlength="2"></span></p>' +
         '</div>' +
         '<div style="text-align:center;margin-top:14px"><button class="btn" id="gCheck">检查答案</button>' +
         '<div id="gFb" style="margin-top:10px;font-size:14px"></div></div>';
@@ -8487,14 +8506,14 @@ window.GAMES = (function () {
         var fb = stage.querySelector("#gFb");
         if (parseInt(s1.value, 10) === step1 && parseInt(s2.value, 10) === step2) {
           score += 15;
-          fb.innerHTML = '✅ 太棒了！10−' + S + '=' + step1 + '，' + step1 + '+' + ones + '=' + step2 + '，所以 ' + M + '−' + S + '=' + step2 + '！';
+          fb.innerHTML = '✅ 太棒了!10-' + S + '=' + step1 + ',' + step1 + '+' + ones + '=' + step2 + ',所以 ' + M + '-' + S + '=' + step2 + '!';
           fb.style.color = "#059e76";
           setTimeout(round, 1400);
         } else if (parseInt(s1.value, 10) !== step1) {
-          fb.innerHTML = '🤔 第 1 步再想想：10 − ' + S + ' 等于几？（可以用口诀：' + S + ' 加几得 10？）';
+          fb.innerHTML = '🤔 第 1 步再想想:10 - ' + S + ' 等于几?(可以用口诀:' + S + ' 加几得 10?)';
           fb.style.color = "#e85d04";
         } else {
-          fb.innerHTML = '🤔 第 2 步：把第 1 步的答案 ' + step1 + ' 加上 ' + ones + ' 试试！';
+          fb.innerHTML = '🤔 第 2 步:把第 1 步的答案 ' + step1 + ' 加上 ' + ones + ' 试试!';
           fb.style.color = "#e85d04";
         }
       };
@@ -8503,8 +8522,8 @@ window.GAMES = (function () {
   }
 
   /* =====================================================
-   * 游戏五：24 点挑战
-   * 给 4 个数，选出能算出 24 的算式
+   * 游戏五:24 点挑战
+   * 给 4 个数,选出能算出 24 的算式
    * ===================================================== */
   function solve24(nums) {
     function helper(list, exprs) {
@@ -8535,7 +8554,7 @@ window.GAMES = (function () {
     return helper(nums, nums.map(String));
   }
   function buildDistractor(nums) {
-    // 结构 ((a op b) op c) op d，随机运算符，返回 {expr, val}
+    // 结构 ((a op b) op c) op d,随机运算符,返回 {expr, val}
     var ops = [["+", function (a, b) { return a + b; }, function (a, b) { return "(" + a + "+" + b + ")"; }],
       ["-", function (a, b) { return a - b; }, function (a, b) { return "(" + a + "-" + b + ")"; }],
       ["*", function (a, b) { return a * b; }, function (a, b) { return "(" + a + "×" + b + ")"; }],
@@ -8559,7 +8578,7 @@ window.GAMES = (function () {
         tries++;
       }
       if (!sol) { nums = [1, 2, 3, 4]; sol = solve24(nums.slice()); }
-      // 造 3 个干扰项（都不等于 24）
+      // 造 3 个干扰项(都不等于 24)
       var choices = [{ expr: sol, correct: true }];
       var guard = 0;
       while (choices.length < 4 && guard < 200) {
@@ -8570,12 +8589,12 @@ window.GAMES = (function () {
         if (choices.some(function (c) { return c.expr === d.expr; })) continue;
         choices.push({ expr: d.expr, correct: false });
       }
-      while (choices.length < 4) choices.push({ expr: "(" + nums[0] + "+" + nums[1] + ")×" + nums[2] + "−" + nums[3], correct: false });
+      while (choices.length < 4) choices.push({ expr: "(" + nums[0] + "+" + nums[1] + ")×" + nums[2] + "-" + nums[3], correct: false });
       choices = shuffle(choices);
       stage.innerHTML =
         '<div class="game-hud"><span class="hud-item">🎯 第 ' + roundNum + ' 题</span><span class="hud-item">⭐ ' + score + '</span></div>' +
-        '<div style="text-align:center;font-size:15px;font-weight:700;margin:8px 0">用这 4 个数算出 24，哪个算式对？</div>' +
-        '<div class="game-q" style="font-size:30px">' + nums.join("　") + '</div>' +
+        '<div style="text-align:center;font-size:15px;font-weight:700;margin:8px 0">用这 4 个数算出 24,哪个算式对?</div>' +
+        '<div class="game-q" style="font-size:30px">' + nums.join(" ") + '</div>' +
         '<div style="display:flex;flex-direction:column;gap:8px">' +
         choices.map(function (c, i) { return '<button class="opt-btn" data-i="' + i + '" style="justify-content:center;font-size:15px"><span>' + c.expr + ' = ?</span></button>'; }).join("") +
         '</div>' +
@@ -8598,12 +8617,12 @@ window.GAMES = (function () {
           });
           if (c.correct) {
             score += 10;
-            fb.textContent = "🎉 太棒了！" + c.expr + " = 24！";
+            fb.textContent = "🎉 太棒了!" + c.expr + " = 24!";
             fb.style.color = "#059e76";
             setTimeout(round, 1100);
           } else {
             btn.classList.add("wrong");
-            fb.textContent = "🤔 再想想，绿色那个才能算出 24 哦～";
+            fb.textContent = "🤔 再想想,绿色那个才能算出 24 哦~";
             fb.style.color = "#e85d04";
             setTimeout(round, 1400);
           }
@@ -8614,7 +8633,7 @@ window.GAMES = (function () {
   }
 
   /* =====================================================
-   * 游戏六：分数比大小
+   * 游戏六:分数比大小
    * ===================================================== */
   function gameFenshu() {
     var score = 0, roundNum = 0;
@@ -8623,7 +8642,7 @@ window.GAMES = (function () {
       if (roundNum > 10) { setBest("fenshu", score); confetti(); if (window.GARDEN) GARDEN.addPoints(score >= 80 ? 1.5 : 1, "分数比大小"); gameOver('<div class="go-emoji">⚖️</div><div style="color:#6b6e7f;font-size:14px">10 题得分 ' + score + '</div>', score, gameFenshu, exitGame); return; }
       var d = rnd(3, 12);
       var n1 = rnd(1, d - 1), n2 = rnd(1, d - 1);
-      // 有时同分母，有时异分母
+      // 有时同分母,有时异分母
       var sameDen = Math.random() < 0.5;
       var d2 = sameDen ? d : rnd(3, 12);
       if (sameDen) { if (n1 === n2) n2 = (n2 % d) + 1; }
@@ -8632,8 +8651,8 @@ window.GAMES = (function () {
       var sym = Math.abs(v1 - v2) < 1e-9 ? "=" : (v1 > v2 ? ">" : "<");
       stage.innerHTML =
         '<div class="game-hud"><span class="hud-item">🎯 第 ' + roundNum + ' 题</span><span class="hud-item">⭐ ' + score + '</span></div>' +
-        '<div style="text-align:center;font-size:15px;font-weight:700;margin:10px 0">比一比，哪个分数大？选符号</div>' +
-        '<div class="game-q" style="font-size:26px">' + n1 + '/' + d + '　○　' + n2 + '/' + d2 + '</div>' +
+        '<div style="text-align:center;font-size:15px;font-weight:700;margin:10px 0">比一比,哪个分数大?选符号</div>' +
+        '<div class="game-q" style="font-size:26px">' + n1 + '/' + d + ' ○ ' + n2 + '/' + d2 + '</div>' +
         '<div style="display:flex;gap:10px;justify-content:center">' +
         ['>', '=', '<'].map(function (s) { return '<button class="judge-btn" data-s="' + s + '" style="flex:0 0 70px;font-size:22px">' + s + '</button>'; }).join("") +
         '</div>' +
@@ -8650,7 +8669,7 @@ window.GAMES = (function () {
           stage.querySelectorAll(".judge-btn").forEach(function (b) { if (b.dataset.s === sym) b.classList.add("correct"); b.disabled = true; });
           if (s === sym) {
             score += 10;
-            fb.textContent = "🎉 对啦！";
+            fb.textContent = "🎉 对啦!";
             fb.style.color = "#059e76";
             setTimeout(round, 900);
           } else {
@@ -8666,22 +8685,125 @@ window.GAMES = (function () {
   }
 
   /* =====================================================
-   * 游戏七：周长面积小达人（60 秒）
+   * 游戏七:周长面积小达人(60 秒)
    * ===================================================== */
   function gameZhouchang() {
-    var left = 60, score = 0, ans = 0, mode = "";
+    var left = 60, score = 0, ans = 0, mode = "", explain = "";
+    function svgRect(a, b) {
+      var w = Math.min(a * 20, 160), h = Math.min(b * 20, 100);
+      return '<svg width="' + (w + 40) + '" height="' + (h + 40) + '" viewBox="0 0 ' + (w + 40) + ' ' + (h + 40) + '" style="display:block;margin:0 auto">' +
+        '<rect x="20" y="10" width="' + w + '" height="' + h + '" fill="#ffe9c9" stroke="#e8930a" stroke-width="2"/>' +
+        '<text x="' + (20 + w / 2) + '" y="' + (h + 30) + '" text-anchor="middle" font-size="12" fill="#333">' + a + 'cm</text>' +
+        '<text x="' + (w + 32) + '" y="' + (10 + h / 2 + 4) + '" text-anchor="start" font-size="12" fill="#333">' + b + 'cm</text></svg>';
+    }
+    function svgTri(base, h) {
+      var w = Math.min(base * 18, 160), ht = Math.min(h * 18, 100);
+      return '<svg width="' + (w + 40) + '" height="' + (ht + 40) + '" viewBox="0 0 ' + (w + 40) + ' ' + (ht + 40) + '" style="display:block;margin:0 auto">' +
+        '<polygon points="' + (20 + w / 2) + ',10 20,' + (ht + 10) + ' ' + (20 + w) + ',' + (ht + 10) + '" fill="#d4edff" stroke="#3a86ff" stroke-width="2"/>' +
+        '<line x1="' + (20 + w / 2) + '" y1="10" x2="' + (20 + w / 2) + '" y2="' + (ht + 10) + '" stroke="#e85d04" stroke-width="1" stroke-dasharray="4"/>' +
+        '<text x="' + (20 + w / 2) + '" y="' + (ht + 30) + '" text-anchor="middle" font-size="11" fill="#333">底=' + base + 'cm</text>' +
+        '<text x="' + (20 + w / 2 + 6) + '" y="' + (10 + ht / 2 + 4) + '" font-size="11" fill="#e85d04">h=' + h + '</text></svg>';
+    }
+    function svgTrap(a, b, h) {
+      var wTop = Math.min(a * 14, 100), wBot = Math.min(b * 14, 160), ht = Math.min(h * 16, 80);
+      var offset = (wBot - wTop) / 2;
+      return '<svg width="' + (wBot + 40) + '" height="' + (ht + 40) + '" viewBox="0 0 ' + (wBot + 40) + ' ' + (ht + 40) + '" style="display:block;margin:0 auto">' +
+        '<polygon points="' + (20 + offset) + ',10 ' + (20 + offset + wTop) + ',10 ' + (20 + wBot) + ',' + (ht + 10) + ' 20,' + (ht + 10) + '" fill="#e8ffe8" stroke="#06a37c" stroke-width="2"/>' +
+        '<text x="' + (20 + (wTop + wBot) / 4 + offset / 2) + '" y="8" text-anchor="middle" font-size="11" fill="#333">上底=' + a + '</text>' +
+        '<text x="' + (20 + wBot / 2) + '" y="' + (ht + 28) + '" text-anchor="middle" font-size="11" fill="#333">下底=' + b + '</text>' +
+        '<text x="' + (wBot + 32) + '" y="' + (10 + ht / 2 + 4) + '" font-size="11" fill="#e85d04">h=' + h + '</text></svg>';
+    }
+    function svgCircle(r) {
+      var cr = Math.min(r * 12, 60);
+      return '<svg width="' + (cr * 2 + 40) + '" height="' + (cr * 2 + 40) + '" viewBox="0 0 ' + (cr * 2 + 40) + ' ' + (cr * 2 + 40) + '" style="display:block;margin:0 auto">' +
+        '<circle cx="' + (cr + 20) + '" cy="' + (cr + 10) + '" r="' + cr + '" fill="#fff0f5" stroke="#e63999" stroke-width="2"/>' +
+        '<line x1="' + (cr + 20) + '" y1="' + (cr + 10) + '" x2="' + (cr * 2 + 20) + '" y2="' + (cr + 10) + '" stroke="#e85d04" stroke-width="1.5"/>' +
+        '<text x="' + (cr + 20 + cr / 2) + '" y="' + (cr + 6) + '" text-anchor="middle" font-size="11" fill="#e85d04">r=' + r + '</text></svg>';
+    }
+    function svgPara(a, h) {
+      var w = Math.min(a * 18, 160), ht = Math.min(h * 18, 100), skew = 20;
+      return '<svg width="' + (w + skew + 40) + '" height="' + (ht + 40) + '" viewBox="0 0 ' + (w + skew + 40) + ' ' + (ht + 40) + '" style="display:block;margin:0 auto">' +
+        '<polygon points="' + (20 + skew) + ',10 ' + (20 + skew + w) + ',10 ' + (20 + w) + ',' + (ht + 10) + ' 20,' + (ht + 10) + '" fill="#fffbe6" stroke="#b8860b" stroke-width="2"/>' +
+        '<text x="' + (20 + skew + w / 2) + '" y="' + (ht + 28) + '" text-anchor="middle" font-size="11" fill="#333">底=' + a + 'cm</text>' +
+        '<line x1="' + (20 + skew) + '" y1="10" x2="20" y2="' + (ht + 10) + '" stroke="#e85d04" stroke-width="1" stroke-dasharray="4"/>' +
+        '<text x="14" y="' + (10 + ht / 2 + 4) + '" font-size="11" fill="#e85d04">h=' + h + '</text></svg>';
+    }
     function nextQ() {
-      var kind = Math.random() < 0.5 ? "zc" : "mj";
-      var a = rnd(3, 12), b = rnd(2, a - 1);
-      if (Math.random() < 0.4) b = a; // 正方形
-      if (kind === "zc") {
-        mode = "zc";
-        ans = (a + b) * 2;
-        stage.querySelector("#gzcq").innerHTML = "长方形长 " + a + "、宽 " + b + "<br>周长 = ?";
-      } else {
-        mode = "mj";
-        ans = a * b;
-        stage.querySelector("#gzcq").innerHTML = "长方形长 " + a + "、宽 " + b + "<br>面积 = ?";
+      var kind = rnd(1, 10);
+      var svg = "";
+      explain = "";
+      if (kind <= 2) { /* 长方形/正方形 */
+        var a = rnd(3, 12), b = rnd(2, a);
+        if (kind === 2) b = a; /* 正方形 */
+        var wantArea = Math.random() < 0.6;
+        if (wantArea) { mode = "mj"; ans = a * b; explain = "面积=" + a + "×" + b + "=" + ans; }
+        else { mode = "zc"; ans = (a + b) * 2; explain = "周长=(" + a + "+" + b + ")×2=" + ans; }
+        svg = svgRect(a, b);
+        stage.querySelector("#gzcq").innerHTML = svg + "<div style='margin-top:6px'>" + (b === a ? "正方形边长 " + a + "cm" : "长方形长 " + a + "cm、宽 " + b + "cm") + "," + (wantArea ? "面积" : "周长") + " = ?</div>";
+      } else if (kind === 3) { /* 三角形面积 */
+        var base = rnd(4, 16), h = rnd(3, 12);
+        if ((base * h) % 2 !== 0) base = base + 1; /* 确保整除 */
+        ans = base * h / 2;
+        explain = "三角形面积=底×高÷2=" + base + "×" + h + "÷2=" + ans;
+        svg = svgTri(base, h);
+        stage.querySelector("#gzcq").innerHTML = svg + "<div style='margin-top:6px'>三角形底 " + base + "cm,高 " + h + "cm,面积 = ?</div>";
+      } else if (kind === 4) { /* 平行四边形面积 */
+        var base4 = rnd(4, 14), h4 = rnd(3, 10);
+        ans = base4 * h4;
+        explain = "平行四边形面积=底×高=" + base4 + "×" + h4 + "=" + ans;
+        svg = svgPara(base4, h4);
+        stage.querySelector("#gzcq").innerHTML = svg + "<div style='margin-top:6px'>平行四边形底 " + base4 + "cm,高 " + h4 + "cm,面积 = ?</div>";
+      } else if (kind === 5) { /* 梯形面积 */
+        var top = rnd(3, 10), bot = top + rnd(2, 8), h5 = rnd(3, 10);
+        if (((top + bot) * h5) % 2 !== 0) bot = bot + 1;
+        ans = (top + bot) * h5 / 2;
+        explain = "梯形面积=(上底+下底)×高÷2=(" + top + "+" + bot + ")×" + h5 + "÷2=" + ans;
+        svg = svgTrap(top, bot, h5);
+        stage.querySelector("#gzcq").innerHTML = svg + "<div style='margin-top:6px'>梯形上底 " + top + "cm,下底 " + bot + "cm,高 " + h5 + "cm,面积 = ?</div>";
+      } else if (kind === 6) { /* 圆的面积 (π=3.14) */
+        var r = pick([2, 3, 4, 5, 6, 7, 10]);
+        ans = Math.round(3.14 * r * r * 100) / 100;
+        explain = "圆面积=πr2=3.14×" + r + "×" + r + "=" + ans;
+        svg = svgCircle(r);
+        stage.querySelector("#gzcq").innerHTML = svg + "<div style='margin-top:6px'>圆的半径 " + r + "cm,面积 = ?(π取3.14,保留两位小数)</div>";
+      } else if (kind === 7) { /* 圆的周长 */
+        var r7 = pick([2, 3, 4, 5, 7, 10]);
+        ans = Math.round(3.14 * 2 * r7 * 100) / 100;
+        explain = "圆周长=2πr=2×3.14×" + r7 + "=" + ans;
+        svg = svgCircle(r7);
+        stage.querySelector("#gzcq").innerHTML = svg + "<div style='margin-top:6px'>圆的半径 " + r7 + "cm,周长 = ?(π取3.14)</div>";
+      } else if (kind === 8) { /* 阴影面积:正方形中挖圆 */
+        var side8 = pick([4, 6, 8, 10]);
+        var r8 = side8 / 2;
+        var sqArea = side8 * side8;
+        var circleArea = Math.round(3.14 * r8 * r8 * 100) / 100;
+        ans = Math.round((sqArea - circleArea) * 100) / 100;
+        explain = "阴影=正方形-圆=" + sqArea + "-" + circleArea + "=" + ans;
+        var w8 = Math.min(side8 * 16, 140);
+        svg = '<svg width="' + (w8 + 40) + '" height="' + (w8 + 40) + '" viewBox="0 0 ' + (w8 + 40) + ' ' + (w8 + 40) + '" style="display:block;margin:0 auto">' +
+          '<rect x="20" y="10" width="' + w8 + '" height="' + w8 + '" fill="#ffe9c9" stroke="#e8930a" stroke-width="2"/>' +
+          '<circle cx="' + (20 + w8 / 2) + '" cy="' + (10 + w8 / 2) + '" r="' + (w8 / 2) + '" fill="white" stroke="#e63999" stroke-width="2"/>' +
+          '<text x="' + (20 + w8 / 2) + '" y="' + (w8 + 28) + '" text-anchor="middle" font-size="11" fill="#333">边长' + side8 + 'cm</text></svg>';
+        stage.querySelector("#gzcq").innerHTML = svg + "<div style='margin-top:6px'>正方形边长 " + side8 + "cm,内切圆。求阴影面积 = ?(π取3.14)</div>";
+      } else if (kind === 9) { /* 组合面积:长方形+三角形 */
+        var a9 = rnd(4, 12), b9 = rnd(3, 8), h9 = rnd(2, 6);
+        ans = a9 * b9 + a9 * h9 / 2;
+        explain = "组合=长方形+三角形=" + a9 + "×" + b9 + "+" + a9 + "×" + h9 + "÷2=" + ans;
+        var w9 = Math.min(a9 * 16, 160), ht9 = Math.min(b9 * 16, 100), triH = Math.min(h9 * 12, 50);
+        svg = '<svg width="' + (w9 + 40) + '" height="' + (ht9 + triH + 40) + '" viewBox="0 0 ' + (w9 + 40) + ' ' + (ht9 + triH + 40) + '" style="display:block;margin:0 auto">' +
+          '<rect x="20" y="' + triH + '" width="' + w9 + '" height="' + ht9 + '" fill="#ffe9c9" stroke="#e8930a" stroke-width="2"/>' +
+          '<polygon points="20,' + triH + ' ' + (20 + w9) + ',' + triH + ' ' + (20 + w9 / 2) + ',10" fill="#d4edff" stroke="#3a86ff" stroke-width="2"/>' +
+          '<text x="' + (20 + w9 / 2) + '" y="' + (ht9 + triH + 28) + '" text-anchor="middle" font-size="11" fill="#333">底=' + a9 + '</text></svg>';
+        stage.querySelector("#gzcq").innerHTML = svg + "<div style='margin-top:6px'>长方形 " + a9 + "×" + b9 + "cm + 上面三角形高 " + h9 + "cm,总面积 = ?</div>";
+      } else { /* 已知面积求边 */
+        var area10 = pick([12, 16, 18, 20, 24, 25, 30, 36, 48]);
+        var factors10 = [];
+        for (var fi = 1; fi <= Math.sqrt(area10); fi++) if (area10 % fi === 0) factors10.push([fi, area10 / fi]);
+        var f10 = pick(factors10);
+        ans = f10[0];
+        explain = "宽=面积÷长=" + area10 + "÷" + f10[1] + "=" + ans;
+        svg = svgRect(f10[1], 1);
+        stage.querySelector("#gzcq").innerHTML = svg + "<div style='margin-top:6px'>长方形面积 " + area10 + "cm2,长 " + f10[1] + "cm,宽 = ?</div>";
       }
       var inp = stage.querySelector("#gzcInput");
       inp.value = "";
@@ -8698,13 +8820,13 @@ window.GAMES = (function () {
       var v = stage.querySelector("#gzcInput").value.trim();
       var fb = stage.querySelector("#gzcFb");
       if (v === "") return;
-      if (parseInt(v, 10) === ans) {
+      if (parseFloat(v) === ans || parseFloat(v) === parseFloat(String(ans))) {
         score += 10;
         stage.querySelector("#gzcScore").textContent = score;
-        fb.textContent = "🎉 对啦！";
+        fb.textContent = "🎉 对啦!";
         fb.style.color = "#059e76";
       } else {
-        fb.textContent = "🤔 应是 " + ans + "。" + (mode === "zc" ? "周长=(长+宽)×2" : "面积=长×宽");
+        fb.textContent = "🤔 应是 " + ans + "。" + explain;
         fb.style.color = "#e85d04";
       }
       nextQ();
@@ -8719,17 +8841,17 @@ window.GAMES = (function () {
       if (left <= 0) {
         clearTimer();
         setBest("zhouchang", score);
-        gameOver('<div class="go-emoji">📐</div><div style="color:#6b6e7f;font-size:14px">时间到！</div>', score, gameZhouchang, exitGame);
+        gameOver('<div class="go-emoji">📐</div><div style="color:#6b6e7f;font-size:14px">时间到!</div>', score, gameZhouchang, exitGame);
       }
     }, 1000);
   }
 
   /* =====================================================
-   * 游戏八：记忆翻翻乐（算式配答案）
+   * 游戏八:记忆翻翻乐(算式配答案)
    * ===================================================== */
   function gameFanpai() {
     var moves = 0, matched = 0, first = null, lock = false;
-    // 造 4 对：算式 + 答案
+    // 造 4 对:算式 + 答案
     var pairs = [];
     var used = {};
     while (pairs.length < 4) {
@@ -8749,7 +8871,7 @@ window.GAMES = (function () {
     cards = shuffle(cards);
     var html =
       '<div class="game-hud"><span class="hud-item">🃏 翻牌 <b id="gfpMoves">0</b> 次</span><span class="hud-item">✨ 配成 <b id="gfpMatch">0</b>/4</span></div>' +
-      '<div style="text-align:center;font-size:13px;color:var(--ink-2);margin:6px 0">把算式和它的答案配成一对吧！</div>' +
+      '<div style="text-align:center;font-size:13px;color:var(--ink-2);margin:6px 0">把算式和它的答案配成一对吧!</div>' +
       '<div class="fp-grid">';
     cards.forEach(function (c, i) {
       html += '<button class="fp-card" data-i="' + i + '"><span class="fp-back">❓</span><span class="fp-front">' + c.label + '</span></button>';
@@ -8780,7 +8902,7 @@ window.GAMES = (function () {
             if (matched === 4) {
               setBest("fanpai", moves);
               setTimeout(function () {
-                gameOver('<div class="go-emoji">🃏</div><div style="color:#6b6e7f;font-size:14px">全部配对成功！</div>', moves, gameFanpai, exitGame);
+                gameOver('<div class="go-emoji">🃏</div><div style="color:#6b6e7f;font-size:14px">全部配对成功!</div>', moves, gameFanpai, exitGame);
               }, 600);
             }
           }, 400);
@@ -8795,7 +8917,7 @@ window.GAMES = (function () {
   }
 
   /* =====================================================
-   * 速算大比拼（速算技巧 + 玩法）
+   * 速算大比拼(速算技巧 + 玩法)
    * ===================================================== */
   function genSuanQ(mode) {
     var q, ans, tip, kind;
@@ -8805,15 +8927,15 @@ window.GAMES = (function () {
       var delta = round - a;
       var b = rnd(11, 89);
       ans = a + b; q = a + " + " + b;
-      tip = "把 " + a + " 看成 " + round + "（多加了 " + delta + "）：" + round + " + " + b + " − " + delta + " = " + ans;
+      tip = "把 " + a + " 看成 " + round + "(多加了 " + delta + "):" + round + " + " + b + " - " + delta + " = " + ans;
     }
     function couzhengSub() {
       var nearRound = pick([98, 99, 198, 297, 498]);
       var round = Math.ceil(nearRound / 10) * 10;
       var delta = round - nearRound;
       var big = nearRound + rnd(50, 300);
-      ans = big - nearRound; q = big + " − " + nearRound;
-      tip = "把 " + nearRound + " 看成 " + round + "（多减了 " + delta + "）：" + big + " − " + round + " + " + delta + " = " + ans;
+      ans = big - nearRound; q = big + " - " + nearRound;
+      tip = "把 " + nearRound + " 看成 " + round + "(多减了 " + delta + "):" + big + " - " + round + " + " + delta + " = " + ans;
     }
     function mulSplit() {
       var a = pick([25, 125]);
@@ -8828,7 +8950,7 @@ window.GAMES = (function () {
       do { ab = rnd(12, 88); } while (Math.floor(ab / 10) + (ab % 10) >= 10);
       var a10 = Math.floor(ab / 10), a1 = ab % 10;
       ans = 11 * ab; q = "11 × " + ab;
-      tip = "两头一拉、中间相加：" + a10 + a1 + " → " + a10 + "，" + (a10 + a1) + "，" + a1 + " = " + ans;
+      tip = "两头一拉、中间相加:" + a10 + a1 + " → " + a10 + "," + (a10 + a1) + "," + a1 + " = " + ans;
     }
     function mul5() {
       var n = rnd(12, 96);
@@ -8840,7 +8962,7 @@ window.GAMES = (function () {
       var c = rnd(11, 89);
       ans = pair[0] + pair[1] + c;
       q = pair[0] + " + " + c + " + " + pair[1];
-      tip = "先凑整：" + pair[0] + " + " + pair[1] + " = " + (pair[0] + pair[1]) + "，再加 " + c + " = " + ans;
+      tip = "先凑整:" + pair[0] + " + " + pair[1] + " = " + (pair[0] + pair[1]) + ",再加 " + c + " = " + ans;
     }
     if (mode === "couzheng") { if (rnd(1, 2) === 1) couzhengAdd(); else couzhengSub(); }
     else if (mode === "chengfa") { kind = rnd(1, 3); if (kind === 1) mulSplit(); else if (kind === 2) mul11(); else mul5(); }
@@ -8850,26 +8972,35 @@ window.GAMES = (function () {
   }
 
   function gameSuan() {
-    stage.innerHTML =
-      '<h3 style="text-align:center;margin:10px 0 6px">🧮 速算大比拼</h3>' +
-      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:14px">学会巧算技巧，60 秒挑战！</div>' +
-      '<div style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto">' +
-      '<button class="btn green block" data-sm="couzheng">➕ 凑整加减法</button>' +
-      '<button class="btn blue block" data-sm="chengfa">✖️ 乘法巧算</button>' +
-      '<button class="btn ghost block" data-sm="lianjia">🔗 连加凑整</button>' +
-      '<button class="btn block" data-sm="zonghe">🏆 综合速算挑战</button>' +
-      '<button class="btn ghost block" id="gBack">← 返回</button></div>';
-    stage.querySelector("#gBack").onclick = exitGame;
-    stage.querySelectorAll("[data-sm]").forEach(function (b) {
-      b.onclick = function () { run(b.dataset.sm); };
-    });
+    /* 合并速算秘籍 + 速算大比拼:先展示技巧,再开始挑战 */
+    var showBook = true;
+    function renderBook() {
+      var html = '<div class="back-row"><button class="back-btn" id="gBack">‹</button><div class="page-title">🧮 速算秘籍 + 大比拼</div></div>' +
+        '<div class="card" style="font-size:13px;color:var(--ink-2)">掌握这些巧算技巧,算得又快又准!学完直接开始挑战~</div>';
+      SUANBOOK.forEach(function (t, i) {
+        html += '<div class="kp-card"><div class="kp-head"><span class="kp-num" style="background:#ff7a2f">' + (i + 1) + '</span>' + t.icon + ' ' + t.name + '</div>' +
+          '<div class="kp-body">' + t.html +
+          '<div class="kbox tip" style="margin-top:8px"><div class="kb-title">🌰 例子</div>' + t.ex + '</div></div></div>';
+      });
+      html += '<div style="margin:16px 0;display:flex;flex-direction:column;gap:10px;max-width:320px;margin:16px auto">' +
+        '<button class="btn green block" data-sm="couzheng">➕ 凑整加减法 · 挑战</button>' +
+        '<button class="btn blue block" data-sm="chengfa">✖️ 乘法巧算 · 挑战</button>' +
+        '<button class="btn block" data-sm="lianjia">🔗 连加凑整 · 挑战</button>' +
+        '<button class="btn block" data-sm="zonghe">🏆 综合速算挑战</button></div>';
+      stage.innerHTML = html;
+      stage.querySelector("#gBack").onclick = exitGame;
+      stage.querySelectorAll("[data-sm]").forEach(function (b) {
+        b.onclick = function () { showBook = false; run(b.dataset.sm); };
+      });
+    }
+    renderBook();
 
     function run(mode) {
       var left = 60, score = 0, cur = null;
       function nextQ() {
         cur = genSuanQ(mode);
         stage.querySelector(".game-q").textContent = cur.q + " = ?";
-        stage.querySelector("#suanTip").innerHTML = "💡 想一想，能不能用巧算？";
+        stage.querySelector("#suanTip").innerHTML = "💡 想一想,能不能用巧算?";
         var inp = stage.querySelector(".game-input");
         inp.value = "";
         suanLocked = false;
@@ -8916,7 +9047,7 @@ window.GAMES = (function () {
           clearTimer();
           setBest("suan" + mode, score);
           confetti();
-          gameOver('<div class="go-emoji">🧮</div><div style="color:#6b6e7f;font-size:14px">时间到！你答对 ' + score + ' 题</div>',
+          gameOver('<div class="go-emoji">🧮</div><div style="color:#6b6e7f;font-size:14px">时间到!你答对 ' + score + ' 题</div>',
             score, gameSuan, exitGame);
         }
       }, 1000);
@@ -8924,20 +9055,20 @@ window.GAMES = (function () {
   }
 
   /* =====================================================
-   * 速算秘籍（技巧知识面板）
+   * 速算秘籍(技巧知识面板)
    * ===================================================== */
   var SUANBOOK = [
-    { name: "凑整加法", icon: "➕", html: "把一个加数看成接近的整十/整百数，先凑整再加，最后<b>减去多加的部分</b>。", ex: "98 + 45 = 100 + 45 − 2 = <b>143</b>" },
-    { name: "减法凑整", icon: "➖", html: "把减数看成接近的整十/整百数，先减整数，再<b>加回多减的部分</b>。", ex: "500 − 298 = 500 − 300 + 2 = <b>202</b>" },
-    { name: "乘法拆分（分配律）", icon: "✖️", html: "把一个因数拆成好算的数相乘，利用 <b>25×4=100、125×8=1000</b>。", ex: "25 × 44 = 25×4×11 = 100×11 = <b>1100</b>" },
-    { name: "乘 11 速算", icon: "🔢", html: "两位数乘 11：<b>两头一拉，中间相加</b>（相邻两位之和放中间）。", ex: "11 × 35 = 3（3+5=8）5 = <b>385</b>" },
+    { name: "凑整加法", icon: "➕", html: "把一个加数看成接近的整十/整百数,先凑整再加,最后<b>减去多加的部分</b>。", ex: "98 + 45 = 100 + 45 - 2 = <b>143</b>" },
+    { name: "减法凑整", icon: "➖", html: "把减数看成接近的整十/整百数,先减整数,再<b>加回多减的部分</b>。", ex: "500 - 298 = 500 - 300 + 2 = <b>202</b>" },
+    { name: "乘法拆分(分配律)", icon: "✖️", html: "把一个因数拆成好算的数相乘,利用 <b>25×4=100、125×8=1000</b>。", ex: "25 × 44 = 25×4×11 = 100×11 = <b>1100</b>" },
+    { name: "乘 11 速算", icon: "🔢", html: "两位数乘 11:<b>两头一拉,中间相加</b>(相邻两位之和放中间)。", ex: "11 × 35 = 3(3+5=8)5 = <b>385</b>" },
     { name: "乘 5 速算", icon: "⚡", html: "一个数乘 5 = <b>先乘 10 再除以 2</b>。", ex: "48 × 5 = 480 ÷ 2 = <b>240</b>" },
-    { name: "连加凑整（结合律）", icon: "🔗", html: "连加时先找<b>能凑成整十/整百的两个数</b>，先加它们。", ex: "36 + 28 + 64 = (36+64) + 28 = <b>128</b>" },
-    { name: "接近整百的乘法", icon: "🎯", html: "把因数看成整百数，用分配律展开：<b>(100−1)×a = 100a − a</b>。", ex: "99 × 7 = 100×7 − 7 = <b>693</b>" }
+    { name: "连加凑整(结合律)", icon: "🔗", html: "连加时先找<b>能凑成整十/整百的两个数</b>,先加它们。", ex: "36 + 28 + 64 = (36+64) + 28 = <b>128</b>" },
+    { name: "接近整百的乘法", icon: "🎯", html: "把因数看成整百数,用分配律展开:<b>(100-1)×a = 100a - a</b>。", ex: "99 × 7 = 100×7 - 7 = <b>693</b>" }
   ];
   function gameSuanBook() {
     var html = '<div class="back-row"><button class="back-btn" id="gBack">‹</button><div class="page-title">📖 速算秘籍</div></div>' +
-      '<div class="card" style="font-size:13px;color:var(--ink-2)">掌握这些巧算技巧，算得又快又准！看完去「速算大比拼」练一练～</div>';
+      '<div class="card" style="font-size:13px;color:var(--ink-2)">掌握这些巧算技巧,算得又快又准!看完去「速算大比拼」练一练~</div>';
     SUANBOOK.forEach(function (t, i) {
       html += '<div class="kp-card"><div class="kp-head"><span class="kp-num" style="background:#ff7a2f">' + (i + 1) + '</span>' + t.icon + ' ' + t.name + '</div>' +
         '<div class="kp-body">' + t.html +
@@ -8950,7 +9081,7 @@ window.GAMES = (function () {
   }
 
   /* =====================================================
-   * 算盘拨数（认识数位）
+   * 算盘拨数(认识数位)
    * ===================================================== */
   function gameAbacus() {
     var RODN = 4, labels = ["千", "百", "十", "个"];
@@ -8960,7 +9091,7 @@ window.GAMES = (function () {
     function pickLevel() {
       stage.innerHTML =
         '<h3 style="text-align:center;margin:10px 0 6px">🧮 算盘拨数</h3>' +
-        '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:14px">拨动算珠，表示出目标数字（上珠=5，下珠=1）</div>' +
+        '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:14px">拨动算珠,表示出目标数字(上珠=5,下珠=1)</div>' +
         '<div style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto">' +
         '<button class="btn green block" data-al="2">🌱 两位数</button>' +
         '<button class="btn blue block" data-al="3">🚀 三位数</button>' +
@@ -8989,7 +9120,7 @@ window.GAMES = (function () {
     function draw() {
       var html = '<div class="game-hud">' +
         '<span class="hud-item">⭐ 答对 ' + score + '</span>' +
-        '<span class="hud-item">🎯 目标：<b style="color:#ff7a2f">' + target + '</b></span>' +
+        '<span class="hud-item">🎯 目标:<b style="color:#ff7a2f">' + target + '</b></span>' +
         '<span class="hud-item"><button id="gBack" style="color:#a8a9b5;font-size:12px">退出</button></span></div>' +
         '<div class="abacus">';
       for (var r = 0; r < RODN; r++) {
@@ -9004,7 +9135,7 @@ window.GAMES = (function () {
         html += '</div><div class="ab-label">' + labels[r] + '</div></div>';
       }
       html += '</div>' +
-        '<div style="text-align:center;font-size:13px;color:#6b6e7f;margin-top:6px">你拨出的数：<b id="abVal" style="color:#3a86ff">' + abacusValue() + '</b></div>' +
+        '<div style="text-align:center;font-size:13px;color:#6b6e7f;margin-top:6px">你拨出的数:<b id="abVal" style="color:#3a86ff">' + abacusValue() + '</b></div>' +
         '<div style="display:flex;gap:10px;max-width:300px;margin:12px auto 0">' +
         '<button class="btn ghost block" id="abReset">清空</button>' +
         '<button class="btn block" id="abCheck">✅ 检查</button></div>';
@@ -9018,7 +9149,7 @@ window.GAMES = (function () {
           if (roundN >= 10) { setTimeout(function () { setBest("abacus", score); gameOver('<div class="go-emoji">🧮</div><div style="color:#6b6e7f;font-size:14px">10 题答对 ' + score + ' 题</div>', score, gameAbacus, exitGame); }, 700); }
           else setTimeout(function () { round(); }, 700);
         } else {
-          stage.querySelector("#abVal").textContent = abacusValue() + "（不对哦，再想想）";
+          stage.querySelector("#abVal").textContent = abacusValue() + "(不对哦,再想想)";
           stage.querySelector("#abVal").style.color = "#ef476f";
         }
       };
@@ -9038,10 +9169,10 @@ window.GAMES = (function () {
   }
 
   /* =====================================================
-   * 数感大冒险（数学常识 / 数感训练）
+   * 数感大冒险(数学常识 / 数感训练)
    * ===================================================== */
     /* =====================================================
-   * 数感大冒险 —— 题目已逐条校对，一局内不重复
+   * 数感大冒险 -- 题目已逐条校对,一局内不重复
    * ===================================================== */
   function makeOpts(correct, distract) {
     var set = [correct], guard = 0;
@@ -9054,84 +9185,172 @@ window.GAMES = (function () {
     return shuffle(set);
   }
   function genShushuQ(maxDigits) {
-    var kind = rnd(1, 7);
-    if (kind === 1) { /* 几个十 / 几个百 */
+    var kind = rnd(1, 18);
+    if (kind === 1) { /* 几个十 / 几个百 / 几个千 */
+      if (maxDigits >= 4) {
+        var th = rnd(1, 9), n4 = th * 1000;
+        return { q: n4 + " 里面有(  )个千。", opts: makeOpts(th, function () { return th + rnd(-3, 3); }), ans: th };
+      }
       if (maxDigits >= 3 && Math.random() < 0.5) {
         var h = rnd(1, 9), n = h * 100;
-        return { q: n + " 里面有（  ）个百。", opts: makeOpts(h, function () { return h + rnd(-3, 3); }), ans: h };
+        return { q: n + " 里面有(  )个百。", opts: makeOpts(h, function () { return h + rnd(-3, 3); }), ans: h };
       }
       var t = rnd(2, 9), n2 = t * 10;
-      return { q: n2 + " 里面有（  ）个十。", opts: makeOpts(t, function () { return t + rnd(-3, 3); }), ans: t };
+      return { q: n2 + " 里面有(  )个十。", opts: makeOpts(t, function () { return t + rnd(-3, 3); }), ans: t };
     }
-    if (kind === 2) { /* 数的组成：几个十和几个一合起来 */
+    if (kind === 2) { /* 数的组成 */
+      if (maxDigits >= 4) {
+        var th2 = rnd(1, 9), hh2 = rnd(0, 9), tt2 = rnd(0, 9);
+        var num4 = th2 * 1000 + hh2 * 100 + tt2 * 10;
+        return { q: th2 + " 个千、" + hh2 + " 个百和 " + tt2 + " 个十,合起来是(  )。", opts: makeOpts(num4, function () { return num4 + rnd(-50, 50) * 10; }), ans: num4 };
+      }
       var tt = rnd(1, maxDigits >= 3 ? 9 : 8), uu = rnd(1, 9);
       var num = tt * 10 + uu;
-      return { q: tt + " 个十和 " + uu + " 个一，合起来是（  ）。", opts: makeOpts(num, function () { return num + rnd(-12, 12); }), ans: num };
+      return { q: tt + " 个十和 " + uu + " 个一,合起来是(  )。", opts: makeOpts(num, function () { return num + rnd(-12, 12); }), ans: num };
     }
-    if (kind === 3) { /* 数位：某数字在哪一位 */
-      var n3, askDigit, placeAns;
-      if (maxDigits >= 3) {
-        n3 = rnd(100, 999);
-        var s3 = String(n3), pos = rnd(0, 2);
-        askDigit = s3[pos];
-        placeAns = ["百", "十", "个"][pos];
-        return { q: "在 " + n3 + " 中，数字 " + askDigit + " 在（  ）位上。", opts: shuffle(["百", "十", "个", "千"]), ans: placeAns };
+    if (kind === 3) { /* 数位 */
+      if (maxDigits >= 4) {
+        var n3k = rnd(1000, 9999), s3k = String(n3k), pos3k = rnd(0, 3);
+        return { q: "在 " + n3k + " 中,数字 " + s3k[pos3k] + " 在(  )位上。", opts: shuffle(["千", "百", "十", "个"]), ans: ["千", "百", "十", "个"][pos3k] };
       }
-      n3 = rnd(11, 99);
-      var pos2 = rnd(0, 1);
-      askDigit = String(n3)[pos2];
-      placeAns = ["十", "个"][pos2];
-      return { q: "在 " + n3 + " 中，数字 " + askDigit + " 在（  ）位上。", opts: shuffle(["十", "个", "百", "千"]), ans: placeAns };
+      if (maxDigits >= 3) {
+        var n3 = rnd(100, 999), s3 = String(n3), pos = rnd(0, 2);
+        return { q: "在 " + n3 + " 中,数字 " + s3[pos] + " 在(  )位上。", opts: shuffle(["百", "十", "个", "千"]), ans: ["百", "十", "个"][pos] };
+      }
+      var n3b = rnd(11, 99), pos2 = rnd(0, 1);
+      return { q: "在 " + n3b + " 中,数字 " + String(n3b)[pos2] + " 在(  )位上。", opts: shuffle(["十", "个", "百", "千"]), ans: ["十", "个"][pos2] };
     }
-    if (kind === 4) { /* 比大小：四个数选最大/最小 */
+    if (kind === 4) { /* 比大小:四个数选最大/最小 */
       var hi = maxDigits >= 3 ? 999 : 99, lo = maxDigits >= 3 ? 100 : 10;
       var nums = [], g = 0;
       while (nums.length < 4 && g < 60) { g++; var x = rnd(lo, hi); if (nums.indexOf(x) === -1) nums.push(x); }
       var wantMax = Math.random() < 0.5;
       var target = wantMax ? Math.max.apply(null, nums) : Math.min.apply(null, nums);
-      return { q: "下面哪个数" + (wantMax ? "最大" : "最小") + "？", opts: shuffle(nums.slice()), ans: target };
+      return { q: "下面哪个数" + (wantMax ? "最大" : "最小") + "?", opts: shuffle(nums.slice()), ans: target };
     }
     if (kind === 5) { /* 相邻数 */
       var n5 = rnd(15, Math.pow(10, maxDigits) - 2);
-      var next = Math.random() < 0.5;
-      var correct5 = next ? n5 + 1 : n5 - 1;
-      return { q: n5 + " " + (next ? "后面" : "前面") + "的一个数是（  ）。", opts: makeOpts(correct5, function () { return correct5 + rnd(-3, 3); }), ans: correct5 };
+      var next5 = Math.random() < 0.5;
+      var correct5 = next5 ? n5 + 1 : n5 - 1;
+      return { q: n5 + " " + (next5 ? "后面" : "前面") + "的一个数是(  )。", opts: makeOpts(correct5, function () { return correct5 + rnd(-3, 3); }), ans: correct5 };
     }
-    if (kind === 6) { /* 整十整百的读写认识 */
+    if (kind === 6) { /* 整十整百的读写 */
       if (maxDigits >= 3) {
         var hh = rnd(1, 9), tens2 = rnd(0, 9);
         var val6 = hh * 100 + tens2 * 10;
-        return { q: "一个数由 " + hh + " 个百和 " + tens2 + " 个十组成，它是（  ）。", opts: makeOpts(val6, function () { return val6 + rnd(-30, 30); }), ans: val6 };
+        return { q: "一个数由 " + hh + " 个百和 " + tens2 + " 个十组成,它是(  )。", opts: makeOpts(val6, function () { return val6 + rnd(-30, 30); }), ans: val6 };
       }
       var a6 = rnd(2, 9), b6 = rnd(2, 9);
-      var sum6 = a6 * 10 + b6;
-      return { q: a6 + "0 加上 " + b6 + " 等于（  ）。", opts: makeOpts(sum6, function () { return sum6 + rnd(-10, 10); }), ans: sum6 };
+      return { q: a6 + "0 加上 " + b6 + " 等于(  )。", opts: makeOpts(a6 * 10 + b6, function () { return a6 * 10 + b6 + rnd(-10, 10); }), ans: a6 * 10 + b6 };
     }
-    /* 数学常识（固定答案，绝不重复由去重保证） */
-    var items = [
-      { q: "一个星期有几天？", a: 7, d: function () { return rnd(5, 9); } },
-      { q: "一年有几个月？", a: 12, d: function () { return rnd(9, 14); } },
-      { q: "一天有几个小时？", a: 24, d: function () { return pick([12, 20, 24, 36]); } },
-      { q: "1 米等于多少厘米？", a: 100, d: function () { return pick([10, 50, 100, 1000]); } },
-      { q: "1 千米等于多少米？", a: 1000, d: function () { return pick([100, 500, 1000, 10000]); } },
-      { q: "1 千克等于多少克？", a: 1000, d: function () { return pick([100, 500, 1000, 10000]); } },
-      { q: "1 小时等于多少分钟？", a: 60, d: function () { return pick([30, 60, 90, 100]); } },
-      { q: "三角形有几条边？", a: 3, d: function () { return rnd(2, 5); } },
-      { q: "正方形有几个直角？", a: 4, d: function () { return rnd(2, 6); } },
-      { q: "钟面上时针走一大格是几小时？", a: 1, d: function () { return rnd(1, 4); } },
-      { q: "一打铅笔有多少支？", a: 12, d: function () { return pick([10, 12, 15, 20]); } }
-    ];
-    var it = pick(items);
-    return { q: it.q, opts: makeOpts(it.a, it.d), ans: it.a };
+    /* --- 新增中年级题型 --- */
+    if (kind === 7 && maxDigits >= 3) { /* 估算 */
+      var a7 = rnd(100, 900), b7 = rnd(100, 900);
+      var exactSum = a7 + b7;
+      var estSum = Math.round(a7 / 100) * 100 + Math.round(b7 / 100) * 100;
+      return { q: "估算:" + a7 + " + " + b7 + " 大约等于(  )。(四舍五入到百位)", opts: makeOpts(estSum, function () { return estSum + pick([-200, -100, 100, 200]); }), ans: estSum };
+    }
+    if (kind === 8 && maxDigits >= 3) { /* 数位值:某位上的数字表示多少 */
+      var n8 = rnd(100, 9999), s8 = String(n8), pos8 = rnd(0, s8.length - 1);
+      var digitVal = parseInt(s8[pos8]) * Math.pow(10, s8.length - 1 - pos8);
+      var placeNames = { 1: "个", 10: "十", 100: "百", 1000: "千" };
+      var pw = Math.pow(10, s8.length - 1 - pos8);
+      return { q: n8 + " 中,数字 " + s8[pos8] + " 表示(  )。", opts: makeOpts(digitVal, function () { return parseInt(s8[pos8]) * pick([1, 10, 100, 1000]); }), ans: digitVal };
+    }
+    if (kind === 9 && maxDigits >= 3) { /* 从小到大排列选第N个 */
+      var arr9 = [], g9 = 0;
+      while (arr9.length < 4 && g9 < 60) { g9++; var v = rnd(100, 999); if (arr9.indexOf(v) === -1) arr9.push(v); }
+      var sorted9 = arr9.slice().sort(function (a, b) { return a - b; });
+      var asc = Math.random() < 0.5;
+      var idx9 = rnd(0, 3);
+      var result9 = asc ? sorted9[idx9] : sorted9[3 - idx9];
+      return { q: "把 " + arr9.join("、") + " 按" + (asc ? "从小到大" : "从大到小") + "排列,第 " + (idx9 + 1) + " 个数是(  )。", opts: shuffle(arr9.slice()), ans: result9 };
+    }
+    if (kind === 10 && maxDigits >= 3) { /* 近似数 */
+      var n10 = rnd(100, 9999);
+      var roundTo = maxDigits >= 4 && n10 >= 1000 ? 1000 : 100;
+      var approx = Math.round(n10 / roundTo) * roundTo;
+      var unitName = roundTo === 1000 ? "千" : "百";
+      return { q: n10 + " 四舍五入到" + unitName + "位约是(  )。", opts: makeOpts(approx, function () { return approx + pick([-roundTo, roundTo, roundTo * 2]); }), ans: approx };
+    }
+    if (kind === 11 && maxDigits >= 3) { /* 倍数关系 */
+      var base11 = rnd(2, 9), times11 = rnd(2, 8);
+      var result11 = base11 * times11;
+      return { q: result11 + " 是 " + base11 + " 的(  )倍。", opts: makeOpts(times11, function () { return times11 + rnd(-2, 3); }), ans: times11 };
+    }
+    if (kind === 12 && maxDigits >= 3) { /* 两数相差多少 */
+      var big12 = rnd(200, 900), small12 = rnd(100, big12 - 10);
+      return { q: big12 + " 比 " + small12 + " 多(  )。", opts: makeOpts(big12 - small12, function () { return big12 - small12 + pick([-20, -10, 10, 20, 30]); }), ans: big12 - small12 };
+    }
+    if (kind === 13) { /* 数的范围:最接近的整十/整百 */
+      var n13 = rnd(11, maxDigits >= 3 ? 999 : 99);
+      var nearTen = Math.round(n13 / 10) * 10;
+      return { q: "最接近 " + n13 + " 的整十数是(  )。", opts: makeOpts(nearTen, function () { return nearTen + pick([-20, -10, 10, 20]); }), ans: nearTen };
+    }
+    if (kind === 14 && maxDigits >= 3) { /* 数的拆分 */
+      var n14 = rnd(100, 999);
+      var thou = 0, hund = Math.floor(n14 / 100), ten = Math.floor((n14 % 100) / 10), one = n14 % 10;
+      var askPart = rnd(0, 2);
+      var parts = [hund + " 个百", ten + " 个十", one + " 个一"];
+      var ansParts = [hund * 100, ten * 10, one];
+      return { q: n14 + " = " + hund + "00 + (  ) + " + one + ",括号里填(  )。", opts: makeOpts(ten * 10, function () { return pick([10, 20, 30, 40, 50, 60, 70, 80, 90]); }), ans: ten * 10 };
+    }
+    if (kind === 15 && maxDigits >= 3) { /* 比较大小:填 > < = */
+      var a15 = rnd(100, 999), b15 = rnd(100, 999);
+      if (Math.random() < 0.15) b15 = a15; /* 偶尔相等 */
+      var rel = a15 > b15 ? ">" : (a15 < b15 ? "<" : "=");
+      return { q: a15 + " ○ " + b15 + ",○ 里应填(  )。", opts: shuffle([">", "<", "=", "≈"]), ans: rel };
+    }
+    if (kind === 16 && maxDigits >= 3) { /* 中间有0的数的读法 */
+      var items16 = [
+        { q: "305 读作(  )。", opts: shuffle(["三百零五", "三百五", "三零五", "三五"]), ans: "三百零五" },
+        { q: "420 读作(  )。", opts: shuffle(["四百二十", "四百二", "四二零", "四二"]), ans: "四百二十" },
+        { q: "一千零一 写作(  )。", opts: shuffle(["1001", "101", "1100", "1010"]), ans: "1001" },
+        { q: "二千零三十 写作(  )。", opts: shuffle(["2030", "2300", "230", "2003"]), ans: "2030" },
+        { q: "5006 读作(  )。", opts: shuffle(["五千零六", "五千六", "五零零六", "五六"]), ans: "五千零六" }
+      ];
+      return pick(items16);
+    }
+    if (kind === 17) { /* 数学常识(扩充版) */
+      var items = [
+        { q: "一个星期有几天?", a: 7, d: function () { return rnd(5, 9); } },
+        { q: "一年有几个月?", a: 12, d: function () { return rnd(9, 14); } },
+        { q: "一天有几个小时?", a: 24, d: function () { return pick([12, 20, 24, 36]); } },
+        { q: "1 米等于多少厘米?", a: 100, d: function () { return pick([10, 50, 100, 1000]); } },
+        { q: "1 千米等于多少米?", a: 1000, d: function () { return pick([100, 500, 1000, 10000]); } },
+        { q: "1 千克等于多少克?", a: 1000, d: function () { return pick([100, 500, 1000, 10000]); } },
+        { q: "1 小时等于多少分钟?", a: 60, d: function () { return pick([30, 60, 90, 100]); } },
+        { q: "三角形有几条边?", a: 3, d: function () { return rnd(2, 5); } },
+        { q: "正方形有几个直角?", a: 4, d: function () { return rnd(2, 6); } },
+        { q: "钟面上时针走一大格是几小时?", a: 1, d: function () { return rnd(1, 4); } },
+        { q: "一打铅笔有多少支?", a: 12, d: function () { return pick([10, 12, 15, 20]); } }
+      ];
+      if (maxDigits >= 3) {
+        items = items.concat([
+          { q: "1 吨等于多少千克?", a: 1000, d: function () { return pick([100, 500, 1000, 10000]); } },
+          { q: "平年二月有多少天?", a: 28, d: function () { return pick([27, 28, 29, 30]); } },
+          { q: "闰年二月有多少天?", a: 29, d: function () { return pick([27, 28, 29, 30]); } },
+          { q: "一年有几个季度?", a: 4, d: function () { return rnd(2, 6); } },
+          { q: "1 公顷等于多少平方米?", a: 10000, d: function () { return pick([100, 1000, 10000, 100000]); } },
+          { q: "圆的周长公式中 π 约等于多少?(保留两位小数)", a: "3.14", d: function () { return pick(["3.12", "3.14", "3.16", "3.41"]); } }
+        ]);
+      }
+      var it = pick(items);
+      return { q: it.q, opts: makeOpts(it.a, it.d), ans: it.a };
+    }
+    /* 规律数列:找下一个数 */
+    var start18 = rnd(2, 20), diff18 = rnd(2, maxDigits >= 3 ? 15 : 8);
+    var seq18 = [start18, start18 + diff18, start18 + 2 * diff18, start18 + 3 * diff18];
+    return { q: "找规律填数:" + seq18.join("、") + "、(  )", opts: makeOpts(start18 + 4 * diff18, function () { return start18 + 4 * diff18 + pick([-diff18, diff18, rnd(1, 5)]); }), ans: start18 + 4 * diff18 };
   }
 
   function gameShushu() {
     stage.innerHTML =
       '<h3 style="text-align:center;margin:10px 0 6px">🔢 数感大冒险</h3>' +
-      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:14px">数的组成、数位、比大小、数学常识，10 题不重复！</div>' +
+      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:14px">数的组成、数位、比大小、数学常识,10 题不重复!</div>' +
       '<div style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto">' +
-      '<button class="btn green block" data-ss="2">🌱 低年级（100 以内）</button>' +
-      '<button class="btn blue block" data-ss="3">🚀 中年级（千以内）</button>' +
+      '<button class="btn green block" data-ss="2">🌱 低年级(100 以内)</button>' +
+      '<button class="btn blue block" data-ss="3">🚀 中年级(千以内)</button>' +
       '<button class="btn ghost block" id="gBack">← 返回</button></div>';
     stage.querySelector("#gBack").onclick = exitGame;
     stage.querySelectorAll("[data-ss]").forEach(function (b) {
@@ -9215,10 +9434,10 @@ window.GAMES = (function () {
   function gameClock() {
     stage.innerHTML =
       '<h3 style="text-align:center;margin:10px 0 6px">⏰ 时钟练习</h3>' +
-      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:14px">看钟面读时间，认识时针和分针</div>' +
+      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:14px">看钟面读时间,认识时针和分针</div>' +
       '<div style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto">' +
       '<button class="btn green block" data-cl="easy">🌱 整点与半点</button>' +
-      '<button class="btn blue block" data-cl="hard">🚀 任意时刻（5分一档）</button>' +
+      '<button class="btn blue block" data-cl="hard">🚀 任意时刻(5分一档)</button>' +
       '<button class="btn ghost block" id="gBack">← 返回</button></div>';
     stage.querySelector("#gBack").onclick = exitGame;
     stage.querySelectorAll("[data-cl]").forEach(function (b) {
@@ -9243,7 +9462,7 @@ window.GAMES = (function () {
           '<div class="game-hud"><span class="hud-item">⭐ ' + score + '</span>' +
           '<span class="hud-item">📋 第 ' + roundN + ' 题</span>' +
           '<span class="hud-item"><button id="gBack" style="color:#a8a9b5;font-size:12px">退出</button></span></div>' +
-          '<div style="text-align:center;font-size:14px;color:#6b6e7f;margin-bottom:4px">现在钟面上是几点？</div>' +
+          '<div style="text-align:center;font-size:14px;color:#6b6e7f;margin-bottom:4px">现在钟面上是几点?</div>' +
           drawClock(h, m) +
           '<div class="game-opts">' + opts.map(function (o) { return '<button class="game-opt" data-v="' + o + '">' + o + '</button>'; }).join("") + '</div>';
         stage.querySelector("#gBack").onclick = exitGame;
@@ -9264,40 +9483,106 @@ window.GAMES = (function () {
    * ===================================================== */
   function gcd(a, b) { while (b) { var t = a % b; a = b; b = t; } return a; }
   function gameHuajian() {
-    var score = 0, roundN = 0, answered = false;
-    function nextRound() {
-      roundN++; answered = false;
-      if (roundN > 10) { setBest("huajian", score); gameOver('<div class="go-emoji">✂️</div><div style="color:#6b6e7f;font-size:14px">10 题答对 ' + score + ' 题</div>', score, gameHuajian, exitGame); return; }
-      var p = rnd(1, 5), q = rnd(p + 1, 9);
-      while (gcd(p, q) !== 1) q = rnd(p + 1, 9);
-      var k = rnd(2, 5);
-      var a = p * k, b = q * k;
-      var correct = p + "/" + q;
-      var opts = [correct];
-      while (opts.length < 4) {
-        var ep = rnd(1, 6), eq = rnd(ep + 1, 9);
-        while (gcd(ep, eq) !== 1) eq = rnd(ep + 1, 9);
-        var c = ep + "/" + eq;
-        if (opts.indexOf(c) === -1 && !(ep === p && eq === q)) opts.push(c);
-      }
-      opts = shuffle(opts);
-      stage.innerHTML =
-        '<div class="game-hud"><span class="hud-item">⭐ ' + score + '</span>' +
-        '<span class="hud-item">📋 第 ' + roundN + ' 题</span>' +
-        '<span class="hud-item"><button id="gBack" style="color:#a8a9b5;font-size:12px">退出</button></span></div>' +
-        '<div class="game-q" style="font-size:26px">' + a + ' / ' + b + '</div>' +
-        '<div style="text-align:center;font-size:13px;color:#6b6e7f;margin-bottom:6px">把它化成最简分数</div>' +
-        '<div class="game-opts">' + opts.map(function (o) { return '<button class="game-opt" data-v="' + o + '">' + o + '</button>'; }).join("") + '</div>';
-      stage.querySelector("#gBack").onclick = exitGame;
-      stage.querySelectorAll(".game-opt").forEach(function (btn) {
-        btn.onclick = function () {
+    /* 分数综合训练：4个子模式 */
+    stage.innerHTML =
+      '<h3 style="text-align:center;margin:10px 0 6px">✂️ 分数综合训练</h3>' +
+      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:14px">约分·化小数·比大小·平方根，四种练习</div>' +
+      '<div style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto">' +
+      '<button class="btn green block" data-hj="jian">✂️ 约分化简</button>' +
+      '<button class="btn blue block" data-hj="f2s">🔁 分数化小数</button>' +
+      '<button class="btn block" data-hj="cmp">⚖️ 分数比大小</button>' +
+      '<button class="btn block" data-hj="sqrt">√ 平方根</button>' +
+      '<button class="btn ghost block" id="gBack">← 返回</button></div>';
+    stage.querySelector("#gBack").onclick = exitGame;
+    stage.querySelectorAll("[data-hj]").forEach(function (b) {
+      b.onclick = function () { runSub(b.dataset.hj); };
+    });
+
+    function runSub(sub) {
+      var score = 0, roundN = 0, answered = false;
+      function nextRound() {
+        roundN++; answered = false;
+        if (roundN > 10) { setBest("huajian_" + sub, score); gameOver('<div class="go-emoji">✂️</div><div style="color:#6b6e7f;font-size:14px">10 题答对 ' + score + ' 题</div>', score, gameHuajian, exitGame); return; }
+
+        var qHtml = "", correctAns = "", opts = [], isInput = false;
+
+        if (sub === "jian") {
+          var p = rnd(1, 5), q = rnd(p + 1, 9);
+          while (gcd(p, q) !== 1) q = rnd(p + 1, 9);
+          var k = rnd(2, 5);
+          var a = p * k, b = q * k;
+          correctAns = p + "/" + q;
+          opts = [correctAns];
+          while (opts.length < 4) {
+            var ep = rnd(1, 6), eq = rnd(ep + 1, 9);
+            while (gcd(ep, eq) !== 1) eq = rnd(ep + 1, 9);
+            var c = ep + "/" + eq;
+            if (opts.indexOf(c) === -1 && !(ep === p && eq === q)) opts.push(c);
+          }
+          opts = shuffle(opts);
+          qHtml = '<div class="game-q" style="font-size:26px">' + a + ' / ' + b + '</div><div style="text-align:center;font-size:13px;color:#6b6e7f;margin-bottom:6px">把它化成最简分数</div>';
+        } else if (sub === "f2s") {
+          var dens2 = [2, 4, 5, 8, 10, 20, 25];
+          var den2 = pick(dens2), num2 = rnd(1, den2 - 1);
+          var dec2 = num2 / den2;
+          correctAns = String(Math.round(dec2 * 10000) / 10000);
+          isInput = true;
+          qHtml = '<div class="game-q" style="font-size:28px">' + num2 + ' / ' + den2 + ' = ?</div><div style="text-align:center;font-size:13px;color:#6b6e7f;margin-bottom:6px">把分数化成小数</div>';
+        } else if (sub === "cmp") {
+          var d1 = pick([2, 3, 4, 5, 6, 8, 10]), n1 = rnd(1, d1 - 1);
+          var d2 = pick([2, 3, 4, 5, 6, 8, 10]), n2 = rnd(1, d2 - 1);
+          var v1 = n1 / d1, v2 = n2 / d2;
+          if (Math.abs(v1 - v2) < 0.001) { n2 = (n2 % (d2 - 1)) + 1; v2 = n2 / d2; }
+          correctAns = v1 > v2 ? n1 + "/" + d1 + " 大" : (v1 < v2 ? n2 + "/" + d2 + " 大" : "一样大");
+          opts = [n1 + "/" + d1 + " 大", n2 + "/" + d2 + " 大", "一样大"];
+          if (opts.length < 3) opts.push("无法比较");
+          opts = shuffle(opts);
+          qHtml = '<div class="game-q" style="font-size:22px">' + n1 + '/' + d1 + ' ○ ' + n2 + '/' + d2 + '</div><div style="text-align:center;font-size:13px;color:#6b6e7f;margin-bottom:6px">哪个分数更大？</div>';
+        } else { /* sqrt */
+          var n3 = rnd(2, 15);
+          correctAns = String(n3);
+          isInput = true;
+          qHtml = '<div class="game-q" style="font-size:32px">√' + (n3 * n3) + ' = ?</div><div style="text-align:center;font-size:13px;color:#6b6e7f;margin-bottom:6px">求平方根</div>';
+        }
+
+        var inputHtml;
+        if (isInput) {
+          inputHtml = '<div class="game-input-row"><input class="game-input" id="gInput" inputmode="decimal" autocomplete="off"><button class="btn" id="gOk">确定</button></div>';
+        } else {
+          inputHtml = '<div class="game-opts">' + opts.map(function (o) { return '<button class="game-opt" data-v="' + o + '">' + o + '</button>'; }).join("") + '</div>';
+        }
+
+        stage.innerHTML =
+          '<div class="game-hud"><span class="hud-item">⭐ ' + score + '</span>' +
+          '<span class="hud-item">📋 第 ' + roundN + ' 题</span>' +
+          '<span class="hud-item"><button id="gBack" style="color:#a8a9b5;font-size:12px">退出</button></span></div>' +
+          qHtml + inputHtml +
+          '<div id="hjfb" style="text-align:center;font-size:13px;margin-top:8px;min-height:18px"></div>';
+        stage.querySelector("#gBack").onclick = exitGame;
+
+        function check(val) {
           if (answered) return; answered = true;
-          if (btn.dataset.v === correct) { score++; btn.classList.add("correct"); if(window.SND)SND.correct(); setTimeout(function () { GARDEN.addPoints(0.5, "化简答对"); nextRound(); }, 650); }
-          else { btn.classList.add("wrong"); stage.querySelectorAll(".game-opt").forEach(function (x) { if (x.dataset.v === correct) x.classList.add("correct"); }); setTimeout(nextRound, 1100); }
-        };
-      });
+          var ok = String(val).trim() === String(correctAns) || (sub === "f2s" && Math.abs(parseFloat(val) - parseFloat(correctAns)) < 0.001);
+          var fb = stage.querySelector("#hjfb");
+          if (ok) { score++; fb.textContent = "🎉 对啦！"; fb.style.color = "#059e76"; if (window.SND) SND.correct(); GARDEN.addPoints(0.5, "分数训练答对"); }
+          else { fb.textContent = "🤔 答案是 " + correctAns; fb.style.color = "#e85d04"; if (window.SND) SND.wrong();
+            stage.querySelectorAll(".game-opt").forEach(function (x) { if (x.dataset.v === correctAns) x.classList.add("correct"); });
+          }
+          setTimeout(nextRound, ok ? 650 : 1200);
+        }
+
+        if (isInput) {
+          var inp = stage.querySelector("#gInput"); inp.focus();
+          stage.querySelector("#gOk").onclick = function () { check(inp.value); };
+          inp.onkeydown = function (e) { if (e.key === "Enter") check(inp.value); };
+        } else {
+          stage.querySelectorAll(".game-opt").forEach(function (btn) {
+            btn.onclick = function () { check(btn.dataset.v); };
+          });
+        }
+      }
+      nextRound();
     }
-    nextRound();
   }
 
   /* =====================================================
@@ -9306,12 +9591,12 @@ window.GAMES = (function () {
   function gameGen() {
     stage.innerHTML =
       '<h3 style="text-align:center;margin:10px 0 6px">√ 平方立方挑战</h3>' +
-      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:14px">背公式、练开方，四种玩法</div>' +
+      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:14px">背公式、练开方,四种玩法</div>' +
       '<div style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto">' +
-      '<button class="btn green block" data-gn="pf">² 平方（5² = ?）</button>' +
-      '<button class="btn blue block" data-gn="lf">³ 立方（6³ = ?）</button>' +
-      '<button class="btn block" data-gn="sq">√ 平方根（√25 = ?）</button>' +
-      '<button class="btn block" data-gn="cb">∛ 立方根（∛27 = ?）</button>' +
+      '<button class="btn green block" data-gn="pf">2 平方(52 = ?)</button>' +
+      '<button class="btn blue block" data-gn="lf">3 立方(63 = ?)</button>' +
+      '<button class="btn block" data-gn="sq">√ 平方根(√25 = ?)</button>' +
+      '<button class="btn block" data-gn="cb">∛ 立方根(∛27 = ?)</button>' +
       '<button class="btn ghost block" id="gBack">← 返回</button></div>';
     stage.querySelector("#gBack").onclick = exitGame;
     stage.querySelectorAll("[data-gn]").forEach(function (b) {
@@ -9323,8 +9608,8 @@ window.GAMES = (function () {
         roundN++;
         if (roundN > 10) { setBest("gen", score); gameOver('<div class="go-emoji">√</div><div style="color:#6b6e7f;font-size:14px">10 题答对 ' + score + ' 题</div>', score, gameGen, exitGame); return; }
         var n, ans, sym;
-        if (mode === "pf") { n = rnd(2, 15); ans = n * n; sym = n + "²"; }
-        else if (mode === "lf") { n = rnd(2, 10); ans = n * n * n; sym = n + "³"; }
+        if (mode === "pf") { n = rnd(2, 15); ans = n * n; sym = n + "2"; }
+        else if (mode === "lf") { n = rnd(2, 10); ans = n * n * n; sym = n + "3"; }
         else if (mode === "sq") { n = rnd(2, 15); ans = n; sym = "√" + (n * n); }
         else { n = rnd(2, 6); ans = n; sym = "∛" + (n * n * n); }
         stage.innerHTML =
@@ -9389,30 +9674,51 @@ window.GAMES = (function () {
   }
 
   /* =====================================================
-   * 游戏：几何小达人（图形特征/对称/角/空间）
+   * 游戏:几何小达人(图形特征/对称/角/空间)
    * ===================================================== */
   function gameGeo() {
     var GEO_QS = [
-      { q: "长方形有几条边？", opts: ["3", "4", "5", "6"], ans: "4", e: "长方形有 4 条边。" },
-      { q: "正方形有几个直角？", opts: ["2", "3", "4", "0"], ans: "4", e: "正方形 4 个角都是直角。" },
-      { q: "三角形有几条边？", opts: ["2", "3", "4", "5"], ans: "3", e: "三角形有 3 条边。" },
-      { q: "三角形的内角和是多少度？", opts: ["90°", "180°", "270°", "360°"], ans: "180°", e: "三角形内角和是 180°。" },
-      { q: "圆有几条对称轴？", opts: ["1", "2", "4", "无数条"], ans: "无数条", e: "圆有无数条对称轴。" },
-      { q: "正方形有几条对称轴？", opts: ["1", "2", "4", "无数条"], ans: "4", e: "正方形有 4 条对称轴。" },
-      { q: "长方形有几条对称轴？", opts: ["1", "2", "4", "无数条"], ans: "2", e: "长方形有 2 条对称轴。" },
-      { q: "等边三角形的每个角是多少度？", opts: ["45°", "60°", "90°", "120°"], ans: "60°", e: "等边三角形三角都是 60°。" },
-      { q: "直角是多少度？", opts: ["45°", "90°", "180°", "360°"], ans: "90°", e: "直角是 90°。" },
-      { q: "平角是多少度？", opts: ["90°", "180°", "270°", "360°"], ans: "180°", e: "平角是 180°。" },
-      { q: "下面哪个是轴对称图形？", opts: ["平行四边形", "等腰三角形", "任意三角形", "梯形"], ans: "等腰三角形", e: "等腰三角形沿高对折能重合。" },
-      { q: "正方体有几个面？", opts: ["4", "6", "8", "12"], ans: "6", e: "正方体有 6 个面。" },
-      { q: "正方体有几条棱？", opts: ["6", "8", "12", "16"], ans: "12", e: "正方体有 12 条棱。" },
-      { q: "长方体有几个顶点？", opts: ["6", "8", "10", "12"], ans: "8", e: "长方体有 8 个顶点。" },
-      { q: "圆柱的侧面展开是什么形状？", opts: ["圆形", "长方形", "三角形", "梯形"], ans: "长方形", e: "圆柱侧面展开是长方形。" },
-      { q: "下面哪个物体接近圆柱？", opts: ["足球", "易拉罐", "魔方", "金字塔"], ans: "易拉罐", e: "易拉罐是圆柱形。" },
-      { q: "球的任意方向看过去都是什么形状？", opts: ["圆形", "正方形", "三角形", "长方形"], ans: "圆形", e: "球从哪看都是圆。" },
-      { q: "一个正方形边长扩大 2 倍，面积扩大几倍？", opts: ["2", "4", "6", "8"], ans: "4", e: "面积 = 边长×边长，扩大 2×2=4 倍。" },
-      { q: "周长是 20 厘米的正方形，边长是多少？", opts: ["4", "5", "10", "20"], ans: "5", e: "边长 = 周长÷4 = 20÷4 = 5。" },
-      { q: "下面哪种运动是旋转？", opts: ["电梯上升", "风车转动", "推拉窗户", "滑滑梯"], ans: "风车转动", e: "风车绕中心转动是旋转。" }
+      { q: "长方形有几条边?", opts: ["3", "4", "5", "6"], ans: "4", e: "长方形有 4 条边。" },
+      { q: "正方形有几个直角?", opts: ["2", "3", "4", "0"], ans: "4", e: "正方形 4 个角都是直角。" },
+      { q: "三角形有几条边?", opts: ["2", "3", "4", "5"], ans: "3", e: "三角形有 3 条边。" },
+      { q: "三角形的内角和是多少度?", opts: ["90°", "180°", "270°", "360°"], ans: "180°", e: "三角形内角和是 180°。" },
+      { q: "圆有几条对称轴?", opts: ["1", "2", "4", "无数条"], ans: "无数条", e: "圆有无数条对称轴。" },
+      { q: "正方形有几条对称轴?", opts: ["1", "2", "4", "无数条"], ans: "4", e: "正方形有 4 条对称轴。" },
+      { q: "长方形有几条对称轴?", opts: ["1", "2", "4", "无数条"], ans: "2", e: "长方形有 2 条对称轴。" },
+      { q: "等边三角形的每个角是多少度?", opts: ["45°", "60°", "90°", "120°"], ans: "60°", e: "等边三角形三角都是 60°。" },
+      { q: "直角是多少度?", opts: ["45°", "90°", "180°", "360°"], ans: "90°", e: "直角是 90°。" },
+      { q: "平角是多少度?", opts: ["90°", "180°", "270°", "360°"], ans: "180°", e: "平角是 180°。" },
+      { q: "下面哪个是轴对称图形?", opts: ["平行四边形", "等腰三角形", "任意三角形", "梯形"], ans: "等腰三角形", e: "等腰三角形沿高对折能重合。" },
+      { q: "正方体有几个面?", opts: ["4", "6", "8", "12"], ans: "6", e: "正方体有 6 个面。" },
+      { q: "正方体有几条棱?", opts: ["6", "8", "12", "16"], ans: "12", e: "正方体有 12 条棱。" },
+      { q: "长方体有几个顶点?", opts: ["6", "8", "10", "12"], ans: "8", e: "长方体有 8 个顶点。" },
+      { q: "圆柱的侧面展开是什么形状?", opts: ["圆形", "长方形", "三角形", "梯形"], ans: "长方形", e: "圆柱侧面展开是长方形。" },
+      { q: "下面哪个物体接近圆柱?", opts: ["足球", "易拉罐", "魔方", "金字塔"], ans: "易拉罐", e: "易拉罐是圆柱形。" },
+      { q: "球的任意方向看过去都是什么形状?", opts: ["圆形", "正方形", "三角形", "长方形"], ans: "圆形", e: "球从哪看都是圆。" },
+      { q: "一个正方形边长扩大 2 倍,面积扩大几倍?", opts: ["2", "4", "6", "8"], ans: "4", e: "面积 = 边长×边长,扩大 2×2=4 倍。" },
+      { q: "周长是 20 厘米的正方形,边长是多少?", opts: ["4", "5", "10", "20"], ans: "5", e: "边长 = 周长÷4 = 20÷4 = 5。" },
+      { q: "下面哪种运动是旋转?", opts: ["电梯上升", "风车转动", "推拉窗户", "滑滑梯"], ans: "风车转动", e: "风车绕中心转动是旋转。" },
+      /* --- 新增真题风格题目 --- */
+      { q: "三角形三个角分别是 50°、60°和(  )°。", opts: ["60°", "70°", "80°", "90°"], ans: "70°", e: "180°-50°-60°=70°。" },
+      { q: "一个三角形最多能有几个直角?", opts: ["0", "1", "2", "3"], ans: "1", e: "三角形内角和 180°,最多 1 个直角。" },
+      { q: "等腰三角形的一个底角是 70°,顶角是多少度?", opts: ["40°", "50°", "60°", "70°"], ans: "40°", e: "180°-70°×2=40°。" },
+      { q: "长方形长 8cm 宽 5cm,对角线把它分成两个什么三角形?", opts: ["等边三角形", "直角三角形", "等腰三角形", "钝角三角形"], ans: "直角三角形", e: "长方形的对角线把它分成两个直角三角形。" },
+      { q: "圆的直径是 6cm,半径是多少?", opts: ["2cm", "3cm", "6cm", "12cm"], ans: "3cm", e: "半径=直径÷2=6÷2=3cm。" },
+      { q: "面积是 36cm2 的正方形,周长是多少?", opts: ["24cm", "36cm", "12cm", "18cm"], ans: "24cm", e: "边长=6cm,周长=6×4=24cm。" },
+      { q: "一个三角形两条边分别是 3cm 和 5cm,第三条边可能是?", opts: ["1cm", "2cm", "7cm", "9cm"], ans: "7cm", e: "三角形两边之和>第三边,两边之差<第三边。5-3<第三边<5+3,即 2<第三边<8。" },
+      { q: "平行四边形有几组对边平行?", opts: ["0", "1", "2", "4"], ans: "2", e: "平行四边形有 2 组对边平行。" },
+      { q: "梯形有几组对边平行?", opts: ["0", "1", "2", "4"], ans: "1", e: "梯形只有 1 组对边平行。" },
+      { q: "一个圆的周长是 31.4cm(π=3.14),直径是多少?", opts: ["5cm", "10cm", "15cm", "20cm"], ans: "10cm", e: "周长=πd,d=31.4÷3.14=10cm。" },
+      { q: "把一个圆形纸片对折再对折,展开后有几条折痕?", opts: ["1", "2", "3", "4"], ans: "2", e: "对折两次产生 2 条折痕(互相垂直的直径)。" },
+      { q: "长方体的 6 个面中,相对的两个面(  )。", opts: ["形状不同", "面积相同", "大小不等", "无法确定"], ans: "面积相同", e: "长方体相对的面完全相同,面积相等。" },
+      { q: "三角形按角分类,三个角都是锐角的三角形叫?", opts: ["直角三角形", "钝角三角形", "锐角三角形", "等边三角形"], ans: "锐角三角形", e: "三个角都是锐角→锐角三角形。" },
+      { q: "正方体每个面的面积是 9cm2,它的棱长是多少?", opts: ["2cm", "3cm", "6cm", "9cm"], ans: "3cm", e: "每个面是正方形,边长=√9=3cm。" },
+      { q: "下面哪个图形不一定是轴对称的?", opts: ["正方形", "等边三角形", "平行四边形", "圆形"], ans: "平行四边形", e: "一般的平行四边形不是轴对称图形(菱形和矩形除外)。" },
+      { q: "三角形的面积是 24cm2,底是 8cm,高是多少?", opts: ["3cm", "4cm", "6cm", "12cm"], ans: "6cm", e: "高=面积×2÷底=24×2÷8=6cm。" },
+      { q: "一个梯形上底 4cm,下底 8cm,高 5cm,面积是多少?", opts: ["20cm2", "30cm2", "40cm2", "60cm2"], ans: "30cm2", e: "(4+8)×5÷2=30cm2。" },
+      { q: "把 3 个棱长 2cm 的小正方体拼成一个长方体,表面积比原来少了多少?", opts: ["8cm2", "16cm2", "24cm2", "32cm2"], ans: "16cm2", e: "拼接处减少 4 个面(每拼一次少 2 个面),每个面 4cm2,共少 16cm2。" },
+      { q: "钟表上 3:00 时,时针和分针的夹角是多少度?", opts: ["30°", "60°", "90°", "180°"], ans: "90°", e: "3:00 时,分针指 12,时针指 3,夹角=3×30°=90°。" },
+      { q: "一个圆的面积是 78.5cm2(π=3.14),半径是多少?", opts: ["3cm", "4cm", "5cm", "6cm"], ans: "5cm", e: "πr2=78.5→r2=25→r=5cm。" }
     ];
     var idx = 0, score = 0, hearts = 3, order = shuffle(GEO_QS.slice());
     function nextQ() {
@@ -9457,12 +9763,12 @@ window.GAMES = (function () {
     nextQ();
   }
   /* =====================================================
-   * 游戏：单位换算大闯关（分单位类型 + 难度）
+   * 游戏:单位换算大闯关(分单位类型 + 难度)
    * ===================================================== */
   function gameUnit() {
     stage.innerHTML =
       '<h3 style="text-align:center;margin:10px 0 6px">📏 单位换算大闯关</h3>' +
-      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:12px">先选单位类型，再选难度</div>' +
+      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:12px">先选单位类型,再选难度</div>' +
       '<div class="section-title" style="margin-top:4px"><span class="bar" style="background:#ff9f43"></span>选单位类型</div>' +
       '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:340px;margin:0 auto">' +
       '<button class="btn block" data-uc="length">📏 长度</button>' +
@@ -9491,7 +9797,7 @@ window.GAMES = (function () {
     selCat = "length";
     stage.querySelector('[data-uc="length"]').style.outline = "3px solid #ffb703";
     stage.querySelector('[data-ul="1"]').style.outline = "3px solid #ffb703";
-    /* 点击进入游戏（点难度即开始） */
+    /* 点击进入游戏(点难度即开始) */
     stage.querySelectorAll("[data-ul]").forEach(function (b) {
       b.onclick = function () { selLv = parseInt(b.dataset.ul, 10); startRun(); };
     });
@@ -9510,7 +9816,7 @@ window.GAMES = (function () {
       var QN = 10, qi = 0, score = 0, lvl = selLv, ans = 0, locked = false, curExp = "";
       function genQ() {
         var c = cats[Math.floor(Math.random() * cats.length)];
-        /* 人民币纸币兑换（5/10/20/50/100 元） */
+        /* 人民币纸币兑换(5/10/20/50/100 元) */
         if (c === "money" && Math.random() < 0.5) {
           var notes = [[100, 50], [100, 20], [100, 10], [50, 10], [20, 10], [10, 5], [50, 5], [100, 5], [20, 5]];
           var np = notes[Math.floor(Math.random() * notes.length)];
@@ -9518,8 +9824,8 @@ window.GAMES = (function () {
           var cnt = lvl === 1 ? rnd(1, 3) : rnd(2, 5);
           var totalN = smallN * cnt;
           ans = cnt;
-          curExp = totalN + " ÷ " + smallN + " = " + cnt + "（张）。1 张 " + bigN + " 元能换 " + (bigN / smallN) + " 张 " + smallN + " 元。";
-          return totalN + " 元可以换成（  ）张 " + smallN + " 元纸币。";
+          curExp = totalN + " ÷ " + smallN + " = " + cnt + "(张)。1 张 " + bigN + " 元能换 " + (bigN / smallN) + " 张 " + smallN + " 元。";
+          return totalN + " 元可以换成(  )张 " + smallN + " 元纸币。";
         }
         var pairs = UNITS[c];
         var pair = pairs[Math.floor(Math.random() * pairs.length)];
@@ -9529,13 +9835,13 @@ window.GAMES = (function () {
         if (toSmall) {
           val = lvl === 1 ? rnd(2, 9) : rnd(2, 30);
           a = val * rate;
-          q = val + " " + big + " = （  ）" + small;
-          curExp = "大单位化小单位 ×进率：" + val + "×" + rate + "=" + a + "。1 " + big + " = " + rate + " " + small + "。";
+          q = val + " " + big + " = (  )" + small;
+          curExp = "大单位化小单位 ×进率:" + val + "×" + rate + "=" + a + "。1 " + big + " = " + rate + " " + small + "。";
         } else {
           val = (lvl === 1 ? rnd(2, 9) : rnd(2, 30)) * rate;
           a = val / rate;
-          q = val + " " + small + " = （  ）" + big;
-          curExp = "小单位化大单位 ÷进率：" + val + "÷" + rate + "=" + a + "。" + rate + " " + small + " = 1 " + big + "。";
+          q = val + " " + small + " = (  )" + big;
+          curExp = "小单位化大单位 ÷进率:" + val + "÷" + rate + "=" + a + "。" + rate + " " + small + " = 1 " + big + "。";
         }
         ans = a;
         return q;
@@ -9562,7 +9868,7 @@ window.GAMES = (function () {
           if (v === "") return;
           locked = true;
           var fb = stage.querySelector("#gufb");
-          if (parseFloat(v) === ans) { score++; if (window.SND) SND.correct(); stage.querySelector(".game-q").style.color = "#06c190"; fb.textContent = "🎉 对啦！" + curExp; fb.style.color = "#059e76"; }
+          if (parseFloat(v) === ans) { score++; if (window.SND) SND.correct(); stage.querySelector(".game-q").style.color = "#06c190"; fb.textContent = "🎉 对啦!" + curExp; fb.style.color = "#059e76"; }
           else { if (window.SND) SND.wrong(); stage.querySelector(".game-q").style.color = "#ef476f"; fb.textContent = "🤔 答案是 " + ans + "。" + curExp; fb.style.color = "#e85d04"; }
           qi++;
           setTimeout(function () { stage.querySelector(".game-q").style.color = ""; nextQ(); }, 1500);
@@ -9589,15 +9895,15 @@ window.GAMES = (function () {
     }
   }
   /* =====================================================
-   * 合并游戏一：20 以内加减（凑十 + 破十）
+   * 合并游戏一:20 以内加减(凑十 + 破十)
    * ===================================================== */
   function game20AddSub() {
     stage.innerHTML =
       '<h3 style="text-align:center;margin:10px 0 16px">🌱 20 以内加减</h3>' +
-      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:14px">凑十法做加法，破十法做减法</div>' +
+      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:14px">凑十法做加法,破十法做减法</div>' +
       '<div style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto">' +
-      '<button class="btn green block" id="mCushi">🟡 凑十法（加法）</button>' +
-      '<button class="btn blue block" id="mPoshi">🔟 破十法（减法）</button>' +
+      '<button class="btn green block" id="mCushi">🟡 凑十法(加法)</button>' +
+      '<button class="btn blue block" id="mPoshi">🔟 破十法(减法)</button>' +
       '<button class="btn ghost block" id="gBack">← 返回</button></div>';
     stage.querySelector("#gBack").onclick = exitGame;
     stage.querySelector("#mCushi").onclick = function () { gameCushi(); };
@@ -9605,7 +9911,7 @@ window.GAMES = (function () {
   }
 
   /* =====================================================
-   * 合并游戏二：益智游乐园（翻翻乐 + 算盘 + 时钟）
+   * 合并游戏二:益智游乐园(翻翻乐 + 算盘 + 时钟)
    * ===================================================== */
   function gameBrainPark() {
     stage.innerHTML =
@@ -9622,33 +9928,117 @@ window.GAMES = (function () {
     stage.querySelector("#mClock").onclick = function () { gameClock(); };
   }
   /* =====================================================
-   * 游戏：逻辑推理关（思维逻辑）
+   * 游戏:逻辑推理关(思维逻辑)
    * ===================================================== */
   function gameLogic() {
     var QN = 10, qi = 0, score = 0, ans = "", locked = false;
     function genQ() {
-      var kind = rnd(1, 3);
-      if (kind === 1) { /* 高矮排序 */
-        var names = shuffle(["小明", "小红", "小刚"]);
-        var tall = names[0], mid = names[1], short = names[2];
+      var kind = rnd(1, 12);
+      if (kind === 1) { /* 高矮排序(三人链) */
+        var nameSets = [["小明","小红","小刚"],["小丽","小华","小强"],["小东","小西","小南"],["阿福","阿禄","阿寿"]];
+        var names = shuffle(pick(nameSets));
         var askTall = Math.random() < 0.5;
-        ans = askTall ? tall : short;
-        return { q: tall + "比" + mid + "高，" + mid + "比" + short + "高。谁" + (askTall ? "最高" : "最矮") + "？", opts: names };
+        ans = askTall ? names[0] : names[2];
+        return { q: names[0] + "比" + names[1] + "高," + names[1] + "比" + names[2] + "高。谁" + (askTall ? "最高" : "最矮") + "?", opts: names };
       }
-      if (kind === 2) { /* 真假 */
-        var persons = shuffle(["小明", "小红"]);
-        ans = persons[1];
-        return { q: persons[0] + "说：“我们俩都在说谎。”已知一人说真话一人说谎。谁说真话？", opts: persons };
+      if (kind === 2) { /* 四人排序(有干扰信息) */
+        var nameSets2 = [["甲","乙","丙","丁"],["A","B","C","D"],["小美","小芳","小玲","小雪"]];
+        var names4 = shuffle(pick(nameSets2));
+        /* 甲>乙>丙>丁, 但给出交错线索 */
+        var ask = Math.random() < 0.5 ? "最高" : "最矮";
+        ans = ask === "最高" ? names4[0] : names4[3];
+        return { q: names4[0] + "比" + names4[2] + "高," + names4[1] + "比" + names4[0] + "矮但比" + names4[3] + "高," + names4[2] + "比" + names4[3] + "高。谁" + ask + "?(提示:" + names4[1] + "不是最高的)", opts: names4 };
       }
-      /* 对应（修正：前提与答案严格一致） */
+      if (kind === 3) { /* 真假话(三人中一人说谎) */
+        var persons3 = shuffle(["小明", "小红", "小刚"]);
+        var liarIdx = rnd(0, 2);
+        /* 构造: 说谎者说"我是第一名", 其他两人说真话 */
+        var scores = [95, 88, 76];
+        var truth = persons3[0] + "考了" + scores[0] + "分," + persons3[1] + "考了" + scores[1] + "分," + persons3[2] + "考了" + scores[2] + "分。";
+        var wrongClaim = persons3[liarIdx] + "说：\"我的分数比" + persons3[(liarIdx + 1) % 3] + "高。\"（实际不是）";
+        ans = persons3[0]; /* 分数最高的 */
+        return { q: truth + "已知其中一人的话有假。" + wrongClaim + "\n谁的分数最高?", opts: persons3 };
+      }
+      if (kind === 4) { /* 对应推理(三人三物) */
+        var persons = shuffle(["小明", "小红", "小刚"]);
+        var items = shuffle(["苹果", "香蕉", "橘子"]);
+        /* 构造确定的对应关系 */
+        var map = {}; map[persons[0]] = items[0]; map[persons[1]] = items[1]; map[persons[2]] = items[2];
+        var askPerson = persons[rnd(0, 2)];
+        ans = map[askPerson];
+        /* 给出两条线索 */
+        var hint1 = persons[0] + "不吃" + items[1] + "和" + items[2];
+        var hint2 = persons[1] + "不吃" + items[2];
+        return { q: persons.join("、") + "三人各吃一种水果(" + items.join("、") + ")。\n" + hint1 + "。\n" + hint2 + "。\n" + askPerson + "吃什么?", opts: items };
+      }
+      if (kind === 5) { /* 列表推理(职业对应) */
+        var persons5 = shuffle(["张老师", "李老师", "王老师"]);
+        var jobs = shuffle(["数学老师", "语文老师", "英语老师"]);
+        var map5 = {}; map5[persons5[0]] = jobs[0]; map5[persons5[1]] = jobs[1]; map5[persons5[2]] = jobs[2];
+        var askP = persons5[rnd(0, 2)];
+        ans = map5[askP];
+        return { q: persons5.join("、") + "分别教" + jobs.join("、") + "(一一对应)。\n1 " + persons5[0] + "不教" + jobs[1] + "和" + jobs[2] + "。\n2 " + persons5[1] + "不教" + jobs[2] + "。\n" + askP + "教什么?", opts: jobs };
+      }
+      if (kind === 6) { /* 座位推理 */
+        var seats = shuffle(["1号位", "2号位", "3号位"]);
+        var names6 = shuffle(["小明", "小红", "小刚"]);
+        /* 小明不在1号, 小红不在2号, 小刚不在3号 -> 构造唯一解 */
+        var seatMap = {}; seatMap[names6[0]] = seats[1]; seatMap[names6[1]] = seats[2]; seatMap[names6[2]] = seats[0];
+        var askN = names6[rnd(0, 2)];
+        ans = seatMap[askN];
+        return { q: names6.join("、") + "坐在" + seats.join("、") + "(一一对应)。\n" + names6[0] + "不坐" + seats[0] + "," + names6[1] + "不坐" + seats[1] + "," + names6[2] + "不坐" + seats[2] + "。\n" + names6[0] + "坐" + seats[1] + "。\n" + askN + "坐几号位?", opts: seats };
+      }
+      if (kind === 7) { /* 真假话经典(两人一真一假) */
+        var persons7 = shuffle(["小明", "小红"]);
+        ans = persons7[1]; /* 说真话的人 */
+        return { q: persons7[0] + "说：\"我们俩都在说谎。\"\n已知一人说真话一人说谎。\n谁说真话?", opts: persons7 };
+      }
+      if (kind === 8) { /* 条件排除(谁做了什么) */
+        var persons8 = shuffle(["小明", "小红", "小刚"]);
+        var actions = shuffle(["画画", "弹琴", "下棋"]);
+        var map8 = {}; map8[persons8[0]] = actions[0]; map8[persons8[1]] = actions[1]; map8[persons8[2]] = actions[2];
+        var askP8 = persons8[rnd(0, 2)];
+        ans = map8[askP8];
+        return { q: persons8.join("、") + "各做一件事(" + actions.join("、") + ")。\n1 " + persons8[0] + "没有" + actions[1] + "也没有" + actions[2] + "。\n2 " + persons8[1] + "没有" + actions[2] + "。\n" + askP8 + "在做什么?", opts: actions };
+      }
+      if (kind === 9) { /* 数字推理 */
+        var a9 = rnd(2, 9), b9 = rnd(2, 9), c9 = rnd(2, 9);
+        var sum9 = a9 + b9 + c9;
+        var clues = a9 + " + " + b9 + " + " + c9 + " = " + sum9;
+        ans = b9;
+        return { q: "三个不同的个位数相加等于 " + sum9 + "。\n已知第一个数是 " + a9 + ",第三个数是 " + c9 + "。\n第二个数是多少?", opts: makeOpts(b9, function () { return b9 + pick([-2, -1, 1, 2, 3]); }), ans: b9 };
+      }
+      if (kind === 10) { /* 日期推理 */
+        var days = ["星期一", "星期二", "星期三", "星期四", "星期五"];
+        var dayIdx = rnd(0, 4);
+        var afterDays = rnd(1, 3);
+        var resultDay = days[(dayIdx + afterDays) % 5];
+        ans = resultDay;
+        return { q: "今天是" + days[dayIdx] + "," + afterDays + " 天后是星期几?", opts: shuffle(days.slice(0, 4)), ans: resultDay };
+      }
+      if (kind === 11) { /* 简单数论推理 */
+        var n11 = rnd(10, 50);
+        var isEven = n11 % 2 === 0;
+        var divBy3 = n11 % 3 === 0;
+        var divBy5 = n11 % 5 === 0;
+        var correctProps = [];
+        if (isEven) correctProps.push("偶数"); else correctProps.push("奇数");
+        if (divBy3) correctProps.push("3的倍数");
+        if (divBy5) correctProps.push("5的倍数");
+        if (correctProps.length === 1 && isEven) correctProps.push("不是3的倍数");
+        ans = correctProps[0];
+        var wrongProps = isEven ? ["奇数", "5的倍数", "质数"] : ["偶数", "10的倍数", "既是2又是5的倍数"];
+        return { q: "关于 " + n11 + " 这个数,下面哪个说法是正确的?", opts: shuffle([correctProps[0]].concat(wrongProps.slice(0, 3))), ans: correctProps[0] };
+      }
+      /* 对应(两人两物基础版) */
       var pets = shuffle(["猫", "狗"]);
-      var mingPet = pets[0], hongPet = pets[1]; /* 小明养 mingPet，小红养 hongPet */
+      var mingPet = pets[0], hongPet = pets[1];
       if (Math.random() < 0.5) {
         ans = hongPet;
-        return { q: "小明和小红各养一只宠物（猫和狗）。小明养" + mingPet + "。小红养什么？", opts: ["猫", "狗"] };
+        return { q: "小明和小红各养一只宠物(猫和狗)。小明养" + mingPet + "。小红养什么?", opts: ["猫", "狗"] };
       }
       ans = mingPet;
-      return { q: "小明和小红各养一只宠物（猫和狗）。小红养" + hongPet + "。小明养什么？", opts: ["猫", "狗"] };
+      return { q: "小明和小红各养一只宠物(猫和狗)。小红养" + hongPet + "。小明养什么?", opts: ["猫", "狗"] };
     }
     function nextQ() {
       if (qi >= QN) { finish(); return; }
@@ -9680,7 +10070,7 @@ window.GAMES = (function () {
   }
 
   /* =====================================================
-   * 游戏：生活应用关（应用实践）
+   * 游戏:生活应用关(应用实践)
    * ===================================================== */
   function gameLife() {
     var QN = 10, qi = 0, score = 0, cur = null, locked = false;
@@ -9708,7 +10098,7 @@ window.GAMES = (function () {
         if (locked) return; locked = true;
         var ok = String(val).trim() === String(cur.ans) || (cur.accept && cur.accept.indexOf(String(val).trim()) >= 0) || (cur.input === "num" && parseFloat(val) === parseFloat(cur.ans));
         var fb = stage.querySelector("#glfb");
-        if (ok) { score++; if (window.SND) SND.correct(); fb.textContent = "🎉 对啦！"; fb.style.color = "#059e76"; }
+        if (ok) { score++; if (window.SND) SND.correct(); fb.textContent = "🎉 对啦!"; fb.style.color = "#059e76"; }
         else { if (window.SND) SND.wrong(); fb.textContent = "🤔 答案是 " + cur.ans + "。" + (cur.explain || ""); fb.style.color = "#e85d04"; }
         qi++;
         setTimeout(nextQ, ok ? 700 : 1600);
@@ -9725,46 +10115,46 @@ window.GAMES = (function () {
     nextQ();
   }
   /* =====================================================
-   * 游戏：圈重点·信息提取（应用题找有效信息）
+   * 游戏:圈重点·信息提取(应用题找有效信息)
    * ===================================================== */
   var QUAN_QS = [
-    { lv: 1, q: "树上有 8 只小鸟，又飞来了 3 只。现在一共有多少只小鸟？", focus: "8 只小鸟", opts: ["原来的总数", "增加的量", "问题所求"], ans: "原来的总数", explain: "“8 只”是原来有的数量，是总数的一部分。" },
-    { lv: 1, q: "小明有 10 颗糖，吃了 4 颗，还剩几颗？", focus: "吃了 4 颗", opts: ["去掉的量", "原来的总数", "剩下的量"], ans: "去掉的量", explain: "“吃了 4 颗”是减少的部分，用减法去掉。" },
-    { lv: 1, q: "每盒有 6 支铅笔，买了 3 盒。一共有多少支铅笔？", focus: "每盒有 6 支", opts: ["每份数", "份数", "总数"], ans: "每份数", explain: "“每盒 6 支”是每份数，乘份数得总数。" },
-    { lv: 1, q: "把 12 个苹果平均分给 3 个小朋友，每人分几个？", focus: "平均分给 3 个小朋友", opts: ["分成的份数", "总数", "每份数"], ans: "分成的份数", explain: "“3 个小朋友”是平均分成的份数，作除数。" },
-    { lv: 2, q: "一件衣服原价 80 元，打八折出售。现价多少元？", focus: "打八折", opts: ["折扣（现价是原价的80%）", "原价", "便宜的钱"], ans: "折扣（现价是原价的80%）", explain: "“打八折”表示现价是原价的 80%，是关键的折扣信息。" },
-    { lv: 2, q: "一辆汽车每小时行 60 千米，行了 3 小时。一共行了多少千米？", focus: "每小时行 60 千米", opts: ["速度", "时间", "路程"], ans: "速度", explain: "“每小时行 60 千米”是速度，乘时间得路程。" },
-    { lv: 2, q: "小红看一本书，每天看 15 页，看了 6 天，还剩 20 页。这本书共多少页？", focus: "还剩 20 页", opts: ["没看的部分", "已看的页数", "每天看的"], ans: "没看的部分", explain: "“还剩 20 页”是没看的部分，要加到已看的上面。" },
-    { lv: 2, q: "果园有苹果树 40 棵，梨树比苹果树多 10 棵。梨树有多少棵？", focus: "梨树比苹果树多 10 棵", opts: ["梨树与苹果树的差", "梨树的棵数", "苹果树的棵数"], ans: "梨树与苹果树的差", explain: "“多 10 棵”是两者相差的量，用来求梨树。" },
-    { lv: 3, q: "一项工程，甲独做要 10 天，乙独做要 15 天。两人合作几天完成？", focus: "甲独做要 10 天", opts: ["甲单独完成的时间", "合作时间", "乙的时间"], ans: "甲单独完成的时间", explain: "“甲独做 10 天”说明甲每天做 1/10，是求效率的关键。" },
-    { lv: 3, q: "鸡兔同笼，共 10 个头，32 条腿。兔有几只？", focus: "32 条腿", opts: ["总腿数", "总头数", "兔的腿数"], ans: "总腿数", explain: "“32 条腿”是总腿数，用假设法的关键条件。" },
-    { lv: 3, q: "修一条路，每天修 20 米，修了 5 天后还剩 40 米。这条路共多长？", focus: "修了 5 天", opts: ["已修的天数", "每天修的", "剩下的米数"], ans: "已修的天数", explain: "“修了 5 天”乘每天修的，得已修的米数。" },
-    { lv: 3, q: "一个长方体长 5 厘米、宽 4 厘米、高 3 厘米。它的体积是多少立方厘米？", focus: "高 3 厘米", opts: ["高", "长", "宽"], ans: "高", explain: "“高 3 厘米”是体积公式里的高，长×宽×高。" },
-    /* 扩容：低年级 */
-    { lv: 1, q: "池塘里有 6 只鸭子，又游来了 4 只。现在一共有多少只？", focus: "又游来了 4 只", opts: ["增加的量", "原来的总数", "问题所求"], ans: "增加的量", explain: "“游来 4 只”是增加的部分，要加上去。" },
-    { lv: 1, q: "停车场有 15 辆车，开走了 6 辆。还剩多少辆？", focus: "开走了 6 辆", opts: ["去掉的量", "原来的总数", "剩下的量"], ans: "去掉的量", explain: "“开走 6 辆”是减少的部分，用减法去掉。" },
-    { lv: 1, q: "每个盘子放 5 个橘子，放了 4 个盘子。一共多少个橘子？", focus: "放了 4 个盘子", opts: ["份数", "每份数", "总数"], ans: "份数", explain: "“4 个盘子”是份数，乘每份数得总数。" },
-    { lv: 1, q: "把 16 块糖平均分给 4 个小朋友，每人分几块？", focus: "16 块糖", opts: ["总数", "分成的份数", "每份数"], ans: "总数", explain: "“16 块糖”是要分的总数，作被除数。" },
-    { lv: 1, q: "小华有 9 支铅笔，小丽比小华多 3 支。小丽有几支？", focus: "小丽比小华多 3 支", opts: ["两人相差的量", "小华的支数", "小丽的支数"], ans: "两人相差的量", explain: "“多 3 支”是相差的量，用来求小丽。" },
-    /* 扩容：中年级 */
-    { lv: 2, q: "一本书 84 页，小军每天看 12 页，看了 5 天。还剩多少页？", focus: "看了 5 天", opts: ["已看的天数", "每天看的", "总页数"], ans: "已看的天数", explain: "“看了 5 天”乘每天看的，得已看页数。" },
-    { lv: 2, q: "商店运来 3 箱饮料，每箱 24 瓶。一共运来多少瓶？", focus: "每箱 24 瓶", opts: ["每份数", "份数", "总数"], ans: "每份数", explain: "“每箱 24 瓶”是每份数，乘箱数得总数。" },
-    { lv: 2, q: "一块正方形菜地边长 9 米，周长是多少米？", focus: "边长 9 米", opts: ["边长", "周长", "面积"], ans: "边长", explain: "“边长 9 米”是求周长的关键，周长=边长×4。" },
-    { lv: 2, q: "小明 6 分钟跑了 480 米，他每分钟跑多少米？", focus: "6 分钟", opts: ["时间", "路程", "速度"], ans: "时间", explain: "“6 分钟”是时间，路程÷时间=速度。" },
-    { lv: 2, q: "妈妈买了 2 千克苹果，每千克 7 元，付了 20 元。应找回多少元？", focus: "付了 20 元", opts: ["付出的钱", "总价", "单价"], ans: "付出的钱", explain: "“付了 20 元”减去总价，就是找回的钱。" },
-    /* 扩容：高年级 */
-    { lv: 3, q: "一项工程，甲队每天完成 1/10，乙队每天完成 1/15。合作每天完成几分之几？", focus: "乙队每天完成 1/15", opts: ["乙的工作效率", "甲的工作效率", "合作效率"], ans: "乙的工作效率", explain: "“乙每天 1/15”是乙的效率，和甲的效率相加得合作效率。" },
-    { lv: 3, q: "一种商品原价 200 元，先涨价 10%，再降价 10%。现价多少元？", focus: "先涨价 10%", opts: ["第一次变化的幅度", "原价", "现价"], ans: "第一次变化的幅度", explain: "“涨价 10%”是第一次变化，注意涨和降的基数不同。" },
-    { lv: 3, q: "一个圆的直径是 10 厘米，它的周长是多少厘米？（π取3.14）", focus: "直径是 10 厘米", opts: ["直径", "半径", "周长"], ans: "直径", explain: "“直径 10 厘米”用来求周长，周长=π×直径。" },
-    { lv: 3, q: "把 60 升水倒入长 5 分米、宽 4 分米的长方体容器，水深多少分米？", focus: "宽 4 分米", opts: ["宽", "长", "水的体积"], ans: "宽", explain: "“宽 4 分米”和长一起算底面积，水深=体积÷底面积。" },
-    { lv: 3, q: "六（2）班男生 24 人，女生 18 人。男生占全班的几分之几？", focus: "女生 18 人", opts: ["女生人数", "男生人数", "全班人数"], ans: "女生人数", explain: "“女生 18 人”要和男生相加得全班，才能求男生占比。" },
-    { lv: 3, q: "一辆车从甲地到乙地，去时每小时行 60 千米，用了 4 小时。甲乙两地相距多少千米？", focus: "用了 4 小时", opts: ["时间", "速度", "路程"], ans: "时间", explain: "“用了 4 小时”是时间，速度×时间=路程。" }
+    { lv: 1, q: "树上有 8 只小鸟,又飞来了 3 只。现在一共有多少只小鸟?", focus: "8 只小鸟", opts: ["原来的总数", "增加的量", "问题所求"], ans: "原来的总数", explain: "\"8 只\"是原来有的数量,是总数的一部分。" },
+    { lv: 1, q: "小明有 10 颗糖,吃了 4 颗,还剩几颗?", focus: "吃了 4 颗", opts: ["去掉的量", "原来的总数", "剩下的量"], ans: "去掉的量", explain: "吃了 4 颗\"是减少的部分,用减法去掉。" },
+    { lv: 1, q: "每盒有 6 支铅笔,买了 3 盒。一共有多少支铅笔?", focus: "每盒有 6 支", opts: ["每份数", "份数", "总数"], ans: "每份数", explain: "每盒 6 支\"是每份数,乘份数得总数。" },
+    { lv: 1, q: "把 12 个苹果平均分给 3 个小朋友,每人分几个?", focus: "平均分给 3 个小朋友", opts: ["分成的份数", "总数", "每份数"], ans: "分成的份数", explain: "3 个小朋友\"是平均分成的份数,作除数。" },
+    { lv: 2, q: "一件衣服原价 80 元,打八折出售。现价多少元?", focus: "打八折", opts: ["折扣(现价是原价的80%)", "原价", "便宜的钱"], ans: "折扣(现价是原价的80%)", explain: "打八折\"表示现价是原价的 80%,是关键的折扣信息。" },
+    { lv: 2, q: "一辆汽车每小时行 60 千米,行了 3 小时。一共行了多少千米?", focus: "每小时行 60 千米", opts: ["速度", "时间", "路程"], ans: "速度", explain: "每小时行 60 千米\"是速度,乘时间得路程。" },
+    { lv: 2, q: "小红看一本书,每天看 15 页,看了 6 天,还剩 20 页。这本书共多少页?", focus: "还剩 20 页", opts: ["没看的部分", "已看的页数", "每天看的"], ans: "没看的部分", explain: "还剩 20 页\"是没看的部分,要加到已看的上面。" },
+    { lv: 2, q: "果园有苹果树 40 棵,梨树比苹果树多 10 棵。梨树有多少棵?", focus: "梨树比苹果树多 10 棵", opts: ["梨树与苹果树的差", "梨树的棵数", "苹果树的棵数"], ans: "梨树与苹果树的差", explain: "多 10 棵\"是两者相差的量,用来求梨树。" },
+    { lv: 3, q: "一项工程,甲独做要 10 天,乙独做要 15 天。两人合作几天完成?", focus: "甲独做要 10 天", opts: ["甲单独完成的时间", "合作时间", "乙的时间"], ans: "甲单独完成的时间", explain: "甲独做 10 天\"说明甲每天做 1/10,是求效率的关键。" },
+    { lv: 3, q: "鸡兔同笼,共 10 个头,32 条腿。兔有几只?", focus: "32 条腿", opts: ["总腿数", "总头数", "兔的腿数"], ans: "总腿数", explain: "32 条腿\"是总腿数,用假设法的关键条件。" },
+    { lv: 3, q: "修一条路,每天修 20 米,修了 5 天后还剩 40 米。这条路共多长?", focus: "修了 5 天", opts: ["已修的天数", "每天修的", "剩下的米数"], ans: "已修的天数", explain: "修了 5 天\"乘每天修的,得已修的米数。" },
+    { lv: 3, q: "一个长方体长 5 厘米、宽 4 厘米、高 3 厘米。它的体积是多少立方厘米?", focus: "高 3 厘米", opts: ["高", "长", "宽"], ans: "高", explain: "高 3 厘米\"是体积公式里的高,长×宽×高。" },
+    /* 扩容:低年级 */
+    { lv: 1, q: "池塘里有 6 只鸭子,又游来了 4 只。现在一共有多少只?", focus: "又游来了 4 只", opts: ["增加的量", "原来的总数", "问题所求"], ans: "增加的量", explain: "游来 4 只\"是增加的部分,要加上去。" },
+    { lv: 1, q: "停车场有 15 辆车,开走了 6 辆。还剩多少辆?", focus: "开走了 6 辆", opts: ["去掉的量", "原来的总数", "剩下的量"], ans: "去掉的量", explain: "开走 6 辆\"是减少的部分,用减法去掉。" },
+    { lv: 1, q: "每个盘子放 5 个橘子,放了 4 个盘子。一共多少个橘子?", focus: "放了 4 个盘子", opts: ["份数", "每份数", "总数"], ans: "份数", explain: "4 个盘子\"是份数,乘每份数得总数。" },
+    { lv: 1, q: "把 16 块糖平均分给 4 个小朋友,每人分几块?", focus: "16 块糖", opts: ["总数", "分成的份数", "每份数"], ans: "总数", explain: "16 块糖\"是要分的总数,作被除数。" },
+    { lv: 1, q: "小华有 9 支铅笔,小丽比小华多 3 支。小丽有几支?", focus: "小丽比小华多 3 支", opts: ["两人相差的量", "小华的支数", "小丽的支数"], ans: "两人相差的量", explain: "多 3 支\"是相差的量,用来求小丽。" },
+    /* 扩容:中年级 */
+    { lv: 2, q: "一本书 84 页,小军每天看 12 页,看了 5 天。还剩多少页?", focus: "看了 5 天", opts: ["已看的天数", "每天看的", "总页数"], ans: "已看的天数", explain: "看了 5 天\"乘每天看的,得已看页数。" },
+    { lv: 2, q: "商店运来 3 箱饮料,每箱 24 瓶。一共运来多少瓶?", focus: "每箱 24 瓶", opts: ["每份数", "份数", "总数"], ans: "每份数", explain: "每箱 24 瓶\"是每份数,乘箱数得总数。" },
+    { lv: 2, q: "一块正方形菜地边长 9 米,周长是多少米?", focus: "边长 9 米", opts: ["边长", "周长", "面积"], ans: "边长", explain: "边长 9 米\"是求周长的关键,周长=边长×4。" },
+    { lv: 2, q: "小明 6 分钟跑了 480 米,他每分钟跑多少米?", focus: "6 分钟", opts: ["时间", "路程", "速度"], ans: "时间", explain: "6 分钟\"是时间,路程÷时间=速度。" },
+    { lv: 2, q: "妈妈买了 2 千克苹果,每千克 7 元,付了 20 元。应找回多少元?", focus: "付了 20 元", opts: ["付出的钱", "总价", "单价"], ans: "付出的钱", explain: "付了 20 元\"减去总价,就是找回的钱。" },
+    /* 扩容:高年级 */
+    { lv: 3, q: "一项工程,甲队每天完成 1/10,乙队每天完成 1/15。合作每天完成几分之几?", focus: "乙队每天完成 1/15", opts: ["乙的工作效率", "甲的工作效率", "合作效率"], ans: "乙的工作效率", explain: "乙每天 1/15\"是乙的效率,和甲的效率相加得合作效率。" },
+    { lv: 3, q: "一种商品原价 200 元,先涨价 10%,再降价 10%。现价多少元?", focus: "先涨价 10%", opts: ["第一次变化的幅度", "原价", "现价"], ans: "第一次变化的幅度", explain: "涨价 10%\"是第一次变化,注意涨和降的基数不同。" },
+    { lv: 3, q: "一个圆的直径是 10 厘米,它的周长是多少厘米?(π取3.14)", focus: "直径是 10 厘米", opts: ["直径", "半径", "周长"], ans: "直径", explain: "直径 10 厘米\"用来求周长,周长=π×直径。" },
+    { lv: 3, q: "把 60 升水倒入长 5 分米、宽 4 分米的长方体容器,水深多少分米?", focus: "宽 4 分米", opts: ["宽", "长", "水的体积"], ans: "宽", explain: "宽 4 分米\"和长一起算底面积,水深=体积÷底面积。" },
+    { lv: 3, q: "六(2)班男生 24 人,女生 18 人。男生占全班的几分之几?", focus: "女生 18 人", opts: ["女生人数", "男生人数", "全班人数"], ans: "女生人数", explain: "女生 18 人\"要和男生相加得全班,才能求男生占比。" },
+    { lv: 3, q: "一辆车从甲地到乙地,去时每小时行 60 千米,用了 4 小时。甲乙两地相距多少千米?", focus: "用了 4 小时", opts: ["时间", "速度", "路程"], ans: "时间", explain: "用了 4 小时\"是时间,速度×时间=路程。" }
   ];
   function gameQuan() {
     var lvSel = 1;
     stage.innerHTML =
       '<h3 style="text-align:center;margin:10px 0 6px">🔍 圈重点·信息提取</h3>' +
-      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:12px">读应用题，圈出关键信息，判断它是什么信息</div>' +
+      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:12px">读应用题,圈出关键信息,判断它是什么信息</div>' +
       '<div style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto">' +
       '<button class="btn green block" data-ql="1">🌱 低年级</button>' +
       '<button class="btn blue block" data-ql="2">🚀 中年级</button>' +
@@ -9784,7 +10174,7 @@ window.GAMES = (function () {
         var qHtml = cur.q.replace(cur.focus, '<span class="quan-focus">' + cur.focus + '</span>');
         stage.innerHTML =
           '<div class="game-hud"><span class="hud-item">📋 ' + (qi + 1) + '/' + pool.length + '</span><span class="hud-item">⭐ ' + score + '</span></div>' +
-          '<div style="text-align:center;font-size:13px;color:#6b6e7f;margin-bottom:6px">读一读，圈出的信息是什么？</div>' +
+          '<div style="text-align:center;font-size:13px;color:#6b6e7f;margin-bottom:6px">读一读,圈出的信息是什么?</div>' +
           '<div class="game-q" style="font-size:16px;line-height:1.8">' + qHtml + '</div>' +
           '<div class="game-opts" style="flex-direction:column;align-items:stretch">' + shuffle(cur.opts.slice()).map(function (o) {
             return '<button class="game-opt" data-v="' + o + '" style="text-align:left">' + o + '</button>';
@@ -9796,7 +10186,7 @@ window.GAMES = (function () {
           btn.onclick = function () {
             if (locked) return; locked = true;
             var fb = stage.querySelector("#qfb");
-            if (btn.dataset.v === cur.ans) { score++; if (window.SND) SND.correct(); btn.classList.add("correct"); fb.textContent = "🎉 对啦！" + cur.explain; fb.style.color = "#059e76"; }
+            if (btn.dataset.v === cur.ans) { score++; if (window.SND) SND.correct(); btn.classList.add("correct"); fb.textContent = "🎉 对啦!" + cur.explain; fb.style.color = "#059e76"; }
             else { if (window.SND) SND.wrong(); btn.classList.add("wrong"); stage.querySelectorAll(".game-opt").forEach(function (x) { if (x.dataset.v === cur.ans) x.classList.add("correct"); }); fb.textContent = "🤔 应是「" + cur.ans + "」。" + cur.explain; fb.style.color = "#e85d04"; }
             qi++;
             setTimeout(nextQ, 1600);
@@ -9812,26 +10202,36 @@ window.GAMES = (function () {
     }
   }
   /* =====================================================
-   * 游戏：七巧板（认识七巧板 + 拼出目标图形）
+   * 游戏:七巧板(认识七巧板 + 拼出目标图形)
    * ===================================================== */
   var TANGRAM_PIECES = [
-    { id: "bigtri1", name: "大三角形①", color: "#ff6b6b" },
-    { id: "bigtri2", name: "大三角形②", color: "#ff9f43" },
+    { id: "bigtri1", name: "大三角形1", color: "#ff6b6b" },
+    { id: "bigtri2", name: "大三角形2", color: "#ff9f43" },
     { id: "midtri", name: "中三角形", color: "#ffd93d" },
-    { id: "smalltri1", name: "小三角形①", color: "#6bcb77" },
-    { id: "smalltri2", name: "小三角形②", color: "#4d96ff" },
+    { id: "smalltri1", name: "小三角形1", color: "#6bcb77" },
+    { id: "smalltri2", name: "小三角形2", color: "#4d96ff" },
     { id: "square", name: "正方形", color: "#9b59b6" },
     { id: "para", name: "平行四边形", color: "#e8930a" }
   ];
   var TANGRAM_SHAPES = [
     { id: "square_shape", name: "正方形", desc: "用全部 7 块拼成一个大正方形", need: ["bigtri1", "bigtri2", "midtri", "smalltri1", "smalltri2", "square", "para"],
+      knowledge: "七巧板由一个大正方形裁成7块:2个大三角形、1个中三角形、2个小三角形、1个正方形、1个平行四边形。全部7块才能拼回正方形。",
       svg: '<svg width="150" height="150" viewBox="0 0 150 150"><rect x="10" y="10" width="130" height="130" fill="#ffe9c9" stroke="#e8930a" stroke-width="2"/><path d="M10 10 L75 75 L10 140 Z" fill="#ff6b6b55"/><path d="M140 10 L75 75 L140 140 Z" fill="#ff9f4355"/><path d="M10 10 L140 10 L75 75 Z" fill="#ffd93d55"/><path d="M10 140 L140 140 L75 75 Z" fill="#6bcb7755"/></svg>' },
     { id: "triangle_shape", name: "大三角形", desc: "用全部 7 块拼成一个大三角形", need: ["bigtri1", "bigtri2", "midtri", "smalltri1", "smalltri2", "square", "para"],
+      knowledge: "大三角形也需要全部7块。两个大三角形各占大三角形的四分之一面积。",
       svg: '<svg width="160" height="140" viewBox="0 0 160 140"><path d="M80 10 L10 130 L150 130 Z" fill="#ffe9c9" stroke="#e8930a" stroke-width="2"/><path d="M80 10 L45 70 L115 70 Z" fill="#ffd93d55"/><path d="M45 70 L10 130 L80 130 Z" fill="#ff6b6b55"/><path d="M115 70 L80 130 L150 130 Z" fill="#4d96ff55"/></svg>' },
-    { id: "house", name: "小房子", desc: "三角形做屋顶，正方形做房身", need: ["bigtri1", "bigtri2", "square", "smalltri1", "smalltri2"],
+    { id: "house", name: "小房子", desc: "三角形做屋顶,正方形做房身", need: ["bigtri1", "bigtri2", "square", "smalltri1", "smalltri2"],
+      knowledge: "小房子需要5块:两个大三角形做屋顶两侧,两个小三角形和正方形做房身。中三角形和平行四边形不需要。",
       svg: '<svg width="150" height="150" viewBox="0 0 150 150"><path d="M20 70 L75 20 L130 70 Z" fill="#ff6b6b55" stroke="#e8930a" stroke-width="1.5"/><rect x="35" y="70" width="80" height="70" fill="#ffd93d55" stroke="#e8930a" stroke-width="1.5"/><rect x="65" y="95" width="20" height="45" fill="#9b59b655" stroke="#e8930a" stroke-width="1"/></svg>' },
-    { id: "rocket", name: "小火箭", desc: "三角形做箭头，平行四边形做箭身", need: ["bigtri1", "smalltri1", "smalltri2", "para"],
-      svg: '<svg width="120" height="160" viewBox="0 0 120 160"><path d="M60 10 L35 55 L85 55 Z" fill="#ff6b6b55" stroke="#e8930a" stroke-width="1.5"/><path d="M40 55 L40 120 L60 120 L60 55 Z" fill="#4d96ff55" stroke="#e8930a" stroke-width="1.5" transform="skewX(-8)"/><path d="M60 55 L60 120 L80 120 L80 55 Z" fill="#4d96ff55" stroke="#e8930a" stroke-width="1.5" transform="skewX(-8)"/></svg>' }
+    { id: "rocket", name: "小火箭", desc: "三角形做箭头,平行四边形做箭身", need: ["bigtri1", "smalltri1", "smalltri2", "para"],
+      knowledge: "小火箭只需4块:1个大三角形做箭头,2个小三角形做翼,1个平行四边形做箭身。",
+      svg: '<svg width="120" height="160" viewBox="0 0 120 160"><path d="M60 10 L35 55 L85 55 Z" fill="#ff6b6b55" stroke="#e8930a" stroke-width="1.5"/><path d="M40 55 L40 120 L60 120 L60 55 Z" fill="#4d96ff55" stroke="#e8930a" stroke-width="1.5" transform="skewX(-8)"/><path d="M60 55 L60 120 L80 120 L80 55 Z" fill="#4d96ff55" stroke="#e8930a" stroke-width="1.5" transform="skewX(-8)"/></svg>' },
+    { id: "cat", name: "小猫", desc: "用三角形做耳朵,正方形做脸", need: ["bigtri1", "bigtri2", "midtri", "smalltri1", "smalltri2", "square"],
+      knowledge: "小猫需要6块:两个大三角形做耳朵,中三角形做身体,两个小三角形和正方形做脸。",
+      svg: '<svg width="150" height="150" viewBox="0 0 150 150"><path d="M30 60 L55 15 L80 60 Z" fill="#ff6b6b55" stroke="#e8930a" stroke-width="1.5"/><path d="M70 60 L95 15 L120 60 Z" fill="#ff9f4355" stroke="#e8930a" stroke-width="1.5"/><rect x="40" y="55" width="70" height="65" rx="8" fill="#ffd93d55" stroke="#e8930a" stroke-width="1.5"/><circle cx="60" cy="80" r="5" fill="#333"/><circle cx="90" cy="80" r="5" fill="#333"/><path d="M70 95 L75 100 L80 95" fill="none" stroke="#333" stroke-width="2"/></svg>' },
+    { id: "boat", name: "小船", desc: "三角形做帆,平行四边形做船身", need: ["bigtri1", "bigtri2", "midtri", "square", "para"],
+      knowledge: "小船需要5块:两个大三角形做帆,中三角形做帆的底部,正方形和平行四边形做船身。",
+      svg: '<svg width="160" height="120" viewBox="0 0 160 120"><path d="M80 10 L50 60 L110 60 Z" fill="#ff6b6b55" stroke="#e8930a" stroke-width="1.5"/><path d="M80 10 L80 60 L110 60 Z" fill="#ff9f4355" stroke="#e8930a" stroke-width="1"/><path d="M20 75 L40 100 L120 100 L140 75 Z" fill="#4d96ff55" stroke="#e8930a" stroke-width="1.5"/><rect x="55" y="62" width="20" height="16" fill="#9b59b655" stroke="#e8930a" stroke-width="1"/></svg>' }
   ];
   function gameTangram() {
     var si = 0, score = 0;
@@ -9843,10 +10243,10 @@ window.GAMES = (function () {
       var selected = [];
       stage.innerHTML =
         '<div class="game-hud"><span class="hud-item">📋 ' + (si + 1) + '/' + TANGRAM_SHAPES.length + '</span><span class="hud-item">⭐ ' + score + '</span></div>' +
-        '<div style="text-align:center;font-size:14px;font-weight:800;color:#4a2c3d">拼一拼：' + cur.name + '</div>' +
+        '<div style="text-align:center;font-size:14px;font-weight:800;color:#4a2c3d">拼一拼:' + cur.name + '</div>' +
         '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin:4px 0">' + cur.desc + '</div>' +
         '<div style="text-align:center;margin:8px 0">' + cur.svg + '</div>' +
-        '<div style="text-align:center;font-size:12px;color:#6b6e7f;margin-bottom:6px">点选能拼出这个图形的七巧板（选 ' + needSet.length + ' 块）</div>' +
+        '<div style="text-align:center;font-size:12px;color:#6b6e7f;margin-bottom:6px">点选能拼出这个图形的七巧板(选 ' + needSet.length + ' 块)</div>' +
         '<div class="tan-pieces">' + opts.map(function (p) {
           return '<button class="tan-piece" data-tp="' + p.id + '"><span class="tan-sw" style="background:' + p.color + '"></span><span class="tan-nm">' + p.name + '</span></button>';
         }).join("") + '</div>' +
@@ -9865,10 +10265,19 @@ window.GAMES = (function () {
       stage.querySelector("#tanCheck").onclick = function () {
         var fb = stage.querySelector("#tanfb");
         var correct = selected.length === needSet.length && needSet.every(function (n) { return selected.indexOf(n) >= 0; });
-        if (correct) { score++; if (window.SND) SND.correct(); fb.textContent = "🎉 对啦！正是这 " + needSet.length + " 块。"; fb.style.color = "#059e76"; }
-        else { if (window.SND) SND.wrong(); fb.textContent = "🤔 还不对，再想想需要哪 " + needSet.length + " 块。"; fb.style.color = "#e85d04"; }
+        if (correct) { score++; if (window.SND) SND.correct(); fb.innerHTML = "🎉 对啦!正是这 " + needSet.length + " 块。" + (cur.knowledge ? "<br><span style='color:#3a86ff;font-size:12px'>📚 " + cur.knowledge + "</span>" : ""); fb.style.color = "#059e76"; }
+        else {
+          if (window.SND) SND.wrong();
+          var correctNames = needSet.map(function (id) { var p = TANGRAM_PIECES.filter(function (x) { return x.id === id; })[0]; return p ? p.name : id; });
+          fb.innerHTML = "🤔 正确答案是这 " + needSet.length + " 块:<b>" + correctNames.join("、") + "</b>" + (cur.knowledge ? "<br><span style='color:#3a86ff;font-size:12px'>📚 " + cur.knowledge + "</span>" : "");
+          fb.style.color = "#e85d04";
+          /* 高亮正确选项 */
+          stage.querySelectorAll(".tan-piece").forEach(function (btn) {
+            if (needSet.indexOf(btn.dataset.tp) >= 0) btn.style.outline = "3px solid #059e76";
+          });
+        }
         si++;
-        setTimeout(round, 1200);
+        setTimeout(round, correct ? 1200 : 2400);
       };
     }
     function finish() {
@@ -9881,26 +10290,25 @@ window.GAMES = (function () {
   /* ---------- 游戏入口 ---------- */
   /* lv: low=低年级(1-2) mid=中年级(3-4) high=高年级(5-6) */
   var GAME_DEFS = [
-    { id: "jiasuan", icon: "⚡", name: "加减法速度挑战", desc: "60 秒限时，看你能答对多少题", lv: "low", cat: "calc", run: gameJiasuan },
+    { id: "jiasuan", icon: "⚡", name: "加减法速度挑战", desc: "60 秒限时,看你能答对多少题", lv: "low", cat: "calc", run: gameJiasuan },
     { id: "addsub20", icon: "🌱", name: "20以内加减", desc: "凑十法加法 + 破十法减法", lv: "low", cat: "calc", run: game20AddSub },
-    { id: "chengkou", icon: "✖️", name: "乘法口诀大闯关", desc: "随机口诀题，3 条命，连击有加分！", lv: "low", cat: "calc", run: gameChengkou },
-    { id: "shushu", icon: "🔢", name: "数感大冒险", desc: "数的组成/数位/比大小/常识，10题不重复", lv: "mid", cat: "logic", run: gameShushu },
+    { id: "chengkou", icon: "✖️", name: "乘法口诀大闯关", desc: "随机口诀题,3 条命,连击有加分!", lv: "low", cat: "calc", run: gameChengkou },
+    { id: "shushu", icon: "🔢", name: "数感大冒险", desc: "数的组成/数位/比大小/常识,10题不重复", lv: "mid", cat: "logic", run: gameShushu },
     { id: "brainpark", icon: "🎡", name: "益智游乐园", desc: "翻翻乐 / 算盘 / 时钟 三合一", lv: "low", cat: "logic", run: gameBrainPark },
-    { id: "logicgame", icon: "🧩", name: "逻辑推理关", desc: "排序/真假/对应，推理闯关", lv: "mid", cat: "logic", run: gameLogic },
-    { id: "huajian", icon: "✂️", name: "分数化简", desc: "把分数化成最简分数，约分练习", lv: "mid", cat: "calc", run: gameHuajian },
+    { id: "logicgame", icon: "🧩", name: "逻辑推理关", desc: "排序/真假/对应,推理闯关", lv: "mid", cat: "logic", run: gameLogic },
+    { id: "huajian", icon: "✂️", name: "分数综合训练", desc: "约分化简/分数化小数/分数比大小/平方根", lv: "mid", cat: "calc", run: gameHuajian },
     { id: "daji", icon: "🧊", name: "积木搭搭乐", desc: "自由搭 / 照样子搭，随时换一组新目标", lv: "mid", cat: "geo", run: function () { if (window.BLOCKS) BLOCKS.genBuilder(stage, { mode: "copy", onExit: exitGame }); } },
-    { id: "zhouchang", icon: "📐", name: "周长面积小达人", desc: "60 秒算周长和面积，公式用起来", lv: "mid", cat: "geo", run: gameZhouchang },
-    { id: "suanbook", icon: "📖", name: "速算秘籍", desc: "凑整法/分配律/乘11速算…7 大巧算技巧", lv: "mid", cat: "calc", run: gameSuanBook },
-    { id: "suan", icon: "🧮", name: "速算大比拼", desc: "用巧算技巧 60 秒限时挑战，附方法提示", lv: "mid", cat: "calc", run: gameSuan },
-    { id: "g24", icon: "🎯", name: "24 点挑战", desc: "用 4 个数算出 24，选出对的算式", lv: "high", cat: "logic", run: game24 },
-    { id: "fenshu", icon: "⚖️", name: "分数比大小", desc: "通分比一比，看哪个分数大", lv: "high", cat: "calc", run: gameFenshu },
-    { id: "gen", icon: "√", name: "平方立方挑战", desc: "平方/立方/开平方/开立方，背公式练运用", lv: "high", cat: "calc", run: gameGen },
-    { id: "f2s", icon: "🔁", name: "分数化小数", desc: "把分数化成小数，除法用起来", lv: "high", cat: "calc", run: gameF2s },
-    { id: "geo", icon: "📐", name: "几何小达人", desc: "图形特征/对称/角/空间，答题闯关", lv: "mid", cat: "geo", run: gameGeo },
-    { id: "unit", icon: "📏", name: "单位换算闯关", desc: "长度/质量/时间/面积/体积，分难度换算", lv: "mid", cat: "app", run: gameUnit },
+    { id: "zhouchang", icon: "📐", name: "周长面积小达人", desc: "60 秒算周长和面积，含三角形/梯形/圆/阴影面积", lv: "mid", cat: "geo", run: gameZhouchang },
+    { id: "suan", icon: "🧮", name: "速算秘籍+大比拼", desc: "先看7大巧算技巧，再60秒限时挑战", lv: "mid", cat: "calc", run: gameSuan },
+    { id: "g24", icon: "🎯", name: "24 点挑战", desc: "用 4 个数算出 24,选出对的算式", lv: "high", cat: "logic", run: game24 },
+    { id: "fenshu", icon: "⚖️", name: "分数比大小", desc: "通分比一比,看哪个分数大", lv: "high", cat: "calc", run: gameFenshu },
+    { id: "gen", icon: "√", name: "平方立方挑战", desc: "平方/立方/开平方/开立方,背公式练运用", lv: "high", cat: "calc", run: gameGen },
+    { id: "f2s", icon: "🔁", name: "分数化小数", desc: "把分数化成小数,除法用起来", lv: "high", cat: "calc", run: gameF2s },
+    { id: "geo", icon: "📐", name: "几何小达人", desc: "图形特征/对称/角/空间,答题闯关", lv: "mid", cat: "geo", run: gameGeo },
+    { id: "unit", icon: "📏", name: "单位换算闯关", desc: "长度/质量/时间/面积/体积,分难度换算", lv: "mid", cat: "app", run: gameUnit },
     { id: "lifegame", icon: "🛒", name: "生活应用关", desc: "生活里的数学应用题闯关", lv: "mid", cat: "app", run: gameLife },
-    { id: "quan", icon: "🔍", name: "圈重点·信息提取", desc: "读应用题圈关键信息，判断信息类型", lv: "mid", cat: "app", run: gameQuan },
-    { id: "tangram", icon: "🧩", name: "七巧板", desc: "认识七巧板，拼出目标图形", lv: "mid", cat: "geo", run: gameTangram }
+    { id: "quan", icon: "🔍", name: "圈重点·信息提取", desc: "读应用题圈关键信息,判断信息类型", lv: "mid", cat: "app", run: gameQuan },
+    { id: "tangram", icon: "🧩", name: "七巧板", desc: "认识七巧板,拼出目标图形", lv: "mid", cat: "geo", run: gameTangram }
   ];
   var CAT_NAME = { calc: "口算计算", logic: "思维逻辑", geo: "空间几何", app: "应用实践" };
 
