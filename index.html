@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>烧脑数学·玩中有学</title>
+<title>烧脑数学·真好玩</title>
 <style>
 :root{
   --primary:#ff7a2f; --primary-dark:#e85d04; --primary-light:#ffe8d6;
@@ -640,7 +640,7 @@ main{padding:14px 14px 92px}
 <!-- ===================== 顶部 ===================== -->
 <header class="app-header">
   <div class="header-top">
-    <div class="logo"><span class="flame">🔥</span>烧脑数学·玩中有学 <small id="verTag">v1.0.0</small></div>
+    <div class="logo"><span class="flame">🔥</span>烧脑数学·真好玩</div>
     <div style="display:flex;gap:8px;align-items:center">
       <button class="icon-btn" id="btnUser" title="切换用户">🦊</button>
       <button class="icon-btn" id="btnVersionLog" title="版本日志">📜</button>
@@ -757,6 +757,13 @@ main{padding:14px 14px 92px}
   <button class="tab-item" data-tab="garden"><span class="t-icon">🏡</span>家园</button>
 </nav>
 
+<!-- ===================== 底部版本信息 ===================== -->
+<footer id="appFooter" style="text-align:center;padding:20px 12px 80px;color:#a8a9b5;font-size:11px;line-height:1.8;border-top:1px solid #f0f0f0;margin-top:20px">
+  <div>🔥 烧脑数学·真好玩 <small id="verTag" style="opacity:0.7">v1.0.0</small></div>
+  <div style="margin-top:4px"><button id="btnFooterLog" style="background:none;border:none;color:#3a86ff;font-size:12px;cursor:pointer;text-decoration:underline">📜 查看更新日志</button></div>
+  <div style="margin-top:4px">持续迭代中，每次更新都会在这里记录～</div>
+</footer>
+
 <!-- ===================== 版本日志弹窗 ===================== -->
 <div class="modal-mask" id="modalLog">
   <div class="modal">
@@ -799,7 +806,7 @@ main{padding:14px 14px 92px}
 <!-- 用户门：创建 / 选择用户 -->
 <div class="user-gate" id="userGate">
   <div class="ug-card">
-    <div class="ug-logo">🔥 烧脑数学</div>
+    <div class="ug-logo">🔥 烧脑数学·真好玩</div>
     <div class="ug-sub">选择或创建一个学习者，积分和家园会为 TA 永久保存</div>
     <div id="ugList"></div>
     <div class="ug-divider">— 新学习者 —</div>
@@ -810,17 +817,26 @@ main{padding:14px 14px 92px}
     </div>
   </div>
 </div>
-<noscript><p style="text-align:center;padding:40px">烧脑数学·玩中有学 需要开启 JavaScript 才能使用哦～</p></noscript>
+<noscript><p style="text-align:center;padding:40px">烧脑数学·真好玩 需要开启 JavaScript 才能使用哦～</p></noscript>
 <script>
 /* =====================================================================
  * 烧脑数学 · 教材内容数据（北师大版 2024 新课标版 三年级上册）
  * ===================================================================== */
 window.MD = {
-  version: "4.4.0",
+  version: "4.5.0",
   textbook: { grade: "三年级", term: "上册", edition: "北师大版（新课标）" },
 
   /* ---------------- 版本日志（应用内展示） ---------------- */
   changelog: [
+    { ver: "v4.5.0", date: "2026-08-26", items: [
+      "应用更名为「烧脑数学·真好玩」",
+      "版本号和更新日志移至页面底部",
+      "分数综合训练新增「小数化分数」模式",
+      "删除独立的分数比大小、平方立方、分数化小数游戏，统一整合到分数综合训练",
+      "七巧板游戏修复：SVG图示更清晰，知识点说明更详细",
+      "积木搭搭乐布局优化：更紧凑，一屏可看全",
+      "生活应用关增加真题题型，要求列算式解答"
+    ]},
     { ver: "v4.4.0", date: "2026-08-25", items: [
       "玩一把大优化：9个游戏模块全面升级",
       "数感大冒险：从7种题型扩到18种（新增估算/数位值/倍数/近似数/排列/拆分/比大小进阶/读法等）",
@@ -2011,46 +2027,46 @@ window.BLOCKS = (function () {
         '<button class="lv-tab' + (mode === 'copy' ? ' sel' : '') + '" id="bbModeCopy">🎯 照样子搭</button></div>';
 
       if (mode === 'copy') {
-        html += '<div style="display:flex;gap:8px;align-items:flex-start">' +
-          '<div style="flex:1;min-width:0"><div style="font-weight:800;font-size:13px;margin-bottom:4px">🎯 目标</div>' +
-          '<div style="text-align:center;background:#fffaf2;border-radius:10px;padding:6px">' + (targetCubes().length ? isoSVG(targetCubes(), 20) : '（空）') + '</div>' +
-          '<div style="text-align:center;margin-top:4px"><button class="btn" id="bbNext" style="padding:4px 12px;font-size:12px">🔄 换一组</button></div></div>' +
-          '<div style="flex:1;min-width:0"><div style="font-weight:800;font-size:13px;margin-bottom:4px">🧱 你搭的</div>' +
-          '<div style="text-align:center;background:#f0f7ff;border-radius:10px;padding:6px">' + (cubes.length ? isoSVG(cubes, 20) : '<div style="color:#a8a9b5;font-size:12px;padding:10px">点下方格子搭积木</div>') + '</div></div></div>' +
-          '<div id="bbStatus" style="text-align:center;font-size:13px;font-weight:700;margin:6px 0;min-height:18px">' +
+        html += '<div style="display:flex;gap:6px;align-items:flex-start;margin-bottom:4px">' +
+          '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:11px;margin-bottom:2px;text-align:center">🎯 目标</div>' +
+          '<div style="text-align:center;background:#fffaf2;border-radius:8px;padding:4px">' + (targetCubes().length ? isoSVG(targetCubes(), 16) : '（空）') + '</div>' +
+          '<div style="text-align:center;margin-top:2px"><button class="btn" id="bbNext" style="padding:3px 10px;font-size:11px">🔄 换一组</button></div></div>' +
+          '<div style="flex:1;min-width:0"><div style="font-weight:700;font-size:11px;margin-bottom:2px;text-align:center">🧱 你搭的</div>' +
+          '<div style="text-align:center;background:#f0f7ff;border-radius:8px;padding:4px">' + (cubes.length ? isoSVG(cubes, 16) : '<div style="color:#a8a9b5;font-size:11px;padding:6px">点下方格子</div>') + '</div></div></div>' +
+          '<div id="bbStatus" style="text-align:center;font-size:12px;font-weight:700;margin:4px 0;min-height:16px">' +
           (solved ? '🎉 太棒了！搭得一模一样！' : '') + '</div>';
       } else {
-        html += '<div style="text-align:center;background:#f0f7ff;border-radius:10px;padding:6px;margin-bottom:6px">' +
-          (cubes.length ? isoSVG(cubes, 24) : '<div style="color:#a8a9b5;font-size:12px;padding:8px">点下方格子搭积木</div>') + '</div>';
+        html += '<div style="text-align:center;background:#f0f7ff;border-radius:8px;padding:4px;margin-bottom:4px">' +
+          (cubes.length ? isoSVG(cubes, 18) : '<div style="color:#a8a9b5;font-size:11px;padding:6px">点下方格子</div>') + '</div>';
       }
 
       /* 搭建区：更紧凑的格子 */
-      html += '<div style="font-weight:800;margin-bottom:4px;font-size:13px">🧱 搭建区（点格子加高，到顶再点拆掉）</div><div class="bb-grid" style="gap:4px">';
+      html += '<div style="font-weight:700;margin-bottom:3px;font-size:12px">🧱 搭建区（点格子加高，到顶再点拆掉）</div><div class="bb-grid" style="gap:3px">';
       for (var y = 0; y < N; y++) {
         for (var x2 = 0; x2 < N; x2++) {
           var h = heights[x2][y];
           var stack = '';
           for (var z = 0; z < h; z++) stack += '<span class="bb-cube"></span>';
-          html += '<button class="bb-cell" data-x="' + x2 + '" data-y="' + y + '" style="min-width:36px;min-height:36px">' +
+          html += '<button class="bb-cell" data-x="' + x2 + '" data-y="' + y + '" style="min-width:32px;min-height:32px;padding:2px">' +
             '<span class="bb-stack">' + stack + '</span>' +
-            '<span class="bb-h">' + (h > 0 ? h : '') + '</span></button>';
+            '<span class="bb-h" style="font-size:10px">' + (h > 0 ? h : '') + '</span></button>';
         }
       }
       html += '</div>' +
-        '<div style="display:flex;gap:6px;margin-top:8px">' +
-        '<button class="btn ghost" id="bbClear" style="flex:1;padding:7px;font-size:13px">🗑️ 清空</button>' +
-        (mode === 'copy' ? '<button class="btn" id="bbCheck" style="flex:1;padding:7px;font-size:13px">✅ 检查</button>' : '') +
+        '<div style="display:flex;gap:4px;margin-top:6px">' +
+        '<button class="btn ghost" id="bbClear" style="flex:1;padding:5px;font-size:12px">🗑️ 清空</button>' +
+        (mode === 'copy' ? '<button class="btn" id="bbCheck" style="flex:1;padding:5px;font-size:12px">✅ 检查</button>' : '') +
         '</div>';
 
       /* 三视图（折叠显示，更紧凑） */
       if (cubes.length) {
-        html += '<div style="margin-top:8px"><div style="font-weight:800;font-size:13px;margin-bottom:4px">👀 三视图</div>' +
-          '<div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">' +
+        html += '<div style="margin-top:6px"><div style="font-weight:700;font-size:11px;margin-bottom:3px">👀 三视图</div>' +
+          '<div style="display:flex;gap:3px;justify-content:center;flex-wrap:wrap">' +
           ['front', 'right', 'top'].map(function (dir) {
             var name = dir === 'front' ? '正面' : (dir === 'right' ? '右面' : '上面');
-            return '<div style="text-align:center;background:#fffaf2;border-radius:8px;padding:4px 8px">' +
-              '<div style="font-size:11px;font-weight:800;color:#8a5a20">' + name + '</div>' +
-              viewSVG(cubes, dir, 16) + '</div>';
+            return '<div style="text-align:center;background:#fffaf2;border-radius:6px;padding:3px 6px">' +
+              '<div style="font-size:10px;font-weight:700;color:#8a5a20;margin-bottom:2px">' + name + '</div>' +
+              viewSVG(cubes, dir, 14) + '</div>';
           }).join("") + '</div></div>';
       }
 
@@ -9483,13 +9499,14 @@ window.GAMES = (function () {
    * ===================================================== */
   function gcd(a, b) { while (b) { var t = a % b; a = b; b = t; } return a; }
   function gameHuajian() {
-    /* 分数综合训练：4个子模式 */
+    /* 分数综合训练：5个子模式 */
     stage.innerHTML =
       '<h3 style="text-align:center;margin:10px 0 6px">✂️ 分数综合训练</h3>' +
-      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:14px">约分·化小数·比大小·平方根，四种练习</div>' +
+      '<div style="text-align:center;font-size:12px;color:#a8a9b5;margin-bottom:14px">约分·化小数·化分数·比大小·平方根</div>' +
       '<div style="display:flex;flex-direction:column;gap:12px;max-width:320px;margin:0 auto">' +
       '<button class="btn green block" data-hj="jian">✂️ 约分化简</button>' +
       '<button class="btn blue block" data-hj="f2s">🔁 分数化小数</button>' +
+      '<button class="btn block" data-hj="d2f">🔄 小数化分数</button>' +
       '<button class="btn block" data-hj="cmp">⚖️ 分数比大小</button>' +
       '<button class="btn block" data-hj="sqrt">√ 平方根</button>' +
       '<button class="btn ghost block" id="gBack">← 返回</button></div>';
@@ -9538,6 +9555,13 @@ window.GAMES = (function () {
           if (opts.length < 3) opts.push("无法比较");
           opts = shuffle(opts);
           qHtml = '<div class="game-q" style="font-size:22px">' + n1 + '/' + d1 + ' ○ ' + n2 + '/' + d2 + '</div><div style="text-align:center;font-size:13px;color:#6b6e7f;margin-bottom:6px">哪个分数更大？</div>';
+        } else if (sub === "d2f") { /* 小数化分数 */
+          var decVals = [0.5, 0.25, 0.75, 0.2, 0.4, 0.6, 0.8, 0.125, 0.375, 0.625, 0.875, 0.1, 0.3, 0.7, 0.9];
+          var fracVals = ["1/2", "1/4", "3/4", "1/5", "2/5", "3/5", "4/5", "1/8", "3/8", "5/8", "7/8", "1/10", "3/10", "7/10", "9/10"];
+          var idx = rnd(0, decVals.length - 1);
+          correctAns = fracVals[idx];
+          isInput = true;
+          qHtml = '<div class="game-q" style="font-size:28px">' + decVals[idx] + ' = ?</div><div style="text-align:center;font-size:13px;color:#6b6e7f;margin-bottom:6px">把小数化成最简分数</div>';
         } else { /* sqrt */
           var n3 = rnd(2, 15);
           correctAns = String(n3);
@@ -9664,6 +9688,43 @@ window.GAMES = (function () {
         if (v === "") return;
         var fv = parseFloat(v);
         if (!isNaN(fv) && Math.abs(fv - dec) < 0.0001) { score++; if(window.SND)SND.correct(); GARDEN.addPoints(0.5, "化小数答对"); stage.querySelector(".game-q").style.color = "#06c190"; }
+        else { if(window.SND)SND.wrong(); stage.querySelector(".game-q").style.color = "#ef476f"; }
+        setTimeout(function () { stage.querySelector(".game-q").style.color = ""; nextRound(); }, 700);
+      }
+      stage.querySelector("#gOk").onclick = submit;
+      inp.onkeydown = function (e) { if (e.key === "Enter") submit(); };
+    }
+    nextRound();
+  }
+
+  /* =====================================================
+   * 小数化分数
+   * ===================================================== */
+  function gameF2d() {
+    var score = 0, roundN = 0;
+    var decVals = [0.5, 0.25, 0.75, 0.2, 0.4, 0.6, 0.8, 0.125, 0.375, 0.625, 0.875, 0.1, 0.3, 0.7, 0.9];
+    var fracVals = ["1/2", "1/4", "3/4", "1/5", "2/5", "3/5", "4/5", "1/8", "3/8", "5/8", "7/8", "1/10", "3/10", "7/10", "9/10"];
+    function nextRound() {
+      roundN++;
+      if (roundN > 10) { setBest("f2d", score); gameOver('<div class="go-emoji">🔄</div><div style="color:#6b6e7f;font-size:14px">10 题答对 ' + score + ' 题</div>', score, gameF2d, exitGame); return; }
+      var idx = rnd(0, decVals.length - 1);
+      var dec = decVals[idx];
+      var frac = fracVals[idx];
+      stage.innerHTML =
+        '<div class="game-hud"><span class="hud-item">⭐ ' + score + '</span>' +
+        '<span class="hud-item">📋 第 ' + roundN + ' 题</span>' +
+        '<span class="hud-item"><button id="gBack" style="color:#a8a9b5;font-size:12px">退出</button></span></div>' +
+        '<div class="game-q" style="font-size:28px">' + dec + ' = ?</div>' +
+        '<div style="text-align:center;font-size:13px;color:#6b6e7f;margin-bottom:6px">把小数化成最简分数</div>' +
+        '<div class="game-input-row"><input class="game-input" id="gInput" autocomplete="off" placeholder="如 1/2">' +
+        '<button class="btn" id="gOk">确定</button></div>';
+      stage.querySelector("#gBack").onclick = exitGame;
+      var inp = stage.querySelector("#gInput");
+      inp.focus();
+      function submit() {
+        var v = inp.value.trim();
+        if (v === "") return;
+        if (v === frac) { score++; if(window.SND)SND.correct(); GARDEN.addPoints(0.5, "化分数答对"); stage.querySelector(".game-q").style.color = "#06c190"; }
         else { if(window.SND)SND.wrong(); stage.querySelector(".game-q").style.color = "#ef476f"; }
         setTimeout(function () { stage.querySelector(".game-q").style.color = ""; nextRound(); }, 700);
       }
@@ -10214,24 +10275,74 @@ window.GAMES = (function () {
     { id: "para", name: "平行四边形", color: "#e8930a" }
   ];
   var TANGRAM_SHAPES = [
-    { id: "square_shape", name: "正方形", desc: "用全部 7 块拼成一个大正方形", need: ["bigtri1", "bigtri2", "midtri", "smalltri1", "smalltri2", "square", "para"],
-      knowledge: "七巧板由一个大正方形裁成7块:2个大三角形、1个中三角形、2个小三角形、1个正方形、1个平行四边形。全部7块才能拼回正方形。",
-      svg: '<svg width="150" height="150" viewBox="0 0 150 150"><rect x="10" y="10" width="130" height="130" fill="#ffe9c9" stroke="#e8930a" stroke-width="2"/><path d="M10 10 L75 75 L10 140 Z" fill="#ff6b6b55"/><path d="M140 10 L75 75 L140 140 Z" fill="#ff9f4355"/><path d="M10 10 L140 10 L75 75 Z" fill="#ffd93d55"/><path d="M10 140 L140 140 L75 75 Z" fill="#6bcb7755"/></svg>' },
-    { id: "triangle_shape", name: "大三角形", desc: "用全部 7 块拼成一个大三角形", need: ["bigtri1", "bigtri2", "midtri", "smalltri1", "smalltri2", "square", "para"],
-      knowledge: "大三角形也需要全部7块。两个大三角形各占大三角形的四分之一面积。",
-      svg: '<svg width="160" height="140" viewBox="0 0 160 140"><path d="M80 10 L10 130 L150 130 Z" fill="#ffe9c9" stroke="#e8930a" stroke-width="2"/><path d="M80 10 L45 70 L115 70 Z" fill="#ffd93d55"/><path d="M45 70 L10 130 L80 130 Z" fill="#ff6b6b55"/><path d="M115 70 L80 130 L150 130 Z" fill="#4d96ff55"/></svg>' },
-    { id: "house", name: "小房子", desc: "三角形做屋顶,正方形做房身", need: ["bigtri1", "bigtri2", "square", "smalltri1", "smalltri2"],
-      knowledge: "小房子需要5块:两个大三角形做屋顶两侧,两个小三角形和正方形做房身。中三角形和平行四边形不需要。",
-      svg: '<svg width="150" height="150" viewBox="0 0 150 150"><path d="M20 70 L75 20 L130 70 Z" fill="#ff6b6b55" stroke="#e8930a" stroke-width="1.5"/><rect x="35" y="70" width="80" height="70" fill="#ffd93d55" stroke="#e8930a" stroke-width="1.5"/><rect x="65" y="95" width="20" height="45" fill="#9b59b655" stroke="#e8930a" stroke-width="1"/></svg>' },
-    { id: "rocket", name: "小火箭", desc: "三角形做箭头,平行四边形做箭身", need: ["bigtri1", "smalltri1", "smalltri2", "para"],
-      knowledge: "小火箭只需4块:1个大三角形做箭头,2个小三角形做翼,1个平行四边形做箭身。",
-      svg: '<svg width="120" height="160" viewBox="0 0 120 160"><path d="M60 10 L35 55 L85 55 Z" fill="#ff6b6b55" stroke="#e8930a" stroke-width="1.5"/><path d="M40 55 L40 120 L60 120 L60 55 Z" fill="#4d96ff55" stroke="#e8930a" stroke-width="1.5" transform="skewX(-8)"/><path d="M60 55 L60 120 L80 120 L80 55 Z" fill="#4d96ff55" stroke="#e8930a" stroke-width="1.5" transform="skewX(-8)"/></svg>' },
-    { id: "cat", name: "小猫", desc: "用三角形做耳朵,正方形做脸", need: ["bigtri1", "bigtri2", "midtri", "smalltri1", "smalltri2", "square"],
-      knowledge: "小猫需要6块:两个大三角形做耳朵,中三角形做身体,两个小三角形和正方形做脸。",
-      svg: '<svg width="150" height="150" viewBox="0 0 150 150"><path d="M30 60 L55 15 L80 60 Z" fill="#ff6b6b55" stroke="#e8930a" stroke-width="1.5"/><path d="M70 60 L95 15 L120 60 Z" fill="#ff9f4355" stroke="#e8930a" stroke-width="1.5"/><rect x="40" y="55" width="70" height="65" rx="8" fill="#ffd93d55" stroke="#e8930a" stroke-width="1.5"/><circle cx="60" cy="80" r="5" fill="#333"/><circle cx="90" cy="80" r="5" fill="#333"/><path d="M70 95 L75 100 L80 95" fill="none" stroke="#333" stroke-width="2"/></svg>' },
-    { id: "boat", name: "小船", desc: "三角形做帆,平行四边形做船身", need: ["bigtri1", "bigtri2", "midtri", "square", "para"],
-      knowledge: "小船需要5块:两个大三角形做帆,中三角形做帆的底部,正方形和平行四边形做船身。",
-      svg: '<svg width="160" height="120" viewBox="0 0 160 120"><path d="M80 10 L50 60 L110 60 Z" fill="#ff6b6b55" stroke="#e8930a" stroke-width="1.5"/><path d="M80 10 L80 60 L110 60 Z" fill="#ff9f4355" stroke="#e8930a" stroke-width="1"/><path d="M20 75 L40 100 L120 100 L140 75 Z" fill="#4d96ff55" stroke="#e8930a" stroke-width="1.5"/><rect x="55" y="62" width="20" height="16" fill="#9b59b655" stroke="#e8930a" stroke-width="1"/></svg>' }
+    { id: "square_shape", name: "正方形", desc: "用全部 7 块拼成一个大正方形",
+      need: ["bigtri1", "bigtri2", "midtri", "smalltri1", "smalltri2", "square", "para"],
+      knowledge: "七巧板由一个大正方形裁成7块：2个大三角形（各占1/4）、1个中三角形（占1/8）、2个小三角形（各占1/16）、1个正方形（占1/8）、1个平行四边形（占1/8）。全部7块才能拼回正方形。",
+      svg: '<svg width="160" height="160" viewBox="0 0 160 160" style="background:#fff;border:2px solid #ddd;border-radius:8px">' +
+        '<rect x="10" y="10" width="140" height="140" fill="none" stroke="#999" stroke-width="1" stroke-dasharray="4"/>' +
+        '<polygon points="10,10 80,80 10,150" fill="#ff6b6b" opacity="0.7"/><text x="35" y="90" font-size="10" fill="#fff" font-weight="bold">大1</text>' +
+        '<polygon points="150,10 80,80 150,150" fill="#ff9f43" opacity="0.7"/><text x="115" y="90" font-size="10" fill="#fff" font-weight="bold">大2</text>' +
+        '<polygon points="10,10 150,10 80,80" fill="#ffd93d" opacity="0.7"/><text x="75" y="45" font-size="10" fill="#333" font-weight="bold">中</text>' +
+        '<polygon points="10,150 80,80 80,150" fill="#6bcb77" opacity="0.7"/><text x="45" y="125" font-size="9" fill="#fff" font-weight="bold">小1</text>' +
+        '<polygon points="150,150 80,80 80,150" fill="#4d96ff" opacity="0.7"/><text x="95" y="125" font-size="9" fill="#fff" font-weight="bold">小2</text>' +
+        '<rect x="65" y="65" width="30" height="30" fill="#9b59b6" opacity="0.7"/><text x="73" y="83" font-size="9" fill="#fff" font-weight="bold">正</text>' +
+        '<polygon points="80,80 110,80 95,95 65,95" fill="#e8930a" opacity="0.7"/><text x="82" y="90" font-size="8" fill="#fff" font-weight="bold">平</text>' +
+        '</svg>' },
+    { id: "triangle_shape", name: "大三角形", desc: "用全部 7 块拼成一个大三角形",
+      need: ["bigtri1", "bigtri2", "midtri", "smalltri1", "smalltri2", "square", "para"],
+      knowledge: "大三角形也需要全部7块。两个大三角形各占大三角形面积的1/4，中三角形占1/8，两个小三角形各占1/16，正方形和平行四边形各占1/8。",
+      svg: '<svg width="160" height="140" viewBox="0 0 160 140" style="background:#fff;border:2px solid #ddd;border-radius:8px">' +
+        '<polygon points="80,10 10,130 150,130" fill="none" stroke="#999" stroke-width="1" stroke-dasharray="4"/>' +
+        '<polygon points="80,10 45,70 115,70" fill="#ffd93d" opacity="0.7"/><text x="75" y="50" font-size="10" fill="#333" font-weight="bold">中</text>' +
+        '<polygon points="45,70 10,130 80,130" fill="#ff6b6b" opacity="0.7"/><text x="40" y="105" font-size="10" fill="#fff" font-weight="bold">大1</text>' +
+        '<polygon points="115,70 80,130 150,130" fill="#ff9f43" opacity="0.7"/><text x="105" y="105" font-size="10" fill="#fff" font-weight="bold">大2</text>' +
+        '<polygon points="45,70 60,70 52,85" fill="#6bcb77" opacity="0.7"/><text x="47" y="78" font-size="7" fill="#fff">小1</text>' +
+        '<polygon points="115,70 100,70 108,85" fill="#4d96ff" opacity="0.7"/><text x="103" y="78" font-size="7" fill="#fff">小2</text>' +
+        '<rect x="68" y="95" width="24" height="24" fill="#9b59b6" opacity="0.7"/><text x="73" y="110" font-size="8" fill="#fff">正</text>' +
+        '<polygon points="80,70 95,70 87,85 73,85" fill="#e8930a" opacity="0.7"/><text x="80" y="80" font-size="7" fill="#fff">平</text>' +
+        '</svg>' },
+    { id: "house", name: "小房子", desc: "三角形做屋顶，正方形做房身",
+      need: ["bigtri1", "bigtri2", "square", "smalltri1", "smalltri2"],
+      knowledge: "小房子需要5块：两个大三角形做屋顶的两侧斜坡，正方形做房身主体，两个小三角形做房身的两侧装饰。中三角形和平行四边形不需要。",
+      svg: '<svg width="150" height="150" viewBox="0 0 150 150" style="background:#fff;border:2px solid #ddd;border-radius:8px">' +
+        '<polygon points="75,20 20,70 130,70" fill="#ff6b6b" opacity="0.7"/><text x="65" y="55" font-size="10" fill="#fff" font-weight="bold">大1</text>' +
+        '<polygon points="75,20 20,70 130,70" fill="#ff9f43" opacity="0.4"/><text x="75" y="45" font-size="10" fill="#fff" font-weight="bold">大2</text>' +
+        '<rect x="35" y="70" width="80" height="70" fill="#9b59b6" opacity="0.7"/><text x="65" y="110" font-size="11" fill="#fff" font-weight="bold">正方形</text>' +
+        '<polygon points="35,70 35,100 50,85" fill="#6bcb77" opacity="0.7"/><text x="35" y="85" font-size="8" fill="#fff">小1</text>' +
+        '<polygon points="115,70 115,100 100,85" fill="#4d96ff" opacity="0.7"/><text x="100" y="85" font-size="8" fill="#fff">小2</text>' +
+        '</svg>' },
+    { id: "rocket", name: "小火箭", desc: "三角形做箭头，平行四边形做箭身",
+      need: ["bigtri1", "smalltri1", "smalltri2", "para"],
+      knowledge: "小火箭只需4块：1个大三角形做箭头（占最大面积），2个小三角形做两侧的翼，1个平行四边形做箭身。这是最省块的拼法之一。",
+      svg: '<svg width="120" height="160" viewBox="0 0 120 160" style="background:#fff;border:2px solid #ddd;border-radius:8px">' +
+        '<polygon points="60,10 35,55 85,55" fill="#ff6b6b" opacity="0.7"/><text x="50" y="40" font-size="10" fill="#fff" font-weight="bold">大1</text>' +
+        '<polygon points="40,55 40,100 55,77" fill="#6bcb77" opacity="0.7"/><text x="40" y="75" font-size="8" fill="#fff">小1</text>' +
+        '<polygon points="80,55 80,100 65,77" fill="#4d96ff" opacity="0.7"/><text x="65" y="75" font-size="8" fill="#fff">小2</text>' +
+        '<polygon points="45,55 75,55 75,120 45,120" fill="#e8930a" opacity="0.7" transform="skewX(-5)"/><text x="52" y="90" font-size="10" fill="#fff" font-weight="bold">平行四边形</text>' +
+        '</svg>' },
+    { id: "cat", name: "小猫", desc: "用三角形做耳朵，正方形做脸",
+      need: ["bigtri1", "bigtri2", "midtri", "smalltri1", "smalltri2", "square"],
+      knowledge: "小猫需要6块：两个大三角形做左右两只耳朵，中三角形做头顶，正方形做脸部，两个小三角形做脸颊两侧。平行四边形不需要。",
+      svg: '<svg width="150" height="150" viewBox="0 0 150 150" style="background:#fff;border:2px solid #ddd;border-radius:8px">' +
+        '<polygon points="30,60 55,15 80,60" fill="#ff6b6b" opacity="0.7"/><text x="48" y="45" font-size="9" fill="#fff" font-weight="bold">大1</text>' +
+        '<polygon points="70,60 95,15 120,60" fill="#ff9f43" opacity="0.7"/><text x="88" y="45" font-size="9" fill="#fff" font-weight="bold">大2</text>' +
+        '<polygon points="55,60 75,30 95,60" fill="#ffd93d" opacity="0.7"/><text x="68" y="50" font-size="8" fill="#333" font-weight="bold">中</text>' +
+        '<rect x="40" y="60" width="70" height="65" fill="#9b59b6" opacity="0.7" rx="5"/><text x="60" y="95" font-size="11" fill="#fff" font-weight="bold">正方形</text>' +
+        '<circle cx="55" cy="80" r="4" fill="#333"/><circle cx="95" cy="80" r="4" fill="#333"/>' +
+        '<polygon points="40,60 40,90 55,75" fill="#6bcb77" opacity="0.7"/><text x="40" y="75" font-size="7" fill="#fff">小1</text>' +
+        '<polygon points="110,60 110,90 95,75" fill="#4d96ff" opacity="0.7"/><text x="95" y="75" font-size="7" fill="#fff">小2</text>' +
+        '<path d="M70 95 L75 100 L80 95" fill="none" stroke="#333" stroke-width="2"/>' +
+        '</svg>' },
+    { id: "boat", name: "小船", desc: "三角形做帆，平行四边形做船身",
+      need: ["bigtri1", "bigtri2", "midtri", "square", "para"],
+      knowledge: "小船需要5块：两个大三角形做左右两片帆，中三角形做帆的顶部，正方形做船舱，平行四边形做船身底部。两个小三角形不需要。",
+      svg: '<svg width="160" height="120" viewBox="0 0 160 120" style="background:#fff;border:2px solid #ddd;border-radius:8px">' +
+        '<polygon points="80,10 50,60 110,60" fill="#ff6b6b" opacity="0.7"/><text x="68" y="45" font-size="9" fill="#fff" font-weight="bold">大1</text>' +
+        '<polygon points="80,10 80,60 110,60" fill="#ff9f43" opacity="0.5"/><text x="88" y="40" font-size="9" fill="#fff" font-weight="bold">大2</text>' +
+        '<polygon points="65,10 80,10 72,25" fill="#ffd93d" opacity="0.7"/><text x="68" y="20" font-size="7" fill="#333">中</text>' +
+        '<rect x="55" y="62" width="50" height="20" fill="#9b59b6" opacity="0.7"/><text x="68" y="75" font-size="9" fill="#fff" font-weight="bold">正方形</text>' +
+        '<polygon points="20,85 40,105 140,105 120,85" fill="#e8930a" opacity="0.7"/><text x="70" y="98" font-size="10" fill="#fff" font-weight="bold">平行四边形</text>' +
+        '</svg>' }
   ];
   function gameTangram() {
     var si = 0, score = 0;
@@ -10296,14 +10407,12 @@ window.GAMES = (function () {
     { id: "shushu", icon: "🔢", name: "数感大冒险", desc: "数的组成/数位/比大小/常识,10题不重复", lv: "mid", cat: "logic", run: gameShushu },
     { id: "brainpark", icon: "🎡", name: "益智游乐园", desc: "翻翻乐 / 算盘 / 时钟 三合一", lv: "low", cat: "logic", run: gameBrainPark },
     { id: "logicgame", icon: "🧩", name: "逻辑推理关", desc: "排序/真假/对应,推理闯关", lv: "mid", cat: "logic", run: gameLogic },
-    { id: "huajian", icon: "✂️", name: "分数综合训练", desc: "约分化简/分数化小数/分数比大小/平方根", lv: "mid", cat: "calc", run: gameHuajian },
+    { id: "huajian", icon: "✂️", name: "分数综合训练", desc: "约分化简/分数化小数/小数化分数/分数比大小/平方根", lv: "mid", cat: "calc", run: gameHuajian },
     { id: "daji", icon: "🧊", name: "积木搭搭乐", desc: "自由搭 / 照样子搭，随时换一组新目标", lv: "mid", cat: "geo", run: function () { if (window.BLOCKS) BLOCKS.genBuilder(stage, { mode: "copy", onExit: exitGame }); } },
     { id: "zhouchang", icon: "📐", name: "周长面积小达人", desc: "60 秒算周长和面积，含三角形/梯形/圆/阴影面积", lv: "mid", cat: "geo", run: gameZhouchang },
     { id: "suan", icon: "🧮", name: "速算秘籍+大比拼", desc: "先看7大巧算技巧，再60秒限时挑战", lv: "mid", cat: "calc", run: gameSuan },
     { id: "g24", icon: "🎯", name: "24 点挑战", desc: "用 4 个数算出 24,选出对的算式", lv: "high", cat: "logic", run: game24 },
-    { id: "fenshu", icon: "⚖️", name: "分数比大小", desc: "通分比一比,看哪个分数大", lv: "high", cat: "calc", run: gameFenshu },
-    { id: "gen", icon: "√", name: "平方立方挑战", desc: "平方/立方/开平方/开立方,背公式练运用", lv: "high", cat: "calc", run: gameGen },
-    { id: "f2s", icon: "🔁", name: "分数化小数", desc: "把分数化成小数,除法用起来", lv: "high", cat: "calc", run: gameF2s },
+    { id: "f2d", icon: "🔄", name: "小数化分数", desc: "把小数化成分数,理解小数的本质", lv: "high", cat: "calc", run: gameF2d },
     { id: "geo", icon: "📐", name: "几何小达人", desc: "图形特征/对称/角/空间,答题闯关", lv: "mid", cat: "geo", run: gameGeo },
     { id: "unit", icon: "📏", name: "单位换算闯关", desc: "长度/质量/时间/面积/体积,分难度换算", lv: "mid", cat: "app", run: gameUnit },
     { id: "lifegame", icon: "🛒", name: "生活应用关", desc: "生活里的数学应用题闯关", lv: "mid", cat: "app", run: gameLife },
@@ -11655,14 +11764,119 @@ window.LIFE = (function () {
       if (kind === 1) {
         var total = R(12, 48), per = R(3, 6);
         while (total % per !== 0) total++;
-        return { topic: "生活分物", q: "妈妈买了 " + total + " 个橘子，平均分给 " + per + " 个小朋友，每人分几个？",
+        return { topic: "生活分物", q: "妈妈买了 " + total + " 个橘子，平均分给 " + per + " 个小朋友，每人分几个？\n\n【要求列算式】",
           input: "num", ans: String(total / per),
-          explain: "平均分用除法：" + total + "÷" + per + "=" + (total / per) + "（个）。" };
+          explain: "列算式：" + total + "÷" + per + "=" + (total / per) + "（个）\n平均分用除法，总数÷份数=每份数。" };
       }
       var ppl = R(3, 6), each = R(2, 5);
-      return { topic: "生活分物", q: "每 " + ppl + " 人坐一桌，每人用 " + each + " 个碗，一桌一共要几个碗？",
+      return { topic: "生活分物", q: "每 " + ppl + " 人坐一桌，每人用 " + each + " 个碗，一桌一共要几个碗？\n\n【要求列算式】",
         input: "num", ans: String(ppl * each),
-        explain: "一桌的碗数 = 人数 × 每人碗数 = " + ppl + "×" + each + "=" + (ppl * each) + "（个）。" };
+        explain: "列算式：" + ppl + "×" + each + "=" + (ppl * each) + "（个）\n一桌的碗数 = 人数 × 每人碗数。" };
+    },
+    /* 真题应用题（考试常见题型） */
+    exam: function () {
+      var kind = R(1, 12);
+      /* 两步计算：先乘后加/减 */
+      if (kind === 1) {
+        var a = R(3, 8), b = R(5, 12), c = R(10, 30);
+        var ans = a * b + c;
+        return { topic: "真题·两步计算", q: "商店运来 " + a + " 箱苹果，每箱 " + b + " 个，又运来 " + c + " 个。一共运来多少个苹果？\n\n【要求列算式】",
+          input: "num", ans: String(ans),
+          explain: "列算式：" + a + "×" + b + "+" + c + "=" + ans + "（个）\n先算箱装苹果数，再加零散的。" };
+      }
+      /* 两步计算：先加后乘 */
+      if (kind === 2) {
+        var a = R(15, 30), b = R(10, 25), c = R(3, 6);
+        var ans = (a + b) * c;
+        return { topic: "真题·两步计算", q: "小明每天看 " + a + " 页书，小红每天看 " + b + " 页书，他们 " + c + " 天一共看了多少页？\n\n【要求列算式】",
+          input: "num", ans: String(ans),
+          explain: "列算式：(" + a + "+" + b + ")×" + c + "=" + ans + "（页）\n先算两人一天共看页数，再乘天数。" };
+      }
+      /* 两步计算：先乘后减 */
+      if (kind === 3) {
+        var total = R(80, 150), a = R(3, 6), b = R(8, 15);
+        var ans = total - a * b;
+        return { topic: "真题·两步计算", q: "一本书有 " + total + " 页，小明每天看 " + b + " 页，看了 " + a + " 天后还剩多少页？\n\n【要求列算式】",
+          input: "num", ans: String(ans),
+          explain: "列算式：" + total + "-" + a + "×" + b + "=" + ans + "（页）\n先算已看页数，再用总数减去。" };
+      }
+      /* 两步计算：先减后除 */
+      if (kind === 4) {
+        var total = R(60, 120), used = R(15, 35), days = R(3, 7);
+        var remain = total - used;
+        while (remain % days !== 0) { total++; remain = total - used; }
+        var ans = remain / days;
+        return { topic: "真题·两步计算", q: "粮店有 " + total + " 袋大米，卖出了 " + used + " 袋，剩下的 " + days + " 天卖完。平均每天卖多少袋？\n\n【要求列算式】",
+          input: "num", ans: String(ans),
+          explain: "列算式：(" + total + "-" + used + ")÷" + days + "=" + ans + "（袋）\n先算剩余袋数，再除以天数。" };
+      }
+      /* 两步计算：先除后加 */
+      if (kind === 5) {
+        var total = R(24, 48), groups = R(3, 6), extra = R(5, 12);
+        while (total % groups !== 0) total++;
+        var ans = total / groups + extra;
+        return { topic: "真题·两步计算", q: "把 " + total + " 个苹果平均分给 " + groups + " 个小朋友，每人又得到 " + extra + " 个橘子。每人一共得到多少个水果？\n\n【要求列算式】",
+          input: "num", ans: String(ans),
+          explain: "列算式：" + total + "÷" + groups + "+" + extra + "=" + ans + "（个）\n先算每人苹果数，再加橘子数。" };
+      }
+      /* 两步计算：先除后减 */
+      if (kind === 6) {
+        var total = R(36, 72), groups = R(4, 8), lost = R(2, 5);
+        while (total % groups !== 0) total++;
+        var ans = total / groups - lost;
+        return { topic: "真题·两步计算", q: "把 " + total + " 块糖平均分给 " + groups + " 个小朋友，每人吃了 " + lost + " 块后还剩几块？\n\n【要求列算式】",
+          input: "num", ans: String(ans),
+          explain: "列算式：" + total + "÷" + groups + "-" + lost + "=" + ans + "（块）\n先算每人分得数，再减去吃掉的。" };
+      }
+      /* 三步计算：混合运算 */
+      if (kind === 7) {
+        var a = R(3, 6), b = R(4, 8), c = R(2, 5), d = R(10, 25);
+        var ans = a * b + c * d;
+        return { topic: "真题·三步计算", q: "买 " + a + " 支铅笔，每支 " + b + " 元；又买 " + c + " 本笔记本，每本 " + d + " 元。一共花了多少元？\n\n【要求列算式】",
+          input: "num", ans: String(ans),
+          explain: "列算式：" + a + "×" + b + "+" + c + "×" + d + "=" + ans + "（元）\n分别算出两种物品的总价，再相加。" };
+      }
+      /* 带小括号的混合运算 */
+      if (kind === 8) {
+        var a = R(20, 40), b = R(5, 12), c = R(3, 6);
+        var ans = a - (b + c);
+        return { topic: "真题·括号运算", q: "小明有 " + a + " 元，买了一支 " + b + " 元的笔和一个 " + c + " 元的本子，还剩多少元？\n\n【要求列算式】",
+          input: "num", ans: String(ans),
+          explain: "列算式：" + a + "-(" + b + "+" + c + ")=" + ans + "（元）\n先算花掉的总数，再用总数减去。" };
+      }
+      /* 带小括号的混合运算2 */
+      if (kind === 9) {
+        var a = R(3, 6), b = R(8, 15), c = R(3, 8);
+        var ans = a * (b + c);
+        return { topic: "真题·括号运算", q: "每个书包里装 " + b + " 本书和 " + c + " 个本子，" + a + " 个书包一共装了多少件学习用品？\n\n【要求列算式】",
+          input: "num", ans: String(ans),
+          explain: "列算式：" + a + "×(" + b + "+" + c + ")=" + ans + "（件）\n先算每个书包装的总数，再乘书包数。" };
+      }
+      /* 倍数关系应用题 */
+      if (kind === 10) {
+        var small = R(5, 15), times = R(2, 5);
+        var big = small * times;
+        var ans = small + big;
+        return { topic: "真题·倍数关系", q: "小红有 " + small + " 朵红花，小明的红花是小红的 " + times + " 倍。两人一共有多少朵红花？\n\n【要求列算式】",
+          input: "num", ans: String(ans),
+          explain: "列算式：" + small + "+" + small + "×" + times + "=" + ans + "（朵）\n先算小明的朵数，再加小红的。" };
+      }
+      /* 倍数关系应用题2 */
+      if (kind === 11) {
+        var big = R(24, 60), times = R(2, 5);
+        while (big % times !== 0) big++;
+        var small = big / times;
+        var ans = big - small;
+        return { topic: "真题·倍数关系", q: "大箱有 " + big + " 个苹果，是小箱的 " + times + " 倍。大箱比小箱多多少个苹果？\n\n【要求列算式】",
+          input: "num", ans: String(ans),
+          explain: "列算式：" + big + "-" + big + "÷" + times + "=" + ans + "（个）\n先算小箱数，再求差。" };
+      }
+      /* 行程问题（简单版） */
+      var speed = R(40, 80), time = R(2, 5);
+      var dist = speed * time;
+      return { topic: "真题·行程问题", q: "一辆汽车每小时行 " + speed + " 千米，" + time + " 小时行了多少千米？\n\n【要求列算式】",
+        input: "num", ans: String(dist),
+        explain: "列算式：" + speed + "×" + time + "=" + dist + "（千米）\n路程=速度×时间。" };
     }
   };
 
@@ -15820,7 +16034,7 @@ window.STATS = (function () {
   }
 
   /* ---------- 版本日志 ---------- */
-  $("#btnVersionLog").onclick = function () {
+  function showVersionLog() {
     var html = "";
     MD.changelog.forEach(function (log) {
       html += '<div class="log-item"><span class="log-ver">' + log.ver + '</span> <span style="color:#a8a9b5;font-size:12px">' + log.date + '</span>' +
@@ -15828,7 +16042,9 @@ window.STATS = (function () {
     });
     $("#logContent").innerHTML = html;
     $("#modalLog").classList.add("show");
-  };
+  }
+  $("#btnVersionLog").onclick = showVersionLog;
+  if ($("#btnFooterLog")) $("#btnFooterLog").onclick = showVersionLog;
   $$("[data-close]").forEach(function (b) {
     b.onclick = function () { $("#" + b.dataset.close).classList.remove("show"); };
   });
