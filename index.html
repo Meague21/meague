@@ -819,15 +819,23 @@ main{padding:14px 14px 92px}
 </div>
 <noscript><p style="text-align:center;padding:40px">烧脑数学·真好玩 需要开启 JavaScript 才能使用哦～</p></noscript>
 <script>
+
 /* =====================================================================
  * 烧脑数学 · 教材内容数据（北师大版 2024 新课标版 三年级上册）
  * ===================================================================== */
 window.MD = {
-  version: "4.6.0",
+  version: "4.7.0",
   textbook: { grade: "三年级", term: "上册", edition: "北师大版（新课标）" },
 
   /* ---------------- 版本日志（应用内展示） ---------------- */
   changelog: [
+    { ver: "v4.7.0", date: "2026-09-03", items: [
+      "单元专项练习大幅扩充:认识更大的数新增口算/填空/选择/判断/应用共40+道专项题",
+      "负数防护:出题引擎全局过滤负数答案,减法生成器加安全防护",
+      "口算键盘优化:所有游戏答题输入改为decimal键盘,支持小数点和负号",
+      "周长面积/速算/口算增加闯关模式(不限时),限时挑战为进阶玩法",
+      "修复多个中文引号导致的JS语法错误"
+    ]},
     { ver: "v4.6.0", date: "2026-08-28", items: [
       "列式题新增算式输入框(全键盘),可在框内列算式再填答案",
       "周长面积小达人:新增闯关模式(10题/关,不限时,逐关升难度),限时挑战为高级玩法",
@@ -2104,7 +2112,7 @@ window.BLOCKS = (function () {
           var st = container.querySelector('#bbStatus');
           if (ok) {
             solved = true;
-            st.innerHTML = '🎉 太棒了！搭得一模一样！点「换一组」继续挑战～';
+            st.innerHTML = '🎉 太棒了！搭得一模一样！点"换一组"继续挑战～';
             st.style.color = '#059e76';
             if (window.GARDEN) GARDEN.addPoints(1.5, "积木搭成功");
           } else {
@@ -5772,7 +5780,7 @@ window.BLOCKS = (function () {
         ],
         warns: [
           "读数时每个 0 都读 → 每级末尾的 0 不读，连续的 0 只读一个。",
-          "改写时丢单位“万” → 360 0000 = 360 万，万字不能少。",
+          "改写时丢单位\"万\" → 360 0000 = 360 万，万字不能少。",
           "四舍五入看错数位 → 精确到万位，看的是千位。"
         ] },
 
@@ -5905,7 +5913,7 @@ window.BLOCKS = (function () {
         ],
         warns: [
           "数对先行后列 → 必须先列后行。",
-          "选错观测点 → “A 在 B 的东北方向”，观测点是 B。",
+          "选错观测点 → \"A 在 B 的东北方向\"，观测点是 B。",
           "描述路线漏掉距离或转折点。"
         ] },
 
@@ -5987,9 +5995,9 @@ window.BLOCKS = (function () {
             ], tip: "" }
         ],
         warns: [
-          "说“长方形是正方形” → 反了！正方形才是特殊的长方形。",
+          "说\"长方形是正方形\" → 反了！正方形才是特殊的长方形。",
           "以为所有四边形都容易变形 → 要看是不是平行四边形结构。",
-          "数四边形特征时漏掉“四个角”的条件。"
+          "数四边形特征时漏掉\"四个角\"的条件。"
         ] },
 
       { id: "g4u7", num: "七", title: "运用数量关系解决问题", emoji: "🚄", color: "#ffb703",
@@ -6095,7 +6103,7 @@ window.BLOCKS = (function () {
   });
   RV("g4u1", "tiankong", "改写成万", function () {
     var n = R(12, 98);
-    return { type: "tiankong", q: "把 " + (n * 10000) + " 改写成用“万”作单位的数是（____）万。", input: "num", ans: String(n),
+    return { type: "tiankong", q: "把 " + (n * 10000) + " 改写成用\"万\"作单位的数是（____）万。", input: "num", ans: String(n),
       explain: "去掉末尾 4 个 0，添上万字：" + (n * 10000) + " = " + n + " 万。" };
   });
   RV("g4u1", "tiankong", "四舍五入", function () {
@@ -6141,6 +6149,239 @@ window.BLOCKS = (function () {
     { q: "个位、十位、百位都是计数单位。", ans: "错", exp: "个、十、百是计数单位；个位、十位、百位是数位。" },
     { q: "360 0000 = 360 万。", ans: "对", exp: "整万数改写：去掉末尾 4 个 0 添上万字。" },
     { q: "近似数一定比准确数小。", ans: "错", exp: "四舍五入后可能变大（五入），也可能变小（四舍）。" }
+  ]);
+
+  /* ===== g4u1 认识更大的数 · 大幅扩充专项题库 ===== */
+
+  /* --- kousuan 口算（大数比较/组成/快速判断） --- */
+  RV("g4u1", "kousuan", "大数比大小", function () {
+    var d = R(4, 9);
+    var a = R(1, 9) * Math.pow(10, d - 1) + R(0, Math.pow(10, d - 1) - 1);
+    var b = R(1, 9) * Math.pow(10, d - 1) + R(0, Math.pow(10, d - 1) - 1);
+    if (a === b) b = a + R(1, 9);
+    var ans = a > b ? ">" : (a < b ? "<" : "=");
+    return { type: "kousuan", q: "<span class='expr'>" + a + " ○ " + b + "，○ 里填（>、< 或 =）</span>", input: "text", ans: ans, accept: [ans],
+      explain: "从最高位比起，" + a + " " + ans + " " + b + "。", kp: "大数比大小" };
+  });
+  RV("g4u1", "kousuan", "整万数加减", function () {
+    var kind = R(1, 2);
+    if (kind === 1) {
+      var a = R(2, 50), b = R(2, 40);
+      return { type: "kousuan", q: "<span class='expr'>" + a + "万 + " + b + "万 = （____）万</span>", input: "num", ans: String(a + b),
+        explain: a + "万 + " + b + "万 = " + (a + b) + "万，即 " + ((a + b) * 10000) + "。", kp: "整万数加法" };
+    }
+    var a2 = R(20, 90), b2 = R(2, a2 - 5);
+    return { type: "kousuan", q: "<span class='expr'>" + a2 + "万 − " + b2 + "万 = （____）万</span>", input: "num", ans: String(a2 - b2),
+      explain: a2 + "万 − " + b2 + "万 = " + (a2 - b2) + "万，即 " + ((a2 - b2) * 10000) + "。", kp: "整万数减法" };
+  });
+  RV("g4u1", "kousuan", "数的组成速算", function () {
+    var wan = R(1, 99), qian = R(1, 9);
+    var n = wan * 10000 + qian * 1000;
+    return { type: "kousuan", q: "<span class='expr'>" + wan + " 个万和 " + qian + " 个千合起来是（____）</span>", input: "num", ans: String(n),
+      explain: wan + " 个万 = " + (wan * 10000) + "，" + qian + " 个千 = " + (qian * 1000) + "，合起来 = " + n + "。", kp: "数的组成" };
+  });
+  RV("g4u1", "kousuan", "十进制速答", function () {
+    var units = ["一", "十", "百", "千", "万", "十万", "百万", "千万", "亿"];
+    var idx = R(1, units.length - 1);
+    return { type: "kousuan", q: "<span class='expr'>10 个" + units[idx - 1] + "是（____）</span>", input: "text", ans: units[idx], accept: [units[idx], "一" + units[idx]],
+      explain: "相邻计数单位之间进率是 10，10 个" + units[idx - 1] + " = 1 个" + units[idx] + "。", kp: "十进制" };
+  });
+
+  /* --- tiankong 填空（大幅扩充） --- */
+  RV("g4u1", "tiankong", "数位顺序表", function () {
+    var positions = [
+      { pos: "个", order: 1 }, { pos: "十", order: 2 }, { pos: "百", order: 3 }, { pos: "千", order: 4 },
+      { pos: "万", order: 5 }, { pos: "十万", order: 6 }, { pos: "百万", order: 7 }, { pos: "千万", order: 8 }, { pos: "亿", order: 9 }
+    ];
+    var p = P(positions);
+    return { type: "tiankong", q: "从右边起，第（____）位是" + p.pos + "位。", input: "num", ans: String(p.order),
+      explain: "从右起依次是：个位(1)、十位(2)、百位(3)、千位(4)、万位(5)、十万位(6)、百万位(7)、千万位(8)、亿位(9)。" + p.pos + "位是第 " + p.order + " 位。" };
+  });
+  RV("g4u1", "tiankong", "数字在数位上的意义", function () {
+    var kind = R(1, 3);
+    if (kind === 1) {
+      var n = R(1000, 9999) * 10000 + R(100, 999) * 10;
+      var s = String(n);
+      var posIdx = R(4, Math.min(s.length - 1, 7));
+      var digit = s[posIdx];
+      var placeNames = ["个位", "十位", "百位", "千位", "万位", "十万位", "百万位", "千万位", "亿位"];
+      var placeName = placeNames[s.length - 1 - posIdx];
+      var meaning = digit + " 个" + placeName.replace("位", "");
+      return { type: "tiankong", q: n + " 中，从左数第 " + (posIdx + 1) + " 个数字是 " + digit + "，它在（____）上。", input: "text", ans: placeName, accept: [placeName],
+        explain: "这个 " + digit + " 在" + placeName + "上，表示 " + meaning + "。" };
+    }
+    if (kind === 2) {
+      var wan = R(1, 9), bai = R(1, 9);
+      var n2 = wan * 10000 + bai * 100;
+      return { type: "tiankong", q: n2 + " 中，" + wan + " 在（____）位上，表示（____）个（____）。", input: "text", ans: "万", accept: ["万", "万位"],
+        explain: wan + " 在万位上，表示 " + wan + " 个万，即 " + (wan * 10000) + "。" };
+    }
+    var digits = R(5, 9);
+    return { type: "tiankong", q: "一个 " + digits + " 位数，它的最高位是（____）位。", input: "text",
+      ans: ["", "", "", "", "万", "十万", "百万", "千万", "亿"][digits],
+      accept: [["", "", "", "", "万", "十万", "百万", "千万", "亿"][digits]],
+      explain: digits + " 位数的最高位是第 " + digits + " 位，即" + ["", "", "", "", "万", "十万", "百万", "千万", "亿"][digits] + "位。" };
+  });
+  RV("g4u1", "tiankong", "展开式", function () {
+    var kind = R(1, 3);
+    if (kind === 1) {
+      var a = R(1, 9), b = R(1, 9), c = R(1, 9);
+      var n = a * 10000 + b * 1000 + c * 100;
+      return { type: "tiankong", q: a + "×10000 + " + b + "×1000 + " + c + "×100 = （____）", input: "num", ans: String(n),
+        explain: a + " 个万 + " + b + " 个千 + " + c + " 个百 = " + n + "。" };
+    }
+    if (kind === 2) {
+      var n2 = R(10, 99) * 10000 + R(10, 99) * 100;
+      var wan = Math.floor(n2 / 10000);
+      var bai = Math.floor((n2 % 10000) / 100);
+      return { type: "tiankong", q: n2 + " = （____）×10000 + （____）×100（依次填两个数）", input: "text", ans: wan + "," + bai, accept: [wan + "," + bai, wan + " " + bai, wan + "和" + bai],
+        explain: n2 + " 中有 " + wan + " 个万和 " + bai + " 个百。" };
+    }
+    var n3 = R(100, 999) * 10000;
+    return { type: "tiankong", q: n3 + " = " + Math.floor(n3 / 10000) + " ×（____）", input: "num", ans: "10000",
+      explain: n3 + " 就是 " + Math.floor(n3 / 10000) + " 个万，所以填 10000。" };
+  });
+  RV("g4u1", "tiankong", "精确到不同位", function () {
+    var kind = R(1, 3);
+    if (kind === 1) {
+      var n = R(100, 999) * 100 + R(0, 99);
+      var rounded = Math.round(n / 100) * 100;
+      return { type: "tiankong", q: n + " 四舍五入到百位约等于（____）。", input: "num", ans: String(rounded),
+        explain: "看十位上的 " + Math.floor((n % 100) / 10) + "，" + (Math.floor((n % 100) / 10) >= 5 ? "满 5 进 1" : "不满 5 舍去") + "，约等于 " + rounded + "。" };
+    }
+    if (kind === 2) {
+      var n2 = R(10, 99) * 10000 + R(100, 9999);
+      var rounded2 = Math.round(n2 / 10000) * 10000;
+      return { type: "tiankong", q: n2 + " 省略万位后面的尾数约是（____）。", input: "num", ans: String(rounded2),
+        explain: "看千位上的 " + Math.floor((n2 % 10000) / 1000) + "，" + (Math.floor((n2 % 10000) / 1000) >= 5 ? "满 5 进 1" : "不满 5 舍去") + "，约 " + rounded2 + "。" };
+    }
+    var n3 = R(1000, 9999) * 1000 + R(100, 999);
+    var rounded3 = Math.round(n3 / 1000) * 1000;
+    return { type: "tiankong", q: n3 + " 精确到千位约是（____）。", input: "num", ans: String(rounded3),
+      explain: "看百位上的 " + Math.floor((n3 % 1000) / 100) + "，" + (Math.floor((n3 % 1000) / 100) >= 5 ? "满 5 进 1" : "不满 5 舍去") + "，约 " + rounded3 + "。" };
+  });
+  RV("g4u1", "tiankong", "大数读写专项", function () {
+    var kind = R(1, 4);
+    if (kind === 1) {
+      var yi = R(1, 9), wan = R(1, 999);
+      var n = yi * 100000000 + wan * 10000;
+      return { type: "tiankong", q: yi + " 亿 " + wan + " 万 写作（____）。", input: "num", ans: String(n),
+        explain: yi + " 亿 = " + (yi * 100000000) + "，" + wan + " 万 = " + (wan * 10000) + "，合起来 = " + n + "。" };
+    }
+    if (kind === 2) {
+      var n2 = R(100, 999) * 10000;
+      return { type: "tiankong", q: n2 + " 读作（____）万。", input: "num", ans: String(n2 / 10000),
+        explain: "去掉末尾 4 个 0，读作 " + (n2 / 10000) + " 万。" };
+    }
+    if (kind === 3) {
+      var n3 = R(10, 99) * 10000000;
+      return { type: "tiankong", q: n3 + " 改写成用\"万\"作单位是（____）万。", input: "num", ans: String(n3 / 10000),
+        explain: "去掉末尾 4 个 0：" + n3 + " = " + (n3 / 10000) + " 万。" };
+    }
+    var wan4 = R(2, 99), ge = R(1, 9999);
+    var n4 = wan4 * 10000 + ge;
+    return { type: "tiankong", q: n4 + " 中，万级上的数是（____）。", input: "num", ans: String(wan4),
+      explain: "分级：" + wan4 + "|" + String(ge).padStart(4, "0") + "，万级上是 " + wan4 + "。" };
+  });
+  RV("g4u1", "tiankong", "相邻数", function () {
+    var kind = R(1, 3);
+    if (kind === 1) {
+      var n = R(1000, 99999);
+      return { type: "tiankong", q: "与 " + n + " 相邻的两个数分别是（____）和（____）。（从小到大填，用逗号隔开）", input: "text", ans: (n - 1) + "," + (n + 1), accept: [(n - 1) + "," + (n + 1), (n - 1) + " " + (n + 1)],
+        explain: "相邻就是少 1 和多 1：" + (n - 1) + " 和 " + (n + 1) + "。" };
+    }
+    if (kind === 2) {
+      var n2 = R(10, 99) * 10000;
+      return { type: "tiankong", q: "比 " + n2 + " 少 1 万的数是（____）。", input: "num", ans: String(n2 - 10000),
+        explain: n2 + " − 10000 = " + (n2 - 10000) + "。" };
+    }
+    var n3 = R(100, 999) * 1000;
+    return { type: "tiankong", q: "比 " + n3 + " 多 1 千的数是（____）。", input: "num", ans: String(n3 + 1000),
+      explain: n3 + " + 1000 = " + (n3 + 1000) + "。" };
+  });
+  RV("g4u1", "tiankong", "最大最小数", function () {
+    var kind = R(1, 3);
+    if (kind === 1) {
+      var d = R(3, 6);
+      var maxN = Math.pow(10, d) - 1;
+      return { type: "tiankong", q: "最大的 " + d + " 位数是（____）。", input: "num", ans: String(maxN),
+        explain: "每一位都取最大数字 9，最大的 " + d + " 位数是 " + maxN + "。" };
+    }
+    if (kind === 2) {
+      var d2 = R(3, 7);
+      var minN = Math.pow(10, d2 - 1);
+      return { type: "tiankong", q: "最小的 " + d2 + " 位数是（____）。", input: "num", ans: String(minN),
+        explain: "最高位取最小非零数字 1，其余位取 0，最小的 " + d2 + " 位数是 " + minN + "。" };
+    }
+    var d3 = R(4, 6);
+    var maxN3 = Math.pow(10, d3) - 1;
+    var minN3 = Math.pow(10, d3 - 1);
+    return { type: "tiankong", q: "最大的 " + d3 + " 位数和最小的 " + d3 + " 位数相差（____）。", input: "num", ans: String(maxN3 - minN3),
+      explain: "最大 " + maxN3 + " − 最小 " + minN3 + " = " + (maxN3 - minN3) + "。" };
+  });
+  RV("g4u1", "tiankong", "数的排序", function () {
+    var base = R(10, 99) * 10000;
+    var nums = [base, base + R(1, 9) * 1000, base + R(10, 99) * 100, base + R(1, 9) * 10000];
+    nums = nums.filter(function (v, i, a) { return a.indexOf(v) === i; });
+    while (nums.length < 4) nums.push(base + R(1, 99999));
+    nums = nums.slice(0, 4);
+    var sorted = nums.slice().sort(function (a, b) { return a - b; });
+    return { type: "tiankong", q: "把 " + nums.join("、") + " 从小到大排列，第二个是（____）。", input: "num", ans: String(sorted[1]),
+      explain: "从小到大：" + sorted.join(" < ") + "，第二个是 " + sorted[1] + "。" };
+  });
+  RV("g4u1", "tiankong", "0的读法", function () {
+    var kind = R(1, 3);
+    if (kind === 1) {
+      return { type: "tiankong", q: "30500 读作三万零（____）百。", input: "num", ans: "5",
+        explain: "30500：万位 3，千位 0，百位 5，读作三万零五百。" };
+    }
+    if (kind === 2) {
+      return { type: "tiankong", q: "40080 读作四万零（____）十。", input: "num", ans: "8",
+        explain: "40080：万位 4，千位 0，百位 0，十位 8，读作四万零八十。" };
+    }
+    return { type: "tiankong", q: "50006 读作五万零（____）。", input: "num", ans: "6",
+      explain: "50006：万位 5，中间连续 3 个 0 只读一个零，个位 6，读作五万零六。" };
+  });
+
+  /* --- xuanze 选择（大幅扩充） --- */
+  RB("g4u1", "xuanze", "大数读写进阶", [
+    { q: "下面各数中，只读一个零的是（　）", opts: ["300500", "305000", "300050"], ans: "300050", exp: "300050 读作三十万零五十，只读一个零。300500 读两个零，305000 一个零也不读。" },
+    { q: "6 0400 0000 读作（　）", opts: ["六亿零四百万", "六亿四百万", "六十四亿"], ans: "六亿零四百万", exp: "分级：6|0400|0000，亿级 6，万级 0400，读作六亿零四百万。" },
+    { q: "一个九位数，最高位是 3，百万位是 5，其余各位都是 0，这个数是（　）", opts: ["305000000", "350000000", "300500000"], ans: "305000000", exp: "九位数最高位是亿位放 3，百万位放 5，其余 0：305000000。" },
+    { q: "下面各数中最大的是（　）", opts: ["999 9999", "1000 0000", "9999 999"], ans: "1000 0000", exp: "1000 0000 是八位数，其余都是七位数，八位数最大。" },
+    { q: "与 10000 相邻的两个数是（　）", opts: ["9999 和 10001", "9998 和 10002", "9990 和 10010"], ans: "9999 和 10001", exp: "相邻就是少 1 和多 1。" }
+  ]);
+  RB("g4u1", "xuanze", "四舍五入与近似数", [
+    { q: "一个数四舍五入到万位是 50 万，这个数最大可能是（　）", opts: ["504999", "505000", "499999"], ans: "504999", exp: "四舍五入到万位是 50 万，千位上最大能是 4（四舍），所以最大是 504999。" },
+    { q: "一个数四舍五入到万位是 50 万，这个数最小可能是（　）", opts: ["495000", "494999", "499999"], ans: "495000", exp: "千位上最小能是 5（五入），所以最小是 495000。" },
+    { q: "下面哪个数是精确数？（　）", opts: ["我校约有 2000 人", "地球到月球约 38 万千米", "一年有 12 个月"], ans: "一年有 12 个月", exp: "\"约\"表示近似，\"12 个月\"是精确数。" },
+    { q: "把 795000 四舍五入到万位是（　）", opts: ["79 万", "80 万", "79.5 万"], ans: "80 万", exp: "千位是 5，五入进 1：79 万 + 1 万 = 80 万。" }
+  ]);
+  RB("g4u1", "xuanze", "数位与计数单位", [
+    { q: "从右边起，第六位是（　）", opts: ["十万位", "百万位", "万位"], ans: "十万位", exp: "个(1)、十(2)、百(3)、千(4)、万(5)、十万(6)。" },
+    { q: "亿位的计数单位是（　）", opts: ["亿位", "亿", "一亿"], ans: "亿", exp: "计数单位是\"亿\"，不是\"亿位\"（那是数位）。" },
+    { q: "10 个一千万是（　）", opts: ["一亿", "十亿", "一千万"], ans: "一亿", exp: "10 × 1000 万 = 1 亿。" },
+    { q: "一个数的最高位是百万位，它是（　）位数。", opts: ["6", "7", "8"], ans: "7", exp: "百万位是从右起第 7 位，所以是 7 位数。" }
+  ]);
+
+  /* --- panduan 判断（大幅扩充） --- */
+  RB("g4u1", "panduan", "大数判断进阶", [
+    { q: "万位上的 5 表示 5 个万。", ans: "对", exp: "万位上的数字表示几个万。" },
+    { q: "一个数中间的 0 都要读出来。", ans: "错", exp: "每级中间连续几个 0 只读一个零，每级末尾的 0 不读。" },
+    { q: "最小的五位数是 10000。", ans: "对", exp: "五位数最高位不能为 0，最小是 10000。" },
+    { q: "49 5000 ≈ 50 万，这里用的是四舍法。", ans: "错", exp: "千位是 5，用的是五入法，不是四舍。" },
+    { q: "99999 再添 1 就是最小的六位数。", ans: "对", exp: "99999 + 1 = 100000，是最小的六位数。" },
+    { q: "计数单位和数位的意义相同。", ans: "错", exp: "计数单位是\"个、十、百…\"，数位是\"个位、十位…\"，意义不同。" },
+    { q: "读数和写数都要从最高位起。", ans: "对", exp: "读写大数都从最高位开始。" },
+    { q: "一个八位数一定比一个七位数大。", ans: "对", exp: "位数多的数一定比位数少的大。" }
+  ]);
+
+  /* --- yingyong 应用（新增大数应用题） --- */
+  RB("g4u1", "yingyong", "大数应用", [
+    { q: "某城市人口约 854 万人，平均每个月约多少万人？（四舍五入取整数）", ans: "71", exp: "854 ÷ 12 ≈ 71（万人）。" },
+    { q: "一本书有 300 页，每页约 800 个字，这本书大约有多少个字？（用万作单位）", ans: "24万", accept: ["24万", "240000", "24 万"], exp: "300 × 800 = 240000 = 24 万（个字）。" },
+    { q: "地球到太阳的平均距离约 149600000 千米，改写成用\"万\"作单位是多少万千米？", ans: "14960万", accept: ["14960万", "14960 万", "14960"], exp: "去掉末尾 4 个 0：149600000 = 14960 万千米。" },
+    { q: "一个工厂去年生产了 2456800 个零件，四舍五入到万位约是多少万个？", ans: "246万", accept: ["246万", "246 万", "246"], exp: "千位是 6，五入进 1：2456800 ≈ 246 万。" }
   ]);
 
   /* g4u2 线与角 */
@@ -6204,7 +6445,7 @@ window.BLOCKS = (function () {
   RB("g4u4", "xuanze", "数对与方向", [
     { q: "小明坐在第 4 列第 3 行，用数对表示是（　）", opts: ["(4, 3)", "(3, 4)", "(4, 4)"], ans: "(4, 3)", exp: "数对先列后行。" },
     { q: "数对 (5, 2) 表示的位置是（　）", opts: ["第 5 列第 2 行", "第 2 列第 5 行", "第 5 行第 2 列"], ans: "第 5 列第 2 行", exp: "第一个数是列，第二个数是行。" },
-    { q: "学校在书店的东北方向，观测点是（　）", opts: ["书店", "学校", "无法确定"], ans: "书店", exp: "“A 在 B 的某方向”，观测点是 B。" },
+    { q: "学校在书店的东北方向，观测点是（　）", opts: ["书店", "学校", "无法确定"], ans: "书店", exp: "\"A 在 B 的某方向\"，观测点是 B。" },
     { q: "数对 (2, 3) 和 (3, 2) 表示的位置（　）", opts: ["不同", "相同", "无法确定"], ans: "不同", exp: "数对顺序不同，位置不同。" },
     { q: "早晨面向太阳站立，左面是（　）方", opts: ["北", "南", "西"], ans: "北", exp: "面东时：前东后西，左北右南。" }
   ]);
@@ -6329,7 +6570,7 @@ window.BLOCKS = (function () {
   RB("g4u8", "panduan", "统计判断", [
     { q: "画条形统计图时，直条的宽窄必须相同。", ans: "对", exp: "否则不公平、不直观。" },
     { q: "统计图的 1 格只能表示 1 个单位。", ans: "错", exp: "数据大时 1 格可以表示 2、5、10 等。" },
-    { q: "根据统计图可以提出建议。", ans: "对", exp: "如“多进一些大家喜欢的玩具”。" },
+    { q: "根据统计图可以提出建议。", ans: "对", exp: "如\"多进一些大家喜欢的玩具\"。" },
     { q: "求总人数只看最多的那一项就行。", ans: "错", exp: "要把所有类别加起来。" }
   ]);
 })();
@@ -6859,7 +7100,7 @@ window.BLOCKS = (function () {
       function () { var p = R(2, 9);
         return { q: "铅笔每支 a 元，买 " + p + " 支一共（____）元（用含 a 的式子表示，格式如 3a）", ans: p + "a", exp: "单价×数量：" + p + "×a=" + p + "a。", acc: [p + "a", "a" + p, p + "×a", p + "*a"] }; },
       function () { var n = R(3, 8);
-        return { q: "一辆汽车每小时行 v 千米，" + n + " 小时行（____）千米（格式如 3v）", ans: n + "v", exp: "速度×时间：" + n + "×v=" + n + "v。", acc: [n + "v", "v" + n, n + "×v", n + "*v"] }; },
+        return { q: "一辆汽车每小时行 " + n + " 千米，" + n + " 小时行（____）千米（格式如 3v）", ans: n + "v", exp: "速度×时间：" + n + "×v=" + n + "v", acc: [n + "v", "v" + n, n + "×v", n + "*v"] }; },
       function () { var m = R(20, 35);
         return { q: "淘气 a 岁，妈妈比他大 " + m + " 岁，妈妈的年龄是（____）岁（格式如 a+5）", ans: "a+" + m, exp: "妈妈的年龄 = a+" + m + "。", acc: ["a+" + m, m + "+a"] }; }
     ];
@@ -7100,10 +7341,15 @@ window.QE = (function () {
     var slot = VGEN[unit] && VGEN[unit][type];
     if (!slot || !slot.fns.length) return null;
     var q = null;
-    for (var t = 0; t < 16; t++) {
+    for (var t = 0; t < 20; t++) {
       var v = rnd(0, slot.fns.length - 1);
       q = makeV(unit, type, v);
-      if (q && !isRecent(q)) break;
+      if (q && !isRecent(q)) {
+        /* 防护：小学不出现负数答案 */
+        var ansNum = parseFloat(q.ans);
+        if (!isNaN(ansNum) && ansNum < 0) { continue; }
+        break;
+      }
     }
     if (q) remember(q);
     return q;
@@ -7121,7 +7367,7 @@ window.QE = (function () {
   /* 举一反三：按错题的 单元+题型 生成同类题。
    * v2.1.1 修复：题库类题目（选择/判断等，每个变体=一道固定题）原先固定用错题的
    * 变体下标出题，导致 3 道举一反三题和错题一模一样。现在改为：
-   * 优先从同单元同题型的「其他变体」里 shuffled 抽取，且互相不重复、不与错题相同。 */
+   * 优先从同单元同题型的"其他变体"里 shuffled 抽取，且互相不重复、不与错题相同。 */
   function dupIn(out, q) {
     var s = sigOf(q);
     for (var k = 0; k < out.length; k++) if (sigOf(out[k]) === s) return true;
@@ -7195,7 +7441,7 @@ window.QE = (function () {
   }
 
   /* 口算速练 */
-  /* ---------- 口算速练「三件套」：口算 / 竖式 / 脱式，偶尔出验算 ---------- */
+  /* ---------- 口算速练"三件套"：口算 / 竖式 / 脱式，偶尔出验算 ---------- */
   function _genKousuan() {
     var kind = rnd(1, 6);
     if (kind === 1) { var a = rnd(2, 9), b = rnd(2, 9);
@@ -7207,7 +7453,8 @@ window.QE = (function () {
     if (kind === 3) { var x = rnd(11, 60), y = rnd(11, 39);
       return { type: "kousuan", q: "<span class='expr'>" + x + " + " + y + " = ?</span>", input: "num", ans: String(x + y), explain: "相同数位相加，满十进一。", kp: "百以内加法" };
     }
-    var x2 = rnd(40, 99), y2 = rnd(11, x2 - 10);
+    var x2 = rnd(50, 99), y2 = rnd(11, Math.min(x2 - 1, 49));
+    if (x2 <= y2) y2 = x2 - 1;
     return { type: "kousuan", q: "<span class='expr'>" + x2 + " − " + y2 + " = ?</span>", input: "num", ans: String(x2 - y2), explain: "不够减要退位。", kp: "百以内减法" };
   }
   function _genShushi() {
@@ -7215,7 +7462,8 @@ window.QE = (function () {
     if (add) { var a = rnd(24, 78), b = rnd(15, 89 - a > 0 ? 89 : 60); if (a + b > 160) b = rnd(11, 60);
       return { type: "shushi", q: "用竖式计算：<br><span class='expr'>" + a + " + " + b + " = ?</span>", input: "num", ans: String(a + b), explain: "个位相加满十向十位进一。" + a + "+" + b + "=" + (a + b) + "。", kp: "竖式加法" };
     }
-    var x = rnd(50, 99), y = rnd(16, x - 12);
+    var x = rnd(50, 99), y = rnd(16, Math.min(x - 1, 80));
+    if (x <= y) y = x - 1;
     return { type: "shushi", q: "用竖式计算：<br><span class='expr'>" + x + " − " + y + " = ?</span>", input: "num", ans: String(x - y), explain: "个位不够减向十位退一当十。" + x + "−" + y + "=" + (x - y) + "。", kp: "竖式减法" };
   }
   function _genTuoshi() {
@@ -7223,7 +7471,8 @@ window.QE = (function () {
     if (kind === 1) { var a = rnd(2, 9), b = rnd(2, 9), c = rnd(2, 40);
       return { type: "tuoshi", q: "脱式计算：<br><span class='expr'>" + a + " × " + b + " + " + c + " = ?</span>", input: "num", ans: String(a * b + c), explain: "先算乘法：" + a + "×" + b + "=" + (a * b) + "，再+" + c + "=" + (a * b + c) + "。", kp: "先乘后加" };
     }
-    if (kind === 2) { var a2 = rnd(2, 9), b2 = rnd(2, 9), c2 = rnd(2, a2 * b2 - 2);
+    if (kind === 2) { var a2 = rnd(3, 9), b2 = rnd(2, 9), c2 = rnd(2, Math.min(a2 * b2 - 1, 30));
+      if (a2 * b2 <= c2) c2 = a2 * b2 - 1;
       return { type: "tuoshi", q: "脱式计算：<br><span class='expr'>" + a2 + " × " + b2 + " − " + c2 + " = ?</span>", input: "num", ans: String(a2 * b2 - c2), explain: "先算乘法再减。" + (a2 * b2) + "−" + c2 + "=" + (a2 * b2 - c2) + "。", kp: "先乘后减" };
     }
     var p = rnd(2, 14), q2 = rnd(2, 14), c3 = rnd(2, 12);
@@ -7258,7 +7507,8 @@ window.QE = (function () {
     if (type === "addsub") {
       var add = Math.random() < 0.5, a, b;
       if (add) { a = rnd(lo, Math.floor(hi / 2)); b = rnd(lo, hi - a); return mkq(a + " + " + b, a + b, "多位数加法", "相同数位相加，满十进一。"); }
-      a = rnd(lo + 1, hi); b = rnd(lo, a - 1); return mkq(a + " − " + b, a - b, "多位数减法", "不够减要向前一位退一。");
+      a = rnd(lo + 1, hi); b = rnd(lo, Math.max(lo, a - 1)); if (a <= b) b = a - 1; if (b < 0) b = 0;
+      return mkq(a + " − " + b, Math.max(0, a - b), "多位数减法", "不够减要向前一位退一。");
     }
     if (type === "muldiv") {
       if (Math.random() < 0.5) {
@@ -7314,7 +7564,8 @@ window.QE = (function () {
       explain: "先算乘法：" + a + "×" + b + "=" + (a * b) + "；再算加法：" + (a * b) + "+" + c + "=" + val + "。" };
   });
   regVariant("u1", "tuoshi", "乘减脱式", function () {
-    var a = rnd(3, 15), b = rnd(2, 9), c = rnd(1, 15), val = a * b - c;
+    var a = rnd(3, 15), b = rnd(2, 9), c = rnd(1, Math.min(a * b - 1, 15)), val = a * b - c;
+    if (val < 0) { c = 1; val = a * b - 1; }
     return { type: "tuoshi", q: "用脱式计算：<br><span class='expr'>" + a + " × " + b + " − " + c + "</span><br>最终得数是多少？", input: "num", ans: String(val),
       explain: "先算乘法：" + a + "×" + b + "=" + (a * b) + "；再算减法：" + (a * b) + "−" + c + "=" + val + "。" };
   });
@@ -8379,7 +8630,7 @@ window.GAMES = (function () {
         var txt = genQ();
         stage.innerHTML = hud() +
           '<div class="game-q">' + txt + ' = ?</div>' +
-          '<div class="game-input-row"><input class="game-input" id="gInput" inputmode="numeric" autocomplete="off">' +
+          '<div class="game-input-row"><input class="game-input" id="gInput" inputmode="decimal" autocomplete="off">' +
           '<button class="btn" id="gOk">确定</button></div>' +
           '<div style="margin-top:14px;text-align:center"><button id="gBack" style="color:#a8a9b5;font-size:13px">← 退出游戏</button></div>';
         stage.querySelector("#gBack").onclick = exitGame;
@@ -8514,8 +8765,8 @@ window.GAMES = (function () {
         '先用 10 减,再把剩下的加回来~</div>' +
         '<div class="game-q" style="font-size:30px">' + M + ' - ' + S + ' = ?</div>' +
         '<div class="card" style="box-shadow:none;background:#fffaf2">' +
-        '<p style="font-size:16px;margin-bottom:10px">第 1 步:先算 10 - ' + S + ' = <span class="step-blank"><input id="s1" inputmode="numeric" maxlength="2"></span></p>' +
-        '<p style="font-size:16px">第 2 步:再算 <span class="step-blank" style="border-color:#06d6a0;color:#059e76" id="midShow">?</span> + ' + ones + ' = <span class="step-blank"><input id="s2" inputmode="numeric" maxlength="2"></span></p>' +
+        '<p style="font-size:16px;margin-bottom:10px">第 1 步:先算 10 - ' + S + ' = <span class="step-blank"><input id="s1" inputmode="decimal" maxlength="2"></span></p>' +
+        '<p style="font-size:16px">第 2 步:再算 <span class="step-blank" style="border-color:#06d6a0;color:#059e76" id="midShow">?</span> + ' + ones + ' = <span class="step-blank"><input id="s2" inputmode="decimal" maxlength="2"></span></p>' +
         '</div>' +
         '<div style="text-align:center;margin-top:14px"><button class="btn" id="gCheck">检查答案</button>' +
         '<div id="gFb" style="margin-top:10px;font-size:14px"></div></div>';
@@ -9105,7 +9356,7 @@ window.GAMES = (function () {
           '<span class="hud-item">✅ ' + score + ' 题</span>' +
           '</div>' +
           '<div class="game-q" style="font-size:24px;margin:16px 0">' + cur.q + ' = ?</div>' +
-          '<div class="game-input-row"><input class="game-input" id="gInput" inputmode="numeric" autocomplete="off"><button class="btn" id="gOk">确定</button></div>' +
+          '<div class="game-input-row"><input class="game-input" id="gInput" inputmode="decimal" autocomplete="off"><button class="btn" id="gOk">确定</button></div>' +
           '<div id="suanTip" style="margin-top:10px;padding:8px;background:#fff7ec;border-radius:10px;font-size:12px;color:#b8762a;text-align:center">💡 想一想,能不能用巧算?</div>' +
           '<div id="suanFb" style="text-align:center;font-size:13px;font-weight:700;margin-top:8px;min-height:18px"></div>' +
           '<div style="margin-top:10px;text-align:center"><button id="gBack" style="color:#a8a9b5;font-size:13px">← 退出</button></div>';
@@ -9155,7 +9406,7 @@ window.GAMES = (function () {
         '<span class="hud-item">✅ 答对 <b id="gScore">0</b> 题</span>' +
         '</div>' +
         '<div class="game-q" style="font-size:24px;margin:12px 0"></div>' +
-        '<div class="game-input-row"><input class="game-input" id="gInput" inputmode="numeric" autocomplete="off">' +
+        '<div class="game-input-row"><input class="game-input" id="gInput" inputmode="decimal" autocomplete="off">' +
         '<button class="btn" id="gOk">确定</button></div>' +
         '<div id="suanTip" style="margin-top:10px;padding:8px;background:#fff7ec;border-radius:10px;font-size:12px;color:#b8762a;text-align:center"></div>' +
         '<div style="margin-top:10px;text-align:center"><button id="gBack" style="color:#a8a9b5;font-size:13px">← 退出</button></div>';
@@ -9204,13 +9455,13 @@ window.GAMES = (function () {
   ];
   function gameSuanBook() {
     var html = '<div class="back-row"><button class="back-btn" id="gBack">‹</button><div class="page-title">📖 速算秘籍</div></div>' +
-      '<div class="card" style="font-size:13px;color:var(--ink-2)">掌握这些巧算技巧,算得又快又准!看完去「速算大比拼」练一练~</div>';
+      '<div class="card" style="font-size:13px;color:var(--ink-2)">掌握这些巧算技巧,算得又快又准!看完去"速算大比拼"练一练~</div>';
     SUANBOOK.forEach(function (t, i) {
       html += '<div class="kp-card"><div class="kp-head"><span class="kp-num" style="background:#ff7a2f">' + (i + 1) + '</span>' + t.icon + ' ' + t.name + '</div>' +
         '<div class="kp-body">' + t.html +
         '<div class="kbox tip" style="margin-top:8px"><div class="kb-title">🌰 例子</div>' + t.ex + '</div></div></div>';
     });
-    html += '<div style="margin:16px 0"><button class="btn block" id="goSuan">🧮 去「速算大比拼」实战</button></div>';
+    html += '<div style="margin:16px 0"><button class="btn block" id="goSuan">🧮 去"速算大比拼"实战</button></div>';
     stage.innerHTML = html;
     stage.querySelector("#gBack").onclick = exitGame;
     stage.querySelector("#goSuan").onclick = gameSuan;
@@ -9761,7 +10012,7 @@ window.GAMES = (function () {
           '<span class="hud-item">📋 第 ' + roundN + ' 题</span>' +
           '<span class="hud-item"><button id="gBack" style="color:#a8a9b5;font-size:12px">退出</button></span></div>' +
           '<div class="game-q" style="font-size:32px">' + sym + ' = ?</div>' +
-          '<div class="game-input-row"><input class="game-input" id="gInput" inputmode="numeric" autocomplete="off">' +
+          '<div class="game-input-row"><input class="game-input" id="gInput" inputmode="decimal" autocomplete="off">' +
           '<button class="btn" id="gOk">确定</button></div>';
         stage.querySelector("#gBack").onclick = exitGame;
         var inp = stage.querySelector("#gInput");
@@ -10037,7 +10288,7 @@ window.GAMES = (function () {
           '<span class="hud-item">📋 ' + (qi + 1) + '/' + QN + '</span>' +
           '<span class="hud-item">⭐ ' + score + '</span></div>' +
           '<div class="game-q" style="font-size:19px">' + q + '</div>' +
-          '<div class="game-input-row"><input class="game-input" id="gInput" inputmode="numeric" autocomplete="off">' +
+          '<div class="game-input-row"><input class="game-input" id="gInput" inputmode="decimal" autocomplete="off">' +
           '<button class="btn" id="gOk">确定</button></div>' +
           '<div id="gufb" style="text-align:center;font-size:13px;margin-top:10px;min-height:18px;line-height:1.5"></div>' +
           '<div style="margin-top:10px;text-align:center"><button id="gBack" style="color:#a8a9b5;font-size:13px">← 退出游戏</button></div>';
@@ -13316,7 +13567,7 @@ window.THINK = (function () {
         { t: "合作效率", html: "两人合作,效率相加。甲每天做 1/a,乙每天做 1/b,合作每天做 1/a + 1/b。" }
       ],
       examples: [
-        { tag: "例题", q: "工人每天加工 30 个零件，5 天加工多少个？", steps: ["30×5", "= 150"], explain: "第一步：效率=每天30个，时间=5天。第二步：工作总量=效率×时间=30×5=150个。基本公式：总量=效率×时间，和行程问题的「路程=速度×时间」完全一样。" }
+        { tag: "例题", q: "工人每天加工 30 个零件，5 天加工多少个？", steps: ["30×5", "= 150"], explain: "第一步：效率=每天30个，时间=5天。第二步：工作总量=效率×时间=30×5=150个。基本公式：总量=效率×时间，和行程问题的\"路程=速度×时间\"完全一样。" }
       ],
       gen: function () {
         var kind = R(1, 10);
@@ -13394,23 +13645,23 @@ window.THINK = (function () {
         { t: "运算要反过来", html: "原来加了的,倒推时减去;原来减了的,倒推时加上;乘了的除以,除了的乘回来。" }
       ],
       examples: [
-        { tag: "例题", q: "一些糖,吃了 6 颗还剩 10 颗。原来有几颗?", steps: ["倒推:剩的 + 吃的", "+ 6 = 16"], explain: "第一步：正向是「原来−吃了=剩的」。第二步：倒推要反过来——原来=剩的+吃的。第三步：原来=10+6=16颗。核心规则：加变减、减变加、乘变除、除变乘——运算全部反过来。" }
+        { tag: "例题", q: "一些糖,吃了 6 颗还剩 10 颗。原来有几颗?", steps: ["倒推:剩的 + 吃的", "+ 6 = 16"], explain: "第一步：正向是\"原来−吃了=剩的\"。第二步：倒推要反过来——原来=剩的+吃的。第三步：原来=10+6=16颗。核心规则：加变减、减变加、乘变除、除变乘——运算全部反过来。" }
       ],
       gen: function () {
         var kind = R(1, 7);
         if (kind === 1) {
           var end = R(20, 90), sub = R(5, 30);
           return { type: "tiankong", q: "一些苹果,吃了 " + sub + " 个后还剩 " + end + " 个。原来有多少个苹果?", input: "num", ans: String(end + sub),
-            explain: "第一步：正向是「原来−" + sub + "=" + end + "」。第二步：倒推——原来=" + end + "+" + sub + "。第三步：原来=" + end + "+" + sub + "=" + (end + sub) + "个。核心：原来减了的，倒推时加回来。" };
+            explain: "第一步：正向是\"原来−" + sub + "=" + end + "\"。第二步：倒推——原来=" + end + "+" + sub + "。第三步：原来=" + end + "+" + sub + "=" + (end + sub) + "个。核心：原来减了的，倒推时加回来。" };
         }
         if (kind === 2) {
           var mid = R(10, 40), got = R(5, 22);
           return { type: "tiankong", q: "小明有一些零花钱,妈妈又给了他 " + got + " 元,现在他有 " + (mid + got) + " 元。他原来有多少元?", input: "num", ans: String(mid),
-            explain: "第一步：正向是「原来+" + got + "=" + (mid + got) + "」。第二步：倒推——原来=" + (mid + got) + "−" + got + "。第三步：原来=" + (mid + got) + "−" + got + "=" + mid + "元。核心：原来加了的，倒推时减回去。" };
+            explain: "第一步：正向是\"原来+" + got + "=" + (mid + got) + "\"。第二步：倒推——原来=" + (mid + got) + "−" + got + "。第三步：原来=" + (mid + got) + "−" + got + "=" + mid + "元。核心：原来加了的，倒推时减回去。" };
         }
         var half = R(10, 50);
         return { type: "tiankong", q: "一筐橘子,卖掉一半后还剩 " + half + " 个。这筐橘子原来有多少个?", input: "num", ans: String(half * 2),
-          explain: "第一步：正向是「原来÷2=" + half + "」（卖掉一半=除以2）。第二步：倒推——原来=" + half + "×2。第三步：原来=" + half + "×2=" + (half * 2) + "个。核心：原来除了的，倒推时乘回来。" };
+          explain: "第一步：正向是\"原来÷2=" + half + "\"（卖掉一半=除以2）。第二步：倒推——原来=" + half + "×2。第三步：原来=" + half + "×2=" + (half * 2) + "个。核心：原来除了的，倒推时乘回来。" };
       }
     },
 
@@ -13639,10 +13890,10 @@ window.THINK = (function () {
     { id: "zhenjia", name: "真假问题", icon: "🎭", color: "#8338ec", level: "中年级",
       desc: "一人说真话一人说假话,用假设法推理。",
       points: [ { t: "假设法", html: "假设某人说真话,推出矛盾则他在说假话。" } ],
-      examples: [ { tag: "例题", q: "甲说「我们俩都在说谎」。谁在说真话?", steps: ["若甲真→两人说谎,矛盾", "甲说谎,乙说真"], explain: "假设法。" } ],
+      examples: [ { tag: "例题", q: "甲说\"我们俩都在说谎\"。谁在说真话?", steps: ["若甲真→两人说谎,矛盾", "甲说谎,乙说真"], explain: "假设法。" } ],
       gen: function () { var kind = R(1, 6);
-        if (kind === 1) return { type: "choice", input: "choice", q: "甲说:「我们俩都在说谎。」乙什么也没说。已知一人总说真话一人总说谎。谁在说真话?", options: ["甲", "乙"], ans: "乙", explain: "若甲说真,则两人说谎,与甲说真矛盾;所以甲说谎、乙说真。" };
-        return { type: "choice", input: "choice", q: "桌上有红蓝两球。甲说:「红球在左边。」乙说:「红球不在左边。」已知一人说真一人说谎。红球在哪边?", options: ["左边", "右边", "无法确定"], ans: "无法确定", explain: "甲乙说法矛盾必一真一假,但无法判断谁说真,故无法确定。" }; } },
+        if (kind === 1) return { type: "choice", input: "choice", q: "甲说:\"我们俩都在说谎。\"乙什么也没说。已知一人总说真话一人总说谎。谁在说真话?", options: ["甲", "乙"], ans: "乙", explain: "若甲说真,则两人说谎,与甲说真矛盾;所以甲说谎、乙说真。" };
+        return { type: "choice", input: "choice", q: "桌上有红蓝两球。甲说:\"红球在左边。\"乙说:\"红球不在左边。\"已知一人说真一人说谎。红球在哪边?", options: ["左边", "右边", "无法确定"], ans: "无法确定", explain: "甲乙说法矛盾必一真一假,但无法判断谁说真,故无法确定。" }; } },
 
     /* ---------------- 排队问题 ---------------- */
     { id: "pailie", name: "排队问题", icon: "🧍", color: "#e63999", level: "高年级",
@@ -13834,7 +14085,7 @@ window.THINK = (function () {
     /* ---------------- 位置与方向 ---------------- */
     { id: "weizhi", name: "位置与方向", icon: "🧭", color: "#ff7a2f", level: "低年级",
       desc: "排队的位置、东南西北方向。",
-      points: [ { t: "位置与方向", html: "排队问题注意「从前/从后数」;方向有东、南、西、北,上北下南左西右东。" } ],
+      points: [ { t: "位置与方向", html: "排队问题注意「从前/从后数」；方向有东、南、西、北,上北下南左西右东。" } ],
       examples: [ { tag: "例题", q: "小明前面有 3 人,后面有 4 人,这队一共几人?", steps: ["3+4+小明自己", "=8"], explain: "别忘了加自己。" } ],
       gen: function () {
         var kind = R(1, 6);
@@ -14470,11 +14721,11 @@ window.OLYMPIAD = (function () {
       desc: "通过已知条件推导出结论，训练严谨的思维。",
       points: [
         { t: "真假话问题", html: "几个人说话，有的说真话有的说假话，通过逻辑推理判断谁说真话。<br><b>方法</b>：假设法——假设某人说真话，看是否矛盾" },
-        { t: "抽屉原理", html: "把n+1个物品放进n个抽屉，至少有一个抽屉放了2个或更多物品。<br><b>应用</b>：证明「至少存在」的问题" },
+        { t: "抽屉原理", html: "把n+1个物品放进n个抽屉，至少有一个抽屉放了2个或更多物品。<br><b>应用</b>：证明\"至少存在\"的问题" },
         { t: "逻辑推理步骤", html: "① 列出所有已知条件<br>② 找出矛盾点<br>③ 用假设法或排除法<br>④ 验证答案是否符合所有条件" }
       ],
       examples: [
-        { tag: "例题", q: "甲说：「乙在说谎。」乙说：「丙在说谎。」丙说：「甲和乙都在说谎。」已知三人中只有一人说真话，谁在说真话？", steps: ["假设甲说真话→乙说谎→丙说真话（矛盾）", "假设乙说真话→丙说谎→甲说真话（矛盾）", "假设丙说真话→甲和乙都说谎→甲说乙说谎（真）矛盾", "重新检验：若乙说真话，丙说谎，甲说乙说谎（假）", "符合：只有乙说真话"], explain: "用假设法逐一检验，只有「乙说真话」符合所有条件。" }
+        { tag: "例题", q: "甲说：\"乙在说谎。\"乙说：\"丙在说谎。\"丙说：\"甲和乙都在说谎。\"已知三人中只有一人说真话，谁在说真话？", steps: ["假设甲说真话→乙说谎→丙说真话（矛盾）", "假设乙说真话→丙说谎→甲说真话（矛盾）", "假设丙说真话→甲和乙都说谎→甲说乙说谎（真）矛盾", "重新检验：若乙说真话，丙说谎，甲说乙说谎（假）", "符合：只有乙说真话"], explain: "用假设法逐一检验，只有\"乙说真话\"符合所有条件。" }
       ],
       gen: function () {
         var items = R(5, 10), drawers = R(2, items - 1);
@@ -15819,7 +16070,7 @@ window.STATS = (function () {
   /* 错题溯源·错因分析 */
   var CAUSES = [
     { id: "calc", icon: "🔢", name: "计算错误", tip: "思路对，但算错了。多练口算、细心验算。" },
-    { id: "concept", icon: "📖", name: "概念不懂", tip: "知识点没吃透。回「学一学」把概念再看一遍。" },
+    { id: "concept", icon: "📖", name: "概念不懂", tip: "知识点没吃透。回\"学一学\"把概念再看一遍。" },
     { id: "read", icon: "👀", name: "审题错误", tip: "看漏条件或看错问题。读题时圈出关键信息。" },
     { id: "method", icon: "💡", name: "思路不会", tip: "不知道用什么方法。看下面精讲，学会思路再做同类题。" }
   ];
@@ -15896,10 +16147,10 @@ window.STATS = (function () {
           var co = null; CAUSES.forEach(function (c) { if (c.id === cid) co = c; });
           return co ? '<span class="chip purple" style="margin:2px">' + co.icon + ' ' + co.name + ' ×' + stats[cid] + '</span>' : '';
         }).join("");
-        html += '<div class="card" style="background:#fff3e0;border:1px solid #ffd9a8"><div style="font-weight:800;color:#b8762a;font-size:13px;margin-bottom:6px">📌 你的高频易错点</div>' + statHtml + '<div style="font-size:11.5px;color:#8a6a3a;margin-top:6px">点每道错题的「错因分析」，先想为什么错，再针对性解决。</div></div>';
+        html += '<div class="card" style="background:#fff3e0;border:1px solid #ffd9a8"><div style="font-weight:800;color:#b8762a;font-size:13px;margin-bottom:6px">📌 你的高频易错点</div>' + statHtml + '<div style="font-size:11.5px;color:#8a6a3a;margin-top:6px">点每道错题的"错因分析"，先想为什么错，再针对性解决。</div></div>';
       }
       html += '<div class="section-title"><span class="bar" style="background:#ef476f"></span>待巩固（' + pending.length + ' 题）</div>';
-      html += '<div class="card" style="font-size:12.5px;color:var(--ink-2)">💡 先「错因分析」想明白为什么错，再「举一反三」出同类题，全对才算掌握！</div>';
+      html += '<div class="card" style="font-size:12.5px;color:var(--ink-2)">💡 先"错因分析"想明白为什么错，再"举一反三"出同类题，全对才算掌握！</div>';
       var groups = WB.groups();
       Object.keys(groups).forEach(function (gkey) {
         html += '<div class="section-title" style="font-size:14px"><span class="bar" style="background:#ffb703"></span>' + esc(gkey) + '（' + groups[gkey].length + '）</div>';
@@ -16418,7 +16669,7 @@ window.STATS = (function () {
     html += '<button class="collapse-head" data-collapse="muti" style="background:#fff7ec">' + arrow(!thinkCollapse.muti) + '<span class="bar" style="background:#e8930a"></span>① 母题精讲 · 学方法 <span class="collapse-count">' + (THINK.MUTI ? THINK.MUTI.length : 0) + ' 道</span></button>';
     if (!thinkCollapse.muti) {
       html += '<div class="collapse-body">' +
-        '<div class="card" style="font-size:12.5px;color:var(--ink-2)">母题 = 一类题的"根"。每道母题配「解题思路+关键+口诀」，学透方法再举一反三！🎯</div>' +
+        '<div class="card" style="font-size:12.5px;color:var(--ink-2)">母题 = 一类题的"根"。每道母题配"解题思路+关键+口诀"，学透方法再举一反三！🎯</div>' +
         '<div class="muti-row">';
       if (window.THINK && THINK.MUTI) {
         THINK.MUTI.forEach(function (m) {
@@ -16947,7 +17198,7 @@ window.STATS = (function () {
     var recentLedger = G.state().ledger.slice(0, 3).map(function (l) {
       return '<span style="color:' + (l.n >= 0 ? '#06a37c' : '#e85d04') + '">' + (l.n >= 0 ? '+' : '') + l.n + '</span> ' + l.reason;
     }).join(' · ');
-    html += '<div class="card" style="font-size:11px;color:#8a8b99;padding:8px 12px">💰 最近变动：' + (recentLedger || '暂无') + '<br><span style="color:#b8bac4">领养/喂养会消耗积分；完整明细见「报告」</span></div>';
+    html += '<div class="card" style="font-size:11px;color:#8a8b99;padding:8px 12px">💰 最近变动：' + (recentLedger || '暂无') + '<br><span style="color:#b8bac4">领养/喂养会消耗积分；完整明细见"报告"</span></div>';
     var checked = G.isCheckedInToday();
     html += '<button class="checkin-btn' + (checked ? ' done' : '') + '" id="checkinBtn">' +
       (checked ? '✅ 今日已打卡 · ' + (u ? u.name : '') + ' 的小动物吃饱啦' : '🍽️ 点我打卡 · 小动物饿着肚子呢（+' + G.CHECKIN_BONUS + '分）') + '</button>';
@@ -17273,7 +17524,7 @@ window.STATS = (function () {
       '<button class="btn ghost" id="backupExport" style="flex:1">📤 导出备份</button>' +
       '<button class="btn ghost" id="backupImport" style="flex:1">📥 恢复备份</button>' +
       '<input type="file" id="backupFile" accept=".json,application/json" style="display:none"></div>' +
-      '<div class="card" style="font-size:11.5px;color:#a8a9b5;margin-top:8px">联网时点「下载离线版」保存到手机，断网也能玩；进度在本机浏览器保存，换设备可用备份迁移。</div>';
+      '<div class="card" style="font-size:11.5px;color:#a8a9b5;margin-top:8px">联网时点"下载离线版"保存到手机，断网也能玩；进度在本机浏览器保存，换设备可用备份迁移。</div>';
     return html;
   }
 
