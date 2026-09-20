@@ -210,6 +210,11 @@ main{padding:14px 14px 92px}
 .type-grid{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
 .type-chip{font-size:13px;font-weight:700;padding:8px 14px;border-radius:20px;background:#fff;border:2px solid var(--line);color:var(--ink-2)}
 .type-chip.sel{background:var(--primary-light);border-color:var(--primary);color:var(--primary-dark)}
+/* 题型专项：一点即练的题型按钮 */
+.kp-drill .kp-go{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:9px 13px;border-radius:12px;background:#fff;border:2px solid #ffd9a8;color:#8a5a20;box-shadow:0 2px 0 #f0dfc0;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:transform .08s}
+.kp-drill .kp-go:active{transform:translateY(1px);box-shadow:none;background:#fff3df}
+.kp-drill .kpg-t{font-size:13px;font-weight:800}
+.kp-drill .kpg-n{font-size:11px;font-weight:700;color:#e8930a}
 .qcard{background:#fff;border-radius:18px;box-shadow:var(--shadow);padding:18px 16px;margin-bottom:12px}
 .q-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .q-type-tag{font-size:12px;font-weight:800;padding:3px 10px;border-radius:8px}
@@ -559,6 +564,11 @@ main{padding:14px 14px 92px}
 .st-btn.close{background:#ff6b6b;color:#fff;border-color:#ff6b6b;font-size:18px}
 #scratchCanvas{flex:1;width:100%;max-width:600px;background:repeating-linear-gradient(rgba(255,253,246,.4),rgba(255,253,246,.4) 27px,rgba(226,206,158,.5) 28px);border:1.5px solid rgba(234,223,194,.7);border-radius:12px;touch-action:none;display:block;margin-bottom:8px}
 .scratch-hint{font-size:11px;color:#a8a9b5;padding:4px 0}
+/* 多空填空：一空一格 */
+.multi-ans{margin-top:10px}
+.ma-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ma-lab{flex:0 0 52px;font-size:12px;font-weight:800;color:var(--ink-2)}
+.ma-row .answer-input{flex:1;width:auto;margin:0}
 /* 手写识别结果条 */
 .ocr-bar{width:100%;max-width:600px;background:#fff;border:2px solid #ffd9a8;border-radius:12px;padding:10px;margin-bottom:8px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
 .ocr-bar.hidden{display:none}
@@ -858,11 +868,20 @@ main{padding:14px 14px 92px}
  * 烧脑数学 · 教材内容数据（北师大版 2024 新课标版 三年级上册）
  * ===================================================================== */
 window.MD = {
-  version: "4.8.1",
+  version: "4.8.2",
   textbook: { grade: "三年级", term: "上册", edition: "北师大版（新课标）" },
 
   /* ---------------- 版本日志（应用内展示） ---------------- */
   changelog: [
+    { ver: "v4.8.2", date: "2026-09-20", items: [
+      "修复题型专项点进去没有反应的真正原因:个别出题代码报错导致整个专项无法开始(四年级上「计数器填空」),已修正并全库复测 1.7 万题零报错",
+      "修复从学一学进入练习时题目页被隐藏的问题:现在会自动切到练习页显示题目,退出时原路返回同一个知识点的专项页",
+      "题型专项交互重做:点题型即可直接开练(原来需先选中再点开始,看起来像点不动),题型按钮改为明显的可点按钮样式",
+      "专项题量固定 10 题:精编题不足时按同一题型自动补足,不再混入其他题型,也不会出现重复题",
+      "多空填空题改为逐空作答:每个空一个输入框,按空依次判分,不再要求一次性填完所有空",
+      "修正错题:四年级上「只读一个零的是」原题 300500 也只读一个零(三十万零五百),存在两个正确答案;已换选项并改正解析",
+      "一并修正自查发现的其它题目数据:「从万位起是几位数」多出不合格空、「9 的位数与最高位」答案错位、里程表当天可问第 5 天(不存在)、「最大的数」选项重复"
+    ]},
     { ver: "v4.8.1", date: "2026-09-20", items: [
       "草稿本新增手写识别🔤:在草稿本写好答案后点🔤,自动识别数字与运算符号",
       "识别结果先给你核对修改,确认后再一键填入答案框(不盲目自动提交),识别失败不影响手动作答"
@@ -6161,7 +6180,7 @@ window.BLOCKS = (function () {
   });
   RV("g4u1", "tiankong", "数位认识", function () {
     var kind = R(1, 3);
-    if (kind === 1) { var n = R(10, 99); return { type: "tiankong", q: n + " 万是（____）位数，最高位是（____）位。（填位数）", input: "num", ans: String(String(n * 10000).length), explain: n + " 万写作 " + (n * 10000) + "，是 " + String(n * 10000).length + " 位数。" }; }
+    if (kind === 1) { var n = R(10, 99); return { type: "tiankong", q: n + " 万是（____）位数。（填位数）", input: "num", ans: String(String(n * 10000).length), explain: n + " 万写作 " + (n * 10000) + "，是 " + String(n * 10000).length + " 位数。" }; }
     if (kind === 2) { var d = R(2, 9); return { type: "tiankong", q: "从右边起，第（____）位是万位。（填数字）", input: "num", ans: "5", explain: "从右起：个、十、百、千、万，万位是第 5 位。" }; }
     return { type: "tiankong", q: "一个数的最高位是千万位，它是（____）位数。（填位数）", input: "num", ans: "8", explain: "千万位是从右起第 8 位，所以是 8 位数。" };
   });
@@ -6176,7 +6195,7 @@ window.BLOCKS = (function () {
     var n = wan * 10000 + qian * 1000 + R(1, 9) * 100;
     var kind = R(1, 2);
     if (kind === 1) return { type: "tiankong", q: n + " 中的数字 " + wan + " 在万位上，表示（____）个万。（填数字）", input: "num", ans: String(wan), explain: "万位上的 " + wan + " 表示 " + wan + " 个万。" };
-    return { type: "tiankong", q: n + " 中的数字 " + qian + " 在（____）位上。（填数位）", input: "text", ans: "千", accept: ["千", "千位"], explain: q + " 中千位上的数字是 " + qian + "。" };
+    return { type: "tiankong", q: n + " 中的数字 " + qian + " 在（____）位上。（填数位）", input: "text", ans: "千", accept: ["千", "千位"], explain: n + " 中千位上的数字是 " + qian + "。" };
   });
   RV("g4u1", "tiankong", "单位换算", function () {
     var kind = R(1, 2);
@@ -6259,14 +6278,16 @@ window.BLOCKS = (function () {
     if (kind === 2) {
       var wan = R(1, 9), bai = R(1, 9);
       var n2 = wan * 10000 + bai * 100;
-      return { type: "tiankong", q: n2 + " 中，" + wan + " 在（____）位上，表示（____）个（____）。", input: "text", ans: "万", accept: ["万", "万位"],
+      return { type: "tiankong", q: n2 + " 中，" + wan + " 在（____）位上，表示（____）个（____）。", input: "text", ans: "万," + wan + ",万", accept: ["万," + wan + ",万", "万位," + wan + ",万"],
         explain: wan + " 在万位上，表示 " + wan + " 个万，即 " + (wan * 10000) + "。" };
     }
     var digits = R(5, 9);
+    /* 位数 → 最高位名称：5位=万位, 6位=十万位, 7位=百万位, 8位=千万位, 9位=亿位 */
+    var POS = ["", "个", "十", "百", "千", "万", "十万", "百万", "千万", "亿"];
+    var pn = POS[digits];
     return { type: "tiankong", q: "一个 " + digits + " 位数，它的最高位是（____）位。", input: "text",
-      ans: ["", "", "", "", "万", "十万", "百万", "千万", "亿"][digits],
-      accept: [["", "", "", "", "万", "十万", "百万", "千万", "亿"][digits]],
-      explain: digits + " 位数的最高位是第 " + digits + " 位，即" + ["", "", "", "", "万", "十万", "百万", "千万", "亿"][digits] + "位。" };
+      ans: pn, accept: [pn],
+      explain: digits + " 位数的最高位是第 " + digits + " 位，即" + pn + "位。" };
   });
   RV("g4u1", "tiankong", "展开式", function () {
     var kind = R(1, 3);
@@ -6391,10 +6412,10 @@ window.BLOCKS = (function () {
 
   /* --- xuanze 选择（大幅扩充） --- */
   RB("g4u1", "xuanze", "大数读写进阶", [
-    { q: "下面各数中，只读一个零的是（　）", opts: ["300500", "305000", "300050"], ans: "300050", exp: "300050 读作三十万零五十，只读一个零。300500 读两个零，305000 一个零也不读。" },
+    { q: "下面各数中，只读一个零的是（　）", opts: ["305000", "300050", "300505", "350000"], ans: "300050", exp: "300050 读作三十万零五十，只读一个零。305000、350000 的 0 都在级末尾，一个零也不读；300505 读作三十万零五百零五，读两个零。" },
     { q: "6 0400 0000 读作（　）", opts: ["六亿零四百万", "六亿四百万", "六十四亿"], ans: "六亿零四百万", exp: "分级：6|0400|0000，亿级 6，万级 0400，读作六亿零四百万。" },
     { q: "一个九位数，最高位是 3，百万位是 5，其余各位都是 0，这个数是（　）", opts: ["305000000", "350000000", "300500000"], ans: "305000000", exp: "九位数最高位是亿位放 3，百万位放 5，其余 0：305000000。" },
-    { q: "下面各数中最大的是（　）", opts: ["999 9999", "1000 0000", "9999 999"], ans: "1000 0000", exp: "1000 0000 是八位数，其余都是七位数，八位数最大。" },
+    { q: "下面各数中最大的是（　）", opts: ["999 9999", "1000 0000", "99 9999"], ans: "1000 0000", exp: "先看位数：1000 0000 是八位数，999 9999 是七位数，99 9999 是六位数，位数多的最大，所以 1000 0000 最大。" },
     { q: "与 10000 相邻的两个数是（　）", opts: ["9999 和 10001", "9998 和 10002", "9990 和 10010"], ans: "9999 和 10001", exp: "相邻就是少 1 和多 1。" }
   ]);
   RB("g4u1", "xuanze", "四舍五入与近似数", [
@@ -7478,6 +7499,10 @@ window.QE = (function () {
     return Object.keys(seen);
   }
   function kpCount(unit, kp) { return ((KPD[unit] || {})[kp] || []).length; }
+  /* 卷内去重签名：同题型同题面视为重复 */
+  function qSig(q) {
+    return (q && q.type ? q.type : "") + "|" + String(q && q.q == null ? "" : q.q).replace(/<[^>]+>/g, "").replace(/\s+/g, "").slice(0, 70);
+  }
   function kpQuestions(unit, kp, types, n) {
     var all = ((KPD[unit] || {})[kp] || []).slice();
     var pool = (types && types.length) ? all.filter(function (it) { return types.indexOf(it.type) >= 0; }) : all;
@@ -7490,13 +7515,28 @@ window.QE = (function () {
       };
     });
     if (n && out.length > n) out = out.slice(0, n);
-    /* 题量不足时用本单元引擎题补足（优先按勾选的题型），保证能开练 */
-    var topUp = (types && types.length) ? types : unitTypes(unit);
-    var guard = 0;
-    while (n && out.length < n && guard < 40) {
+    /* 题量不足时补足：严格保持「专项=该题型」，只用勾选的题型出题并卷内去重；
+     * 只有该题型确实无更多新题时才提前收尾，绝不往里塞别的题型（否则又不针对性了）。
+     * 未指定题型（混练）时才允许用单元全部题型。 */
+    var want = (types && types.length) ? types : unitTypes(unit);
+    var sigs = {};
+    out.forEach(function (q) { sigs[qSig(q)] = 1; });
+    var guard = 0, dry = 0;
+    while (n && out.length < n && guard < 200 && dry < 30) {
       guard++;
-      var q = make(unit, pick(topUp)) || make(unit, pick(unitTypes(unit)));
-      if (q) { q.kp = kp; out.push(q); }
+      if (!want.length) break;
+      var q = null, tries = 0;
+      while (tries++ < 14) {
+        var cand = make(unit, pick(want));
+        if (!cand) continue;
+        if (types && types.length && types.indexOf(cand.type) < 0) continue;  /* 保持题型纯净 */
+        var s = qSig(cand);
+        if (sigs[s]) continue;
+        sigs[s] = 1; q = cand; break;
+      }
+      if (!q) { dry++; continue; }
+      q.kp = kp;
+      out.push(q);
     }
     return out;
   }
@@ -7794,7 +7834,7 @@ window.QE = (function () {
   regVariant("u3", "yingyong", "里程表求当天", function () {
     var y0 = rnd(100, 300), day = [0, 0, 0];
     day[0] = y0 + rnd(60, 150); day[1] = day[0] + rnd(60, 150); day[2] = day[1] + rnd(60, 150);
-    var ask = rnd(1, 5);
+    var ask = rnd(1, 3);
     var ans = ask === 1 ? day[0] - y0 : (ask === 2 ? day[1] - day[0] : day[2] - day[1]);
     var names = ["星期一", "星期二", "星期三"];
     var subExpr = ask === 1 ? day[0] + " − " + y0 : day[ask - 1] + " − " + day[ask - 2];
@@ -16109,7 +16149,8 @@ window.STATS = (function () {
       wireKpDrill($("#kpDetail"), u, p.title);
     }
 
-    /* 题型专项：本知识点的针对性练习（参考教辅「潜能练基础 / 细研提能力」分题型设计） */
+    /* 题型专项：本知识点的针对性练习（参考教辅「潜能练基础 / 细研提能力」分题型设计）
+     * 交互：直接点某个题型即开练该题型；底部两个按钮分别用于「全部题型混练」和「整单元综合练」 */
     function kpDrillHtml(unit, kp) {
       if (!window.QE || !QE.kpTypes) return "";
       var types = QE.kpTypes(unit.id, kp);
@@ -16122,43 +16163,41 @@ window.STATS = (function () {
       }
       if (!types.length) return "";
       var TN = QE.TYPE_NAME;
+      var infoFor = function (t) {
+        if (auto) return "无限出题";
+        var n = QE.kpQuestions(unit.id, kp, [t], 0).length;
+        return n > 0 ? "精编 " + n + " 题" : "引擎出题";
+      };
       return '<div class="section-title" style="margin-top:14px"><span class="bar" style="background:#e8930a"></span>题型专项 · ' + esc(kp) + '</div>' +
         '<div class="kbox" style="background:#fffaf0;border:1.5px solid #ffd9a8">' +
-        '<div class="kb-title" style="color:#b06d00">' + (auto ? "🎲 按题型动态出题，每练一次都是新题" : "🎯 专项题库 " + total + " 道，按题型专练") + '</div>' +
-        '<div class="type-grid" style="margin:8px 0 0">' +
+        '<div class="kb-title" style="color:#b06d00">' + (auto ? "🎲 按题型出题，每练一次都是新题" : "🎯 专项题库 " + total + " 道") + '</div>' +
+        '<div style="font-size:11.5px;color:#8a6a3a;margin:4px 0 2px">👇 点题型直接开练（10 题，不足时按同题型自动补足）</div>' +
+        '<div class="type-grid kp-drill" style="margin:6px 0 0">' +
         types.map(function (t) {
-          var n = auto ? "∞" : QE.kpQuestions(unit.id, kp, [t], 0).length;
-          return '<button class="type-chip kp-type" data-kt="' + t + '">' + TN[t] +
-            ' <b style="color:var(--primary-dark)">' + n + '</b></button>';
+          return '<button class="type-chip kp-go" data-kt="' + t + '"><span class="kpg-t">' + TN[t] + '</span>' +
+            '<span class="kpg-n">' + infoFor(t) + ' ›</span></button>';
         }).join("") + '</div>' +
-        '<div style="font-size:11.5px;color:#8a6a3a;margin:6px 0 8px">可多选，不选＝全部题型</div>' +
-        '<button class="btn block kp-start" style="margin-top:2px">✏️ 开始专项练习</button>' +
-        '<button class="btn block kp-mix" data-mix="1" style="margin-top:8px;background:#eef2ff;color:#3a4a7a">🎲 混练整个单元</button>' +
+        '<button class="btn block kp-start" style="margin-top:10px">🔀 全部题型混练 12 题</button>' +
+        '<button class="btn block kp-mix ghost" data-mix="1" style="margin-top:8px;background:#eef2ff;color:#3a4a7a">🎲 混练整个单元</button>' +
         '</div>';
     }
     function wireKpDrill(root, unit, kp) {
-      var picked = [];
-      $$(".kp-type", root).forEach(function (b) {
-        b.onclick = function () {
-          b.classList.toggle("sel");
-          var t = b.dataset.kt;
-          var k = picked.indexOf(t);
-          if (k >= 0) picked.splice(k, 1); else picked.push(t);
-        };
-      });
-      var go = $(".kp-start", root);
-      if (go) go.onclick = function () {
-        var qs = QE.kpQuestions(unit.id, kp, picked, picked.length ? 10 : 12);
-        if (!qs.length) {
-          qs = QE.makePaper(unit.id, picked.length ? 10 : 12, picked, "normal");
+      var startFor = function (types, n, label) {
+        var qs = QE.kpQuestions(unit.id, kp, types, n);
+        if (!qs || !qs.length) {
+          qs = QE.makePaper(unit.id, n, types, "normal");
           qs.forEach(function (q) { q.kp = kp; });
         }
         if (!qs.length) { toast("这个知识点暂时没有题～"); return; }
-        startSession({
-          title: "第" + unit.num + "单元 · " + kp + " 专项",
-          unit: unit.id, questions: qs
-        });
+        var _kpi = -1;
+        if (unit.points) unit.points.forEach(function (pp, pi) { if (pp.title === kp) _kpi = pi; });
+        startSession({ title: "第" + unit.num + "单元 · " + kp + (label ? " · " + label : "") + " 专项", unit: unit.id, questions: qs, _kpi: _kpi });
       };
+      $$(".kp-go", root).forEach(function (b) {
+        b.onclick = function () { startFor([b.dataset.kt], 10, QE.TYPE_NAME[b.dataset.kt]); };
+      });
+      var go = $(".kp-start", root);
+      if (go) go.onclick = function () { startFor(null, 12, "全题型"); };
       $$(".kp-mix", root).forEach(function (b) {
         b.onclick = function () {
           var qs = QE.makePaper(unit.id, 10, null, "normal");
@@ -16520,10 +16559,31 @@ window.STATS = (function () {
     });
   }
 
+  /* 练习结束/退出：从哪里进来就回哪里（如学一学的单元页），否则回练习首页 */
+  function backToStart() {
+    var from = session && session._from;
+    var uid = session && session.unit;
+    var kpi = session && session._kpi;
+    session = null;
+    if (from === "page-learn" && uid) {
+      switchTab("learn"); openUnit(uid);
+      if (kpi > 0) { var tabs = document.querySelectorAll("#kpTabs .kp-tab"); if (tabs[kpi]) tabs[kpi].click(); }
+      return;
+    }
+    if (from && from !== "page-practice") { switchTab(from.replace("page-", "")); return; }
+    renderPracticeHome();
+  }
+
   function startSession(cfg) {
     cfg.idx = 0; cfg.correct = 0; cfg.total = cfg.questions.length;
     cfg.newWrong = 0;
     cfg.startTs = Date.now();
+    /* 从「学一学」等其他页进入练习时，必须先切到练一练页面：
+     * 否则 #practiceSession 渲染在 display:none 的 #page-practice 里，
+     * 表现为「点了没反应/点不进去」。记录来源，练完自动回到原页面。 */
+    var active = $(".page.active");
+    cfg._from = active ? active.id : "";
+    if (cfg._from && cfg._from !== "page-practice") switchTab("practice");
     if (window.SCRATCH) SCRATCH.show();
     if (window.GARDEN) GARDEN.startActivity("practice", cfg.title || "练习");
     session = cfg;
@@ -16567,7 +16627,17 @@ window.STATS = (function () {
       html += '<div class="judge-row"><button class="judge-btn" data-j="对">✔ 对</button><button class="judge-btn" data-j="错">✘ 错</button></div>';
     } else {
       var _ns = /[^\d.\-]/.test(String(q.ans)) || (q.accept || []).some(function (a) { return /[^\d.\-]/.test(String(a)); });
-      html += '<input class="answer-input" id="ansInput" placeholder="在这里写答案" autocomplete="off" inputmode="' + ((q.input === "num" && !_ns) ? "decimal" : "text") + '">';
+      var _nb = blankCount(q.q), _np = splitParts(q.ans).length;
+      if (_nb >= 2 && _nb === _np) {
+        /* 多空填空：一问一空，逐空填写，交卷时按逗号合并比对 */
+        html += '<div class="multi-ans">' + Array.apply(null, Array(_nb)).map(function (_, k) {
+          return '<div class="ma-row"><span class="ma-lab">第 ' + (k + 1) + ' 空</span>' +
+            '<input class="answer-input ansPart" data-k="' + k + '"' + (k === 0 ? ' id="ansInput"' : '') +
+            ' placeholder="请填写" autocomplete="off" inputmode="text"></div>';
+        }).join("") + '</div>';
+      } else {
+        html += '<input class="answer-input" id="ansInput" placeholder="在这里写答案" autocomplete="off" inputmode="' + ((q.input === "num" && !_ns) ? "decimal" : "text") + '">';
+      }
     }
     html += '<div class="feedback" id="fb"></div>' +
       '<div class="btn-sticky-row">' +
@@ -16578,7 +16648,7 @@ window.STATS = (function () {
     $("#exitSess").onclick = function () {
       if (session && session.timer) clearInterval(session.timer);
       if (window.SCRATCH) SCRATCH.hide();
-      renderPracticeHome();
+      backToStart();
     };
 
     var answered = false, userAns = null;
@@ -16613,9 +16683,11 @@ window.STATS = (function () {
     $("#btnCheck", el).onclick = function () {
       if (answered) return;
       var val;
+      var parts = $$(".ansPart", el);
       if (q.input === "choice" || q.input === "judge" || q.input === "choiceHtml") val = userAns;
+      else if (parts.length) val = parts.map(function (p) { return p.value.trim(); }).join(",");
       else val = inp ? inp.value.trim() : "";
-      if (val === "" || val == null) { toast("先写个答案再提交哦～"); return; }
+      if (val === "" || val == null || /^[,，]*$/.test(val)) { toast("先写个答案再提交哦～"); return; }
       cfg.done = (cfg.done || 0) + 1;
 
       var ok = checkAnswer(q, val);
@@ -16628,6 +16700,7 @@ window.STATS = (function () {
           fbA.className = "feedback show no";
           fbA.innerHTML = '<div class="fb-title">❌ 不对哦，再试一次！</div>';
           if (inp) { inp.value = ""; inp.focus(); }
+          $$(".ansPart", el).forEach(function (p) { p.value = ""; });
           userAns = null;
           $$(".opt-btn", el).forEach(function (b) { b.classList.remove("sel"); });
           return; /* 不锁定、不前进，让用户重答 */
@@ -16718,6 +16791,7 @@ window.STATS = (function () {
         b.disabled = true;
       });
       if (inp) inp.disabled = true;
+      $$(".ansPart", el).forEach(function (p) { p.disabled = true; });
       $("#btnCheck", el).classList.add("hidden");
       $("#btnNext", el).classList.remove("hidden");
     };
@@ -16746,7 +16820,27 @@ window.STATS = (function () {
     for (var j = 0; j < list.length; j++) {
       if (norm(list[j]) === norm(val)) return true;
     }
+    /* 多空填空题：按空逐个比对，允许「万位,千万」这类混合写法 */
+    var mine = splitParts(val);
+    if (mine.length >= 2) {
+      var slots = [];
+      list.forEach(function (a) {
+        var ps = splitParts(a);
+        if (ps.length !== mine.length) return;
+        ps.forEach(function (p, k) { (slots[k] = slots[k] || {})[p] = 1; });
+      });
+      if (slots.length === mine.length && mine.every(function (p, k) { return slots[k] && slots[k][p]; })) return true;
+    }
     return false;
+  }
+  /* 拆分多空答案：按中英文逗号/顿号分隔并归一化 */
+  function splitParts(s) {
+    return String(s == null ? "" : s).split(/[,，、]/).map(norm).filter(function (x) { return x !== ""; });
+  }
+  /* 题面里的空数量（____ 或全角空格括号） */
+  function blankCount(q) {
+    var t = String(q == null ? "" : q).replace(/<[^>]+>/g, "");
+    return (t.match(/（\s*_{2,}\s*）|\(\s*_{2,}\s*\)|（　+）/g) || []).length;
   }
   function showAns(q) {
     if (q.input === "choiceHtml") return "图中正确的那个形状";
@@ -16816,7 +16910,7 @@ window.STATS = (function () {
       '<div class="result-btns" style="margin-top:12px">' +
       '<button class="btn ghost" id="rBack">' + (cfg.similar ? "返回错题本" : "返回练习") + '</button>' +
       '<button class="btn" id="rAgain">再来一次</button></div></div>';
-    $("#rBack").onclick = cfg.similar ? renderWrongBook : renderPracticeHome;
+    $("#rBack").onclick = cfg.similar ? renderWrongBook : backToStart;
     $("#rAgain").onclick = function () {
       if (cfg.similar) {
         var entry = null;
