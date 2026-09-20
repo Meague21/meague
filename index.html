@@ -559,6 +559,13 @@ main{padding:14px 14px 92px}
 .st-btn.close{background:#ff6b6b;color:#fff;border-color:#ff6b6b;font-size:18px}
 #scratchCanvas{flex:1;width:100%;max-width:600px;background:repeating-linear-gradient(rgba(255,253,246,.4),rgba(255,253,246,.4) 27px,rgba(226,206,158,.5) 28px);border:1.5px solid rgba(234,223,194,.7);border-radius:12px;touch-action:none;display:block;margin-bottom:8px}
 .scratch-hint{font-size:11px;color:#a8a9b5;padding:4px 0}
+/* 手写识别结果条 */
+.ocr-bar{width:100%;max-width:600px;background:#fff;border:2px solid #ffd9a8;border-radius:12px;padding:10px;margin-bottom:8px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
+.ocr-bar.hidden{display:none}
+.ocr-tip{font-size:12px;font-weight:700;color:#8a5a20;margin-bottom:6px}
+.ocr-input{width:100%;box-sizing:border-box;padding:10px 12px;font-size:17px;font-weight:700;border:2px solid #eef0f6;border-radius:10px;background:#fffdf6;color:var(--ink)}
+.ocr-btns{display:flex;gap:8px;margin-top:8px}
+.ocr-btns .btn{flex:1;padding:9px 0;font-size:13.5px}
 /* 学习报告 */
 .stats-tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
 .stats-tab{flex:1;min-width:0;padding:8px 4px;border-radius:10px;background:#f8f9fa;font-size:12px;font-weight:600;color:var(--ink-2);border:none;white-space:nowrap}
@@ -812,13 +819,22 @@ main{padding:14px 14px 92px}
     <div class="scratch-tools">
       <button class="st-btn sel" data-tool="pen" title="画笔">✏️</button>
       <button class="st-btn" data-tool="eraser" title="橡皮">🧽</button>
+      <button class="st-btn" id="scratchOcr" title="识别手写并填入答案">🔤</button>
       <button class="st-btn" id="scratchUndo" title="撤销">↩️</button>
       <button class="st-btn" id="scratchClear" title="清空">🗑️</button>
       <button class="st-btn close" id="scratchClose" title="收起">✕</button>
     </div>
   </div>
   <canvas id="scratchCanvas"></canvas>
-  <div class="scratch-hint">画完后点右上角 ✕ 收起</div>
+  <div class="scratch-hint" id="scratchHint">画完后点右上角 ✕ 收起 · 写完答案点 🔤 可识别填入</div>
+  <div class="ocr-bar hidden" id="ocrBar">
+    <div class="ocr-tip" id="ocrTip">🔤 正在识别…</div>
+    <input class="ocr-input" id="ocrInput" inputmode="text" placeholder="识别结果，可手动修改">
+    <div class="ocr-btns">
+      <button class="btn" id="ocrFill">✅ 填入答案</button>
+      <button class="btn ghost" id="ocrCancel">取消</button>
+    </div>
+  </div>
 </div>
 
 <!-- 用户门：创建 / 选择用户 -->
@@ -842,11 +858,15 @@ main{padding:14px 14px 92px}
  * 烧脑数学 · 教材内容数据（北师大版 2024 新课标版 三年级上册）
  * ===================================================================== */
 window.MD = {
-  version: "4.8.0",
+  version: "4.8.1",
   textbook: { grade: "三年级", term: "上册", edition: "北师大版（新课标）" },
 
   /* ---------------- 版本日志（应用内展示） ---------------- */
   changelog: [
+    { ver: "v4.8.1", date: "2026-09-20", items: [
+      "草稿本新增手写识别🔤:在草稿本写好答案后点🔤,自动识别数字与运算符号",
+      "识别结果先给你核对修改,确认后再一键填入答案框(不盲目自动提交),识别失败不影响手动作答"
+    ]},
     { ver: "v4.8.0", date: "2026-09-19", items: [
       "知识点题型专项:四年级上全部23个知识点新增按题型专练题库(150道),每个知识点详情页可单选题型开练",
       "其余年级/单元知识点接入动态专项:按引擎实时出题,同样支持题型筛选与混练",
@@ -13211,6 +13231,15 @@ window.SCRATCH = (function () {
   var tool = "pen", drawing = false, lastX = 0, lastY = 0;
   var strokes = []; /* 撤销用：每笔是 ImageData 快照前的记录，这里简化为重放点集 */
   var current = null;
+  /* 本模块独立提示（主站 toast 不在同一闭包作用域内） */
+  function notify(msg) {
+    var t = document.getElementById("toast");
+    if (!t) return;
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(t._h);
+    t._h = setTimeout(function () { t.classList.remove("show"); }, 2400);
+  }
 
   function init() {
     bean = document.getElementById("scratchBean");
@@ -13269,6 +13298,77 @@ window.SCRATCH = (function () {
     canvas.addEventListener("pointerup", up);
     canvas.addEventListener("pointercancel", up);
     canvas.addEventListener("pointerleave", up);
+    /* ---- 手写识别：识别草稿笔迹 → 可编辑预览 → 用户确认后填入答案框 ---- */
+    var ocrBtn = document.getElementById("scratchOcr");
+    var ocrBar = document.getElementById("ocrBar");
+    var ocrTip = document.getElementById("ocrTip");
+    var ocrInput = document.getElementById("ocrInput");
+    if (ocrBtn) ocrBtn.onclick = function () {
+      if (!strokes.length) { notify("草稿本是空的，先写点内容再识别～"); return; }
+      recognize();
+    };
+    if (document.getElementById("ocrFill")) document.getElementById("ocrFill").onclick = function () {
+      var val = (ocrInput.value || "").trim();
+      if (!val) { notify("识别结果为空，可手动输入或再试试～"); return; }
+      var tgt = document.getElementById("ansInput");
+      if (!tgt) { notify("当前题目用点选作答，手写识别先不支持哦～"); return; }
+      tgt.value = val;
+      ocrBar.classList.add("hidden");
+      closePanel();
+      tgt.focus();
+      notify("已填入答案框，确认无误后点「提交答案」");
+    };
+    if (document.getElementById("ocrCancel")) document.getElementById("ocrCancel").onclick = function () {
+      ocrBar.classList.add("hidden");
+    };
+    /* 动态加载 tesseract.js（首次用才下载），带进度提示与失败兜底 */
+    function loadScript(src, cb) {
+      if (window.Tesseract) { cb(true); return; }
+      var s = document.createElement("script");
+      s.src = src; s.async = true;
+      s.onload = function () { cb(true); };
+      s.onerror = function () { cb(false); };
+      document.head.appendChild(s);
+    }
+    function cleanOcr(s) {
+      return String(s || "").replace(/[\s]+/g, "").replace(/[^0-9+\-×xX*\/÷=.()]/g, "");
+    }
+    function ocrImage() {
+      var c = document.createElement("canvas");
+      c.width = canvas.width; c.height = canvas.height;
+      var x = c.getContext("2d");
+      x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height);
+      x.drawImage(canvas, 0, 0);
+      return c;
+    }
+    function recognize() {
+      ocrBar.classList.remove("hidden");
+      ocrInput.value = "";
+      ocrTip.textContent = "🔤 正在加载识别引擎…";
+      loadScript("https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js", function (ok) {
+        if (!ok) { ocrTip.textContent = "⚠️ 引擎加载失败（网络受限），可手动输入答案"; return; }
+        var img = ocrImage();
+        ocrTip.textContent = "🔤 正在识别，请稍候（首次需下载字库）…";
+        var p = window.__ocrWorker ? Promise.resolve(window.__ocrWorker)
+          : Tesseract.createWorker("eng", 1, {
+              logger: function (m) {
+                if (m.status === "recognizing text") ocrTip.textContent = "🔤 识别中 " + Math.round((m.progress || 0) * 100) + "%";
+              }
+            }).then(function (w) {
+              return w.setParameters({ tessedit_char_whitelist: "0123456789+-x×*/÷=.()" }).then(function () { return w; });
+            });
+        p.then(function (w) {
+          window.__ocrWorker = w;
+          return w.recognize(img);
+        }).then(function (res) {
+          var cleaned = cleanOcr(res && res.data && res.data.text);
+          ocrInput.value = cleaned;
+          ocrTip.textContent = cleaned ? "🔤 识别完成，请核对（可直接改），再点「填入答案」" : "🔤 没识别清楚，写大一点或再试一次";
+        }).catch(function () {
+          ocrTip.textContent = "⚠️ 识别出错，可手动输入答案";
+        });
+      });
+    }
     hide();
   }
   function ensureCtx() {
@@ -13348,6 +13448,8 @@ window.SCRATCH = (function () {
   function closePanel() {
     panel.classList.add("hidden");
     bean.classList.remove("hidden");
+    var ob = document.getElementById("ocrBar");
+    if (ob) ob.classList.add("hidden");
   }
   function show() { if (bean) bean.classList.remove("hidden"); }
   function hide() {
