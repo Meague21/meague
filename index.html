@@ -134,6 +134,24 @@ main{padding:14px 14px 92px}
 .mm-b-title{font-size:14px;font-weight:800;color:var(--bc,#ff7a2f);display:flex;align-items:center;gap:6px}
 .mm-leaves{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
 .mm-leaf{font-size:12.5px;background:#fff8ef;border:1px solid #ffe3bd;color:#7a4a12;padding:4px 10px;border-radius:10px}
+/* 树状思维导图（参考教辅「单元知识点梳理」样式） */
+.mmt{margin-top:2px}
+.mmt-root{display:flex;justify-content:center}
+.mmt-root span{background:linear-gradient(135deg,#ff9a3d,#ff6b2f);color:#fff;font-weight:800;font-size:14.5px;padding:7px 18px;border-radius:22px;box-shadow:0 4px 10px rgba(255,107,47,.28);text-align:center}
+.mmt-stem{width:2px;height:12px;background:#e3c9a3;margin:0 auto}
+.mmt-list{position:relative;padding-left:20px}
+.mmt-list::before{content:"";position:absolute;left:7px;top:0;bottom:26px;width:2px;background:#e3c9a3;border-radius:2px}
+.mmt-row{position:relative;display:flex;gap:8px;align-items:stretch;margin-bottom:10px}
+.mmt-row:last-child{margin-bottom:2px}
+.mmt-row::before{content:"";position:absolute;left:-13px;top:50%;width:13px;height:2px;background:#e3c9a3}
+.mmt-branch{flex:none;width:58px;display:flex;align-items:center;justify-content:center;text-align:center;
+  background:var(--bc,#ff7a2f);color:#fff;font-size:12px;font-weight:800;line-height:1.35;
+  padding:6px 4px;border-radius:10px;box-shadow:0 2px 6px rgba(0,0,0,.08);word-break:break-word}
+.mmt-detail{flex:1;min-width:0;background:#fff;border:1.5px solid #eadfc2;border-radius:10px;padding:8px 10px;font-size:12.8px;line-height:1.65;color:#5b4a36}
+.mmt-detail div{position:relative;padding-left:15px;margin-bottom:3px}
+.mmt-detail div:last-child{margin-bottom:0}
+.mmt-detail div::before{content:attr(data-i);position:absolute;left:0;top:0;font-size:11px;font-weight:800;color:var(--bc,#ff7a2f)}
+.mmt-detail b{color:#c2410c}
 
 /* 知识点卡片 */
 .kp-card{background:#fff;border-radius:16px;box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden}
@@ -531,7 +549,7 @@ main{padding:14px 14px 92px}
 .scratch-bean.dragging{cursor:grabbing;opacity:.7}
 .scratch-bean.hidden{display:none}
 .scratch-bean:active{transform:translateY(-50%) scale(.92)}
-.scratch-overlay{position:fixed;inset:0;z-index:200;background:rgba(255,253,246,.45);backdrop-filter:blur(1px);display:flex;flex-direction:column;align-items:center;padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom)}
+.scratch-overlay{position:fixed;inset:0;z-index:200;background:rgba(255,253,246,.18);display:flex;flex-direction:column;align-items:center;padding:env(safe-area-inset-top) 12px env(safe-area-inset-bottom)}
 .scratch-overlay.hidden{display:none}
 .scratch-head{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:600px;padding:10px 0 6px}
 .scratch-title{font-size:14px;font-weight:800;color:#8a5a20}
@@ -539,7 +557,7 @@ main{padding:14px 14px 92px}
 .st-btn{width:34px;height:34px;border-radius:10px;background:#fff;border:2px solid #eef0f6;font-size:16px;display:flex;align-items:center;justify-content:center}
 .st-btn.sel{border-color:#ffb703;background:#fff7ec}
 .st-btn.close{background:#ff6b6b;color:#fff;border-color:#ff6b6b;font-size:18px}
-#scratchCanvas{flex:1;width:100%;max-width:600px;background:repeating-linear-gradient(#fffdf6,#fffdf6 27px,#f3ead2 28px);border:1.5px solid #eadfc2;border-radius:12px;touch-action:none;display:block;margin-bottom:8px}
+#scratchCanvas{flex:1;width:100%;max-width:600px;background:repeating-linear-gradient(rgba(255,253,246,.4),rgba(255,253,246,.4) 27px,rgba(226,206,158,.5) 28px);border:1.5px solid rgba(234,223,194,.7);border-radius:12px;touch-action:none;display:block;margin-bottom:8px}
 .scratch-hint{font-size:11px;color:#a8a9b5;padding:4px 0}
 /* 学习报告 */
 .stats-tabs{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
@@ -824,11 +842,19 @@ main{padding:14px 14px 92px}
  * 烧脑数学 · 教材内容数据（北师大版 2024 新课标版 三年级上册）
  * ===================================================================== */
 window.MD = {
-  version: "4.7.0",
+  version: "4.8.0",
   textbook: { grade: "三年级", term: "上册", edition: "北师大版（新课标）" },
 
   /* ---------------- 版本日志（应用内展示） ---------------- */
   changelog: [
+    { ver: "v4.8.0", date: "2026-09-19", items: [
+      "知识点题型专项:四年级上全部23个知识点新增按题型专练题库(150道),每个知识点详情页可单选题型开练",
+      "其余年级/单元知识点接入动态专项:按引擎实时出题,同样支持题型筛选与混练",
+      "草稿本全面透明化:背景降至约40%不透明度,可直接看到底下题目边算边写;橡皮改为真正擦除",
+      "公式速查修复:年级×主题双筛选空结果问题,主题标签显示题目数、无题标签置灰,自动回退+空状态引导",
+      "母题精讲新增11道:周期与星期、过桥、空瓶换酒、卖鸡盈亏、组数计数、多步还原、面积变化、时针夹角、龟鹤、多次相遇、爬楼梯等,均接入举一反三",
+      "全单元知识点思维导图上线:树状结构(根→分支→编号要点),75个单元全覆盖"
+    ]},
     { ver: "v4.7.0", date: "2026-09-03", items: [
       "单元专项练习大幅扩充:认识更大的数新增口算/填空/选择/判断/应用共40+道专项题",
       "负数防护:出题引擎全局过滤负数答案,减法生成器加安全防护",
@@ -7409,6 +7435,52 @@ window.QE = (function () {
     return VGEN[unit] ? Object.keys(VGEN[unit]) : [];
   }
 
+  /* ---------- 知识点题型专项（KPD） ----------
+   * KPD[单元][知识点] = [{t,q,a,exp,opts,accept}]
+   * 与 regVariant（按题型注册）互补：这里按「知识点」精确归档，
+   * 学一学每个知识点都能直接开一组针对性专项题。
+   */
+  var KPD = {};
+  function regKP(unit, kp, items) {
+    if (!KPD[unit]) KPD[unit] = {};
+    if (!KPD[unit][kp]) KPD[unit][kp] = [];
+    items.forEach(function (it) {
+      KPD[unit][kp].push({
+        type: it.t || "tiankong", q: it.q, ans: String(it.a),
+        accept: it.accept, options: it.opts, explain: it.exp || "", kp: kp
+      });
+    });
+  }
+  function kpList(unit) { return KPD[unit] ? Object.keys(KPD[unit]) : []; }
+  function kpTypes(unit, kp) {
+    var seen = {};
+    ((KPD[unit] || {})[kp] || []).forEach(function (it) { seen[it.type] = 1; });
+    return Object.keys(seen);
+  }
+  function kpCount(unit, kp) { return ((KPD[unit] || {})[kp] || []).length; }
+  function kpQuestions(unit, kp, types, n) {
+    var all = ((KPD[unit] || {})[kp] || []).slice();
+    var pool = (types && types.length) ? all.filter(function (it) { return types.indexOf(it.type) >= 0; }) : all;
+    var out = shuffle(pool).map(function (it) {
+      return {
+        type: it.type, q: it.q, ans: it.ans, accept: it.accept,
+        options: it.options ? shuffle(it.options) : undefined,
+        input: it.type === "xuanze" ? "choice" : (it.type === "panduan" ? "judge" : (it.type === "yingyong" ? "num" : "text")),
+        explain: it.explain, kp: kp, unit: unit
+      };
+    });
+    if (n && out.length > n) out = out.slice(0, n);
+    /* 题量不足时用本单元引擎题补足（优先按勾选的题型），保证能开练 */
+    var topUp = (types && types.length) ? types : unitTypes(unit);
+    var guard = 0;
+    while (n && out.length < n && guard < 40) {
+      guard++;
+      var q = make(unit, pick(topUp)) || make(unit, pick(unitTypes(unit)));
+      if (q) { q.kp = kp; out.push(q); }
+    }
+    return out;
+  }
+
   function makePaper(unitId, n, types, difficulty) {
     _hardMode = difficulty === "hard";
     var pool = types && types.length ? types : unitTypes(unitId);
@@ -7966,12 +8038,479 @@ window.QE = (function () {
   return {
     TYPES: TYPES, TYPE_NAME: TYPE_NAME,
     unitTypes: unitTypes,
+    regKP: regKP, kpList: kpList, kpTypes: kpTypes, kpCount: kpCount, kpQuestions: kpQuestions,
     make: make, makeV: makeV, makePaper: makePaper, similar: similar,
     quickKousuan: quickKousuan, quickGen: quickGen,
     regVariant: regVariant, regBank: regBank,
     rnd: rnd, pick: pick, shuffle: shuffle
   };
 })();
+/* =====================================================================
+ * 烧脑数学 · 知识点题型专项库（第一批：四年级上册）
+ * 参考教辅「潜能练基础 · 核心知识针对练 / 细研提能力 · 能力拓展提升练」
+ * 的分题型设计思路：每个知识点配 快乐填一填 / 认真选一选 / 判断 /
+ * 竖式与脱式 / 解决问题 等专项题，答案由表达式实时算出，避免算错。
+ * ===================================================================== */
+(function () {
+  if (!window.QE || !QE.regKP) return;
+
+  /* 数字 → 中文读法（亿以内），按四位分级 */
+  var CN = ["零", "一", "二", "三", "四", "五", "六", "七", "八", "九"];
+  var SUB = ["", "十", "百", "千"];
+  function readFour(str) {
+    var d = String(str).split(""), out = "", zero = false, n = d.length;
+    for (var i = 0; i < n; i++) {
+      var v = +d[i], p = n - 1 - i;
+      if (v === 0) { zero = true; continue; }
+      if (zero && out) out += "零";
+      zero = false;
+      out += CN[v] + SUB[p];
+    }
+    return out;
+  }
+  function readCN(n) {
+    var s = String(n), parts = [], t = s;
+    while (t.length > 4) { parts.unshift(t.slice(-4)); t = t.slice(0, -4); }
+    parts.unshift(t);
+    var NAME = ["", "万", "亿"], out = "", top = parts.length - 1;
+    parts.forEach(function (p, i) {
+      var lvl = top - i;
+      if (+p === 0) { if (lvl > 0 && out) out += "零"; return; }
+      if (out && p.length === 4 && p.charAt(0) === "0") out += "零";
+      out += readFour(p.replace(/^0+/, "") || "0") + (NAME[lvl] || "");
+    });
+    out = out.replace(/零+/g, "零").replace(/零$/, "");
+    return out.replace(/^一十/, "十");
+  }
+
+  /* ---------------- 第一单元 · 认识更大的数 ---------------- */
+  QE.regKP("g4u1", "数位顺序表", [
+    { t: "tiankong", q: "在数位顺序表中，从右边起第五位是（____）位，第八位是（____）位。", a: "万,千万",
+      accept: ["万位,千万位", "万,千万"],
+      exp: "从右起依次：个位、十位、百位、千位、万位、十万位、百万位、千万位。第五位是万位，第八位是千万位。" },
+    { t: "tiankong", q: "每相邻两个计数单位之间的进率都是（____），这种计数方法叫（____）计数法。", a: "10,十进制",
+      accept: ["十,十进制", "10,十进制"],
+      exp: "10 个一是十、10 个十是一百……进率都是 10，所以叫十进制计数法。" },
+    { t: "tiankong", q: "从右边起，每（____）个数位分一级，数级从低到高依次是个级、（____）级、（____）级。", a: "4,万,亿",
+      accept: ["4,万级,亿级", "四,万,亿"],
+      exp: "从右往左每 4 个数位一级，依次是个级、万级、亿级。" },
+    { t: "xuanze", q: "与「十万位」相邻的两个数位是（　）。", a: "万位和百万位",
+      opts: ["万位和百万位", "万和百万", "十万和百万", "千位和百万位"],
+      exp: "十万位的右边是万位、左边是百万位。注意题目问的是「数位」，要带「位」字。" },
+    { t: "xuanze", q: "一个数的最高位是千万位，这个数是（　）。", a: "八位数",
+      opts: ["八位数", "七位数", "九位数", "六位数"],
+      exp: "千万位是从右数第八位，所以这个数是八位数。" },
+    { t: "panduan", q: "「计数单位」和「数位」表示的是同一个意思。", a: "错",
+      exp: "计数单位是个、十、百、千……，数位是个位、十位、百位……，计数单位加上「位」才是数位。" },
+    { t: "panduan", q: "个位、十位、百位、千位都是计数单位。", a: "错",
+      exp: "它们带了「位」字，是数位；计数单位是一（个）、十、百、千。" },
+    { t: "tiankong", q: "490508 中的「9」在（____）位上，表示 9 个（____）。", a: "万,万",
+      accept: ["万位,万"],
+      exp: "从右数：8 个位、0 十位、5 百位、0 千位、9 万位、4 十万位。9 在万位，表示 9 个万。" },
+    { t: "tiankong", q: "10 个一百万是（____），10 个一千万是（____）。", a: "一千万,一亿",
+      accept: ["千万,亿", "一千万,一亿", "10000000,100000000"],
+      exp: "相邻计数单位进率是 10：10 个一百万是一千万，10 个一千万是一亿。" },
+    { t: "yingyong", q: "一个六位数，最高位上是 7，其余各位都是最大的一位数，这个数是多少？", a: "799999",
+      exp: "六位数的最高位是十万位，写 7；其余五位都写最大的一位数 9，所以是 799999。" }
+  ]);
+
+  QE.regKP("g4u1", "大数的读法和写法", [
+    { t: "tiankong", q: "5500 5000 读作（____）。", a: readCN(55005000),
+      exp: "先分级 5500|5000：万级 5500 读作五千五百万，个级 5000 读作五千，合起来是" + readCN(55005000) + "。" },
+    { t: "tiankong", q: "9030 5800 读作（____）。", a: readCN(90305800),
+      exp: "分级 9030|5800，万级读九千零三十万，个级读五千八百，合起来是" + readCN(90305800) + "。" },
+    { t: "tiankong", q: "1 2603 0092 读作（____）。", a: readCN(126030092),
+      exp: "分三级 1|2603|0092：一亿 + 二千六百零三万 + 零九十二，亿级和个级之间的 0 要读一个零。" },
+    { t: "tiankong", q: "三百零五万零四十 写作（____）。", a: String(3050040),
+      exp: "万级写 305，个级写 0040（不满四位用 0 占位），合起来是 3050040。" },
+    { t: "tiankong", q: "十二亿四千零三十七万零九十 写作（____）。", a: String(1240370090),
+      exp: "亿级 12、万级 4037、个级 0090，写作 1240370090。" },
+    { t: "xuanze", q: "下面各数中，一个零都不读的是（　）。", a: "506000",
+      opts: ["506000", "500600", "500006", "500606"],
+      exp: "506000 读作五十万六千，末尾的 0 都不读；其余三个数中间的 0 都要读出来。" },
+    { t: "xuanze", q: "下面各数中，十万位上的数是 8 的是（　）。", a: "2803926",
+      opts: ["2803926", "8203926", "2083926", "8023926"],
+      exp: "十万位是从右数第六位。2803926 从右依次是 6、2、9、3、0、8、2，第六位是 8；8203926 的 8 在百万位，2083926 的 8 在万位。" },
+    { t: "panduan", q: "读数时，每级末尾的 0 都要读出来。", a: "错",
+      exp: "每级末尾的 0 都不读；其他数位有一个 0 或连续几个 0，都只读一个「零」。" },
+    { t: "panduan", q: "写数时，哪一位上一个计数单位也没有，就写 0 占位。", a: "对",
+      exp: "0 起占位作用，漏写会改变数的大小。" },
+    { t: "tiankong", q: "用 3 个 0 和 1、2、3 组成最大的六位数是（____）。", a: "321000",
+      exp: "把大数字往高位放：3、2、1 依次排在十万位、万位、千位，3 个 0 放在末尾。" },
+    { t: "tiankong", q: "9080050 是由（____）个百万、（____）个万和（____）个十组成的。", a: "9,8,5",
+      exp: "9 在百万位、8 在万位、5 在十位，所以是 9 个百万、8 个万、5 个十。" }
+  ]);
+
+  QE.regKP("g4u1", "改写和求近似数", [
+    { t: "tiankong", q: "3600000 = （____）万", a: String(3600000 / 10000),
+      exp: "整万数改写成用「万」作单位，去掉末尾 4 个 0，写上「万」字：3600000 = 360 万。" },
+    { t: "tiankong", q: "5400000000 = （____）亿", a: String(5400000000 / 100000000),
+      exp: "整亿数去掉末尾 8 个 0 添「亿」字：5400000000 = 54 亿。" },
+    { t: "tiankong", q: "845000 省略万位后面的尾数约是（____）万。", a: "85",
+      exp: "精确到万位看千位，千位是 5，满 5 进 1，84 万 → 85 万。" },
+    { t: "tiankong", q: "498000 省略万位后面的尾数约是（____）万。", a: "50",
+      exp: "千位是 8，满 5 进 1，49 万 → 50 万。" },
+    { t: "xuanze", q: "把 845000 四舍五入到万位，正确的是（　）。", a: "85万",
+      opts: ["85万", "84万", "84.5万", "90万"],
+      exp: "看千位 5，向万位进 1 得 85 万。改写后不能带小数，也不能省略「万」字。" },
+    { t: "panduan", q: "「改写」和「求近似数」的意义完全一样。", a: "错",
+      exp: "改写后大小不变，用「=」；求近似数大小变了，用「≈」。" },
+    { t: "tiankong", q: "一个数四舍五入到万位约是 60 万，这个数最大是（____）。", a: "604999",
+      exp: "最大时万级是 60、千位最大填 4，后面全填 9，即 604999。" },
+    { t: "tiankong", q: "一个数四舍五入到万位约是 60 万，这个数最小是（____）。", a: "595000",
+      exp: "最小时万级是 59、千位最小填 5，后面全填 0，即 595000。" },
+    { t: "tiankong", q: "508000 ≈ （____）万（省略万位后面的尾数）", a: "51",
+      exp: "千位是 8，满 5 进 1，50 万 → 51 万。" }
+  ]);
+
+  /* ---------------- 第二单元 · 线与角 ---------------- */
+  QE.regKP("g4u2", "线段、射线、直线", [
+    { t: "tiankong", q: "线段有（____）个端点，射线有（____）个端点，直线（____）个端点。", a: "2,1,0",
+      accept: ["2,1,没有", "两,一,没有", "2,1,没有0"],
+      exp: "线段 2 个端点、可以测量；射线 1 个端点、向一端无限延伸；直线没有端点、向两端无限延伸。" },
+    { t: "xuanze", q: "过一点可以画（　）条直线。", a: "无数", opts: ["无数", "1", "2", "4"],
+      exp: "过一个点可以向任意方向画直线，所以有无数条；过两点只能画 1 条。" },
+    { t: "xuanze", q: "两点之间（　）最短。", a: "线段", opts: ["线段", "直线", "射线", "曲线"],
+      exp: "这是基本事实：两点之间线段的长度叫做两点间的距离。" },
+    { t: "panduan", q: "射线可以量出长度是 5 厘米。", a: "错",
+      exp: "射线向一端无限延伸，不可测量；只有线段能量出长度。" },
+    { t: "tiankong", q: "直线上有 A、B、C 三个点，这条直线上共有（____）条线段。", a: "3",
+      exp: "线段有 AB、BC、AC 三条。数线段可按顺序：2+1=3。" },
+    { t: "tiankong", q: "从一点出发可以画（____）条射线。", a: "无数", accept: ["无数条"],
+      exp: "把这个点作端点，向任意方向延伸都是一条射线。" },
+    { t: "xuanze", q: "下面可以看作线段的是（　）。", a: "拉直的 20 厘米长的绳子",
+      opts: ["拉直的 20 厘米长的绳子", "手电筒射出的光", "向两端无限延伸的铁轨", "钟面上分针扫过的轨迹"],
+      exp: "线段有两个端点且能量出长度。手电筒的光像射线，铁轨像直线。" }
+  ]);
+
+  QE.regKP("g4u2", "垂直与平行", [
+    { t: "tiankong", q: "两条直线相交成（____）时，就说这两条直线互相垂直，交点叫做（____）。", a: "直角,垂足",
+      accept: ["直角,垂中", "90度,垂足", "90°,垂足"],
+      exp: "垂直是相交的特殊情况，必须相交成直角（90°），交点叫垂足。" },
+    { t: "xuanze", q: "从直线外一点到这条直线所画的线段中，（　）最短。", a: "垂直线段",
+      opts: ["垂直线段", "斜线段", "一样长", "无法比较"],
+      exp: "垂直线段最短，它的长度叫做这点到直线的距离。" },
+    { t: "panduan", q: "在同一平面内，不相交的两条直线互相平行。", a: "对",
+      exp: "平行定义有两个前提：同一平面内、不相交，缺一不可。" },
+    { t: "panduan", q: "两条平行线之间的距离处处相等。", a: "对",
+      exp: "这是平行线的重要性质，也是检验画平行线是否正确的依据。" },
+    { t: "tiankong", q: "数学书封面相对的两条边互相（____），相邻的两条边互相（____）。", a: "平行,垂直",
+      exp: "长方形对边平行且相等，邻边相交成直角即互相垂直。" },
+    { t: "xuanze", q: "互相垂直的两条直线所成的角是（　）。", a: "90°", opts: ["90°", "180°", "45°", "360°"],
+      exp: "垂直的定义就是相交成直角，直角等于 90°。" },
+    { t: "tiankong", q: "直线 a 和 b 都平行于直线 c，那么 a 和 b 的关系是（____）。", a: "互相平行",
+      accept: ["平行", "a平行于b"],
+      exp: "平行于同一条直线的两条直线互相平行。" }
+  ]);
+
+  QE.regKP("g4u2", "角的认识与度量", [
+    { t: "tiankong", q: "1 周角 =（____）度 =（____）个平角 =（____）个直角。", a: "360,2,4",
+      exp: "周角 360°、平角 180°、直角 90°，所以 1 周角 = 2 平角 = 4 直角。" },
+    { t: "xuanze", q: "用量角器量角时，量角器的中心要与角的（　）重合。", a: "顶点",
+      opts: ["顶点", "边", "端点", "任意位置"],
+      exp: "量角「两合一看」：中心合顶点、0 刻度线合角的一条边，再看另一条边指着的刻度。" },
+    { t: "panduan", q: "角的两条边画得越长，角就越大。", a: "错",
+      exp: "角的大小只与两边张开的大小有关，与边的长短无关（边是射线，本来无限长）。" },
+    { t: "tiankong", q: "9 时整，钟面上时针和分针成（____）角。", a: "直",
+      accept: ["直角", "90", "90度", "90°"],
+      exp: "9 时整时针指 9、分针指 12，相差 3 大格 = 3×30° = 90°，是直角。" },
+    { t: "tiankong", q: "6 时整，钟面上时针和分针成（____）角。", a: "平",
+      accept: ["平角", "180", "180度", "180°"],
+      exp: "6 时整两针在一条直线上，相差 6 大格 = 180°，是平角。" },
+    { t: "xuanze", q: "下面各角中，钝角是（　）。", a: "100°", opts: ["100°", "89°", "180°", "90°"],
+      exp: "钝角是大于 90° 且小于 180° 的角，100° 符合。" },
+    { t: "tiankong", q: "把一张正方形纸对折两次再打开，两条折痕相交所成的角是（____）度。", a: "90",
+      exp: "对折两次产生的两条折痕互相垂直，所以都是 90°。" },
+    { t: "panduan", q: "平角就是一条直线。", a: "错",
+      exp: "平角有顶点和两条边，只是两条边在一条直线上；直线没有顶点，两者不能等同。" }
+  ]);
+
+  /* ---------------- 第三单元 · 整数乘法（二） ---------------- */
+  QE.regKP("g4u3", "三位数乘两位数的竖式", [
+    { t: "shushi", q: "列竖式计算：345 × 27 = ?", a: String(345 * 27),
+      exp: "先用个位 7 乘 345 得 2415，再用十位 2 乘 345 得 690（末位对齐十位），2415 + 6900 = 9315。" },
+    { t: "shushi", q: "列竖式计算：608 × 35 = ?", a: String(608 * 35),
+      exp: "个位 5×608=3040；十位 3×608=1824（末位对齐十位即 18240）；相加得 21280。" },
+    { t: "tiankong", q: "345 × 27 的积是（____）位数。", a: String(String(345 * 27).length),
+      exp: "345×27=" + (345 * 27) + "，是四位数。三位数乘两位数，积可能是四位数或五位数。" },
+    { t: "xuanze", q: "竖式中，用第二个因数十位上的数去乘，所得积的末位要与（　）对齐。", a: "十位",
+      opts: ["十位", "个位", "百位", "任意位"],
+      exp: "十位上的数表示几个十，乘得的积是「几个十」，所以末位要和十位对齐。" },
+    { t: "panduan", q: "三位数乘两位数，积一定是五位数。", a: "错",
+      exp: "最小 100×10=1000 是四位数，最大 999×99=98901 是五位数，四位、五位都可能。" },
+    { t: "yingyong", q: "学校买了 145 套校服，每套 32 元，一共要花多少元？", a: String(145 * 32),
+      exp: "总价 = 单价 × 数量 = 145 × 32 = 4640（元）。" },
+    { t: "shushi", q: "列竖式计算：206 × 45 = ?", a: String(206 * 45),
+      exp: "个位 5×206=1030，十位 4×206=824（对齐十位即 8240），相加得 9270。" }
+  ]);
+
+  QE.regKP("g4u3", "乘数中间或末尾有 0", [
+    { t: "tiankong", q: "250 × 40 = （____）", a: String(250 * 40),
+      exp: "先算 25×4=100，再看两个因数末尾一共有 2 个 0，添上得 10000。" },
+    { t: "xuanze", q: "250 × 40 的积末尾有（　）个 0。", a: "4", opts: ["4", "3", "2", "5"],
+      exp: "25×4=100 已有 2 个 0，再添因数末尾的 2 个 0，共 4 个 0，积是 10000。" },
+    { t: "tiankong", q: "306 × 25 = （____）", a: String(306 * 25),
+      exp: "中间的 0 也要乘：5×306=1530，2×306=612（对齐十位即 6120），相加得 7650。" },
+    { t: "panduan", q: "因数中间有 0，因为 0 乘任何数得 0，所以这一位可以不乘。", a: "错",
+      exp: "中间的 0 也要参与运算，某一位乘得 0 时要写 0 占位，漏掉会算错。" },
+    { t: "tiankong", q: "480 × 60 = （____）", a: String(480 * 60),
+      exp: "先算 48×6=288，两个因数末尾共 2 个 0，添上得 28800。" },
+    { t: "tiankong", q: "205 × 30 = （____）", a: String(205 * 30),
+      exp: "205×3=615，再在末尾添 1 个 0 得 6150。" }
+  ]);
+
+  QE.regKP("g4u3", "估算的策略", [
+    { t: "kousuan", q: "估算：298 × 41 ≈ ?", a: String(300 * 40), accept: [String(298 * 41), "12000", "12218"],
+      exp: "把 298 看成 300、41 看成 40，300×40=12000。精确值 " + (298 * 41) + "，估算用来快速判断大概范围。" },
+    { t: "kousuan", q: "估算：104 × 48 ≈ ?", a: String(100 * 50), accept: [String(104 * 48), "5000", "4992"],
+      exp: "104→100、48→50，100×50=5000。精确值 " + (104 * 48) + "。" },
+    { t: "panduan", q: "估算的结果一定比精确值大。", a: "错",
+      exp: "四舍时估算值偏小，五入时偏大，可能大也可能小。" },
+    { t: "tiankong", q: "判断 587 × 62 的积是（____）位数。", a: String(String(587 * 62).length),
+      exp: "估算 600×60=36000，所以积是五位数（实际 " + (587 * 62) + "）。" },
+    { t: "yingyong", q: "每张门票 48 元，学校组织 104 名学生参观，带 5000 元够吗？", a: "够",
+      accept: ["够。", "4992"],
+      exp: "精确算 48×104=4992 元 < 5000 元，够。（注意：把 48 看成 50、104 看成 110 估出 5500 会误判不够，估算方向要合理。）" },
+    { t: "xuanze", q: "下面算式中，积最接近 6000 的是（　）。", a: "102 × 59",
+      opts: ["102 × 59", "71 × 92", "58 × 99", "110 × 45"],
+      exp: "102×59=6018、71×92=6532、58×99=5742、110×45=4950，6018 与 6000 相差最小。" }
+  ]);
+
+  /* ---------------- 第四单元 · 我们生活的空间（二） ---------------- */
+  QE.regKP("g4u4", "用数对确定位置", [
+    { t: "tiankong", q: "第 3 列第 5 行，用数对表示是（____）。", a: "(3,5)",
+      accept: ["（3，5）", "3,5", "(3, 5)"],
+      exp: "数对先写列、再写行，中间用逗号，外面加括号。" },
+    { t: "tiankong", q: "数对（7,4）表示的位置是第（____）列第（____）行。", a: "7,4",
+      accept: ["第7列,第4行", "七,四"],
+      exp: "数对的第一个数表示列，第二个数表示行。" },
+    { t: "xuanze", q: "数对（3,5）和（5,3）表示（　）。", a: "两个不同的位置",
+      opts: ["两个不同的位置", "同一个位置", "无法确定", "同一行"],
+      exp: "数对是有序的：（3,5）是第 3 列第 5 行，（5,3）是第 5 列第 3 行。" },
+    { t: "panduan", q: "确定一个物体的位置，一般需要两个数据。", a: "对",
+      exp: "只用一个数据只能确定一行或一列，不能确定唯一位置。" },
+    { t: "tiankong", q: "点 A 在第 4 列第 3 行，向右平移 2 格后的位置用数对表示是（____）。", a: "(6,3)",
+      accept: ["（6，3）", "6,3"],
+      exp: "向右平移列数增加、行数不变：4+2=6，行仍是 3。" },
+    { t: "tiankong", q: "同一行的两个点（2,5）和（8,5），它们的（____）相同。", a: "行数",
+      accept: ["行", "第二个数"],
+      exp: "数对的第二个数表示行，两个点都是第 5 行，所以在同一行。" }
+  ]);
+
+  QE.regKP("g4u4", "用方向描述位置", [
+    { t: "tiankong", q: "地图通常是按上（____）、下（____）、左（____）、右（____）来画的。", a: "北,南,西,东",
+      exp: "口诀：上北下南，左西右东。" },
+    { t: "xuanze", q: "小红面向北站立，她的右面是（　）。", a: "东", opts: ["东", "西", "南", "北"],
+      exp: "面向北时，右手指向东、左手是西、身后是南。" },
+    { t: "tiankong", q: "介于北和东之间的方向叫（____）。", a: "东北",
+      accept: ["东北方", "东北方向"],
+      exp: "四个斜方向是东北、东南、西南、西北，命名时先说南北、再说东西。" },
+    { t: "panduan", q: "甲在乙的东面，那么乙在甲的西面。", a: "对",
+      exp: "两地的方向是相对的，观测点互换后方向正好相反。" },
+    { t: "tiankong", q: "图书馆在教学楼北偏东 30°方向，教学楼在图书馆的（____）方向。", a: "南偏西30°",
+      accept: ["南偏西30度", "南偏西"],
+      exp: "方向相反、角度不变：北偏东 ↔ 南偏西。" }
+  ]);
+
+  QE.regKP("g4u4", "描述简单的路线", [
+    { t: "tiankong", q: "描述行走路线要说清三要素：起点、（____）和（____）。", a: "方向,路程",
+      accept: ["方向,距离", "距离,方向"],
+      exp: "必须同时有方向和距离，例如「从校门出发向东走 200 米」。" },
+    { t: "xuanze", q: "描述路线时，下列说法正确的是（　）。", a: "方向和距离都要说清楚",
+      opts: ["方向和距离都要说清楚", "只说方向就够了", "只说距离就够了", "说起点就可以了"],
+      exp: "只说方向不知道走多远，只说距离不知道往哪走，两者缺一不可。" },
+    { t: "panduan", q: "两条路线路程相同，所用时间一定相同。", a: "错",
+      exp: "还要看速度和路况（上坡、红绿灯等），路程相同时间不一定相同。" },
+    { t: "yingyong", q: "从家到学校先向东走 300 米，再向北走 200 米。放学回家的路线应怎样走？", a: "先向南走200米，再向西走300米",
+      accept: ["向南走200米再向西走300米", "先向南200米，再向西300米"],
+      exp: "回家路线与上学路线方向相反、顺序颠倒：先向南 200 米，再向西 300 米。" }
+  ]);
+
+  /* ---------------- 第五单元 · 运算律 ---------------- */
+  QE.regKP("g4u5", "交换律和结合律", [
+    { t: "tiankong", q: "37 + 58 = 58 + 37，运用了加法（____）律。", a: "交换",
+      accept: ["交换律", "加法交换"],
+      exp: "两个数相加，交换加数的位置和不变，用字母表示 a+b=b+a。" },
+    { t: "tiankong", q: "(23 + 45) + 55 = 23 + (45 + 55)，运用了加法（____）律。", a: "结合",
+      accept: ["结合律", "加法结合"],
+      exp: "三个数相加，先把前两个或先把后两个相加，和不变：(a+b)+c=a+(b+c)。" },
+    { t: "xuanze", q: "25 × 13 × 4 = 13 × (25 × 4) 运用了（　）。", a: "乘法交换律和结合律",
+      opts: ["乘法交换律和结合律", "只有交换律", "只有结合律", "乘法分配律"],
+      exp: "把 13 换到前面用了交换律，把 25 和 4 先结合用了结合律。" },
+    { t: "tiankong", q: "用字母表示乘法结合律：（____）。", a: "(a×b)×c=a×(b×c)",
+      accept: ["（a×b）×c=a×(b×c)", "(a·b)·c=a·(b·c)"],
+      exp: "三个数相乘，先乘前两个或先乘后两个，积不变。" },
+    { t: "panduan", q: "减法和除法也满足交换律。", a: "错",
+      exp: "a−b 一般不等于 b−a，a÷b 一般也不等于 b÷a，只有加法和乘法有交换律。" },
+    { t: "kousuan", q: "用简便方法计算：87 + 36 + 13 = ?", a: String(87 + 36 + 13),
+      exp: "先用交换律把 87 和 13 结合凑整：(87+13)+36=100+36=136。" },
+    { t: "kousuan", q: "用简便方法计算：125 × 32 × 25 = ?", a: String(125 * 32 * 25),
+      exp: "把 32 拆成 8×4：(125×8)×(4×25)=1000×100=100000。" }
+  ]);
+
+  QE.regKP("g4u5", "乘法分配律（重点）", [
+    { t: "tiankong", q: "用字母表示乘法分配律：（____）。", a: "(a+b)×c=a×c+b×c",
+      accept: ["（a+b）×c=a×c+b×c", "(a+b)c=ac+bc", "(a-b)×c=a×c-b×c"],
+      exp: "两个数的和与一个数相乘，可以把它俩分别与这个数相乘再相加。" },
+    { t: "kousuan", q: "简便计算：(20 + 3) × 4 = ?", a: String(23 * 4),
+      exp: "20×4 + 3×4 = 80 + 12 = 92。" },
+    { t: "kousuan", q: "简便计算：35 × 8 + 65 × 8 = ?", a: String((35 + 65) * 8),
+      exp: "逆用分配律提取公因数 8：(35+65)×8=100×8=800。" },
+    { t: "kousuan", q: "简便计算：102 × 45 = ?", a: String(102 * 45),
+      exp: "把 102 拆成 100+2：100×45 + 2×45 = 4500 + 90 = 4590。" },
+    { t: "kousuan", q: "简便计算：99 × 37 + 37 = ?", a: String(100 * 37),
+      exp: "把后面的 37 看成 37×1，提取 37：37×(99+1)=37×100=3700。" },
+    { t: "xuanze", q: "45 × 101 用分配律简算，正确的是（　）。", a: "45×100+45",
+      opts: ["45×100+45", "45×100+1", "45×100-45", "45+100×1"],
+      exp: "101=100+1，所以 45×101=45×100+45×1=4545。" },
+    { t: "panduan", q: "25 × (40 × 8) = 25 × 40 + 25 × 8。", a: "错",
+      exp: "括号里是乘号，应该用结合律 25×40×8；分配律只适用于括号里是加或减的情况。" },
+    { t: "kousuan", q: "简便计算：56 × 99 = ?", a: String(56 * 99),
+      exp: "把 99 看成 100−1：56×100 − 56×1 = 5600 − 56 = 5544。" }
+  ]);
+
+  QE.regKP("g4u5", "好朋友数（必背）", [
+    { t: "kousuan", q: "25 × 4 = ?", a: String(25 * 4), exp: "25 和 4 是好朋友数，乘积是 100，简算时优先结合。" },
+    { t: "kousuan", q: "125 × 8 = ?", a: String(125 * 8), exp: "125 和 8 是好朋友数，乘积是 1000。" },
+    { t: "kousuan", q: "简便计算：25 × 17 × 4 = ?", a: String(25 * 4 * 17),
+      exp: "先用交换律把 25 和 4 结合：100×17=1700。" },
+    { t: "kousuan", q: "简便计算：125 × 16 = ?", a: String(125 * 16),
+      exp: "把 16 拆成 8×2：125×8×2=1000×2=2000。" },
+    { t: "kousuan", q: "简便计算：25 × 32 = ?", a: String(25 * 32),
+      exp: "把 32 拆成 4×8：25×4×8=100×8=800。" },
+    { t: "tiankong", q: "简算 25 × 44 时，把 44 看成 4 × 11 用的是乘法（____）律，看成 40 + 4 用的是乘法（____）律。", a: "结合,分配",
+      exp: "看成 4×11 是连乘，用结合律；看成 40+4 要与 25 分别相乘，用分配律。" },
+    { t: "panduan", q: "25 × 4 ÷ 25 × 4 = 1。", a: "错",
+      exp: "同级运算从左往右：25×4=100，100÷25=4，4×4=16。不能先算两个乘法。" }
+  ]);
+
+  /* ---------------- 第六单元 · 图形的奥秘 ---------------- */
+  QE.regKP("g4u6", "长方形和正方形的特征", [
+    { t: "tiankong", q: "长方形的对边（____），四个角都是（____）角。", a: "相等,直",
+      accept: ["平行且相等,直", "相等,90"],
+      exp: "长方形特征：对边平行且相等，四个角都是直角。" },
+    { t: "xuanze", q: "正方形是（　）。", a: "特殊的长方形",
+      opts: ["特殊的长方形", "不是长方形", "一般的四边形", "梯形"],
+      exp: "正方形满足长方形的全部特征（对边相等、四角直角），还多了四条边都相等。" },
+    { t: "tiankong", q: "一个长方形长 12 厘米、宽 8 厘米，周长是（____）厘米。", a: String((12 + 8) * 2),
+      exp: "周长 =（长+宽）×2 =（12+8）×2 = 40 厘米。" },
+    { t: "panduan", q: "四个角都是直角的四边形一定是正方形。", a: "错",
+      exp: "还可能是长方形；只有四条边都相等且四个角都是直角才是正方形。" },
+    { t: "tiankong", q: "用一根 36 厘米长的铁丝围成一个正方形，边长是（____）厘米。", a: "9",
+      exp: "正方形周长 = 边长×4，边长 = 36÷4 = 9 厘米。" },
+    { t: "yingyong", q: "一个长方形花坛长 15 米、宽 7 米，绕它走一圈是多少米？", a: String((15 + 7) * 2),
+      exp: "（15+7）×2 = 44（米）。" }
+  ]);
+
+  QE.regKP("g4u6", "平行四边形和梯形", [
+    { t: "tiankong", q: "两组对边分别平行的四边形叫（____）。", a: "平行四边形",
+      exp: "这是平行四边形的定义，它同时对边相等。" },
+    { t: "tiankong", q: "只有（____）组对边平行的四边形叫梯形。", a: "一",
+      accept: ["1", "一组", "一（1）"],
+      exp: "梯形只有一组对边平行，平行的那组叫底（上底、下底），不平行的叫腰。" },
+    { t: "xuanze", q: "下面图形中，最容易变形的是（　）。", a: "平行四边形",
+      opts: ["平行四边形", "三角形", "正方形框架", "圆"],
+      exp: "三角形有稳定性，平行四边形容易变形，伸缩门就利用了这个特性。" },
+    { t: "panduan", q: "平行四边形和梯形都是四边形。", a: "对",
+      exp: "它们都是由四条线段围成的封闭图形。" },
+    { t: "tiankong", q: "从平行四边形一条边上的一点到对边的（____）线段，叫做平行四边形的高。", a: "垂直",
+      accept: ["垂直线段", "垂"],
+      exp: "高必须与底垂直，画高时用三角尺的直角边对齐底边。" }
+  ]);
+
+  QE.regKP("g4u6", "稳定性与不稳定性", [
+    { t: "tiankong", q: "三角形具有（____），自行车架、屋顶桁架都用到了它。", a: "稳定性",
+      accept: ["稳定"],
+      exp: "三角形三条边确定后形状就固定不变，这叫稳定性。" },
+    { t: "xuanze", q: "下面（　）没有利用三角形的稳定性。", a: "可伸缩的推拉门",
+      opts: ["可伸缩的推拉门", "自行车的三角形车架", "屋顶的人字梁", "大桥的斜拉杆"],
+      exp: "推拉门利用的是平行四边形容易变形的特性。" },
+    { t: "panduan", q: "把长方形框架拉成平行四边形后，周长不变、面积变小。", a: "对",
+      exp: "四条边长度没变所以周长不变；高变短了所以面积变小。" },
+    { t: "tiankong", q: "要使五边形框架稳固不变形，至少需要加（____）根斜杆。", a: "2",
+      exp: "从一个顶点连 2 条对角线，把五边形分成 3 个三角形就稳定了。" }
+  ]);
+
+  /* ---------------- 第七单元 · 运用数量关系解决问题 ---------------- */
+  QE.regKP("g4u7", "速度、时间和路程", [
+    { t: "tiankong", q: "路程 =（____）×（____）。", a: "速度,时间", accept: ["时间,速度"],
+      exp: "三个量的关系：路程=速度×时间，速度=路程÷时间，时间=路程÷速度。" },
+    { t: "tiankong", q: "汽车每小时行 65 千米，行 6 小时，路程是（____）千米。", a: String(65 * 6),
+      exp: "路程 = 速度 × 时间 = 65 × 6 = 390（千米）。" },
+    { t: "tiankong", q: "360 千米的路程用了 6 小时，速度是（____）千米/时。", a: "60",
+      exp: "速度 = 路程 ÷ 时间 = 360 ÷ 6 = 60（千米/时）。" },
+    { t: "xuanze", q: "求「用了多少时间」，应该用（　）。", a: "路程 ÷ 速度",
+      opts: ["路程 ÷ 速度", "速度 ÷ 路程", "路程 × 速度", "速度 + 路程"],
+      exp: "时间 = 路程 ÷ 速度，注意别把除数和被除数颠倒。" },
+    { t: "panduan", q: "速度越大，所用的时间一定越少。", a: "错",
+      exp: "只有在路程相同的前提下，速度越大时间才越少。" },
+    { t: "yingyong", q: "小明 5 分钟走了 300 米，照这样的速度走 12 分钟，能走多少米？", a: String(60 * 12),
+      exp: "先求速度 300÷5=60（米/分），再求路程 60×12=720（米）。" }
+  ]);
+
+  QE.regKP("g4u7", "单价、数量和总价", [
+    { t: "tiankong", q: "总价 =（____）×（____）。", a: "单价,数量", accept: ["数量,单价"],
+      exp: "单价×数量=总价；总价÷单价=数量；总价÷数量=单价。" },
+    { t: "tiankong", q: "每本笔记本 6 元，买 14 本一共要（____）元。", a: String(6 * 14),
+      exp: "总价 = 单价 × 数量 = 6 × 14 = 84（元）。" },
+    { t: "tiankong", q: "108 元买了 9 本同样的书，每本（____）元。", a: String(108 / 9),
+      exp: "单价 = 总价 ÷ 数量 = 108 ÷ 9 = 12（元）。" },
+    { t: "xuanze", q: "已知总价和单价，求数量，用（　）。", a: "总价 ÷ 单价",
+      opts: ["总价 ÷ 单价", "单价 ÷ 总价", "总价 × 单价", "总价 − 单价"],
+      exp: "数量 = 总价 ÷ 单价。" },
+    { t: "panduan", q: "总价一定时，买的数量越多，单价就越低。", a: "对",
+      exp: "单价×数量=总价（一定），两者成反向变化关系。" },
+    { t: "yingyong", q: "钢笔每支 12 元，小明带了 100 元，最多能买几支？", a: "8",
+      exp: "100÷12=8（支）……4（元），剩下的 4 元不够再买一支，用「去尾法」取 8。" },
+    { t: "yingyong", q: "3 千克苹果 24 元，照这样计算，买 7 千克要多少元？", a: String(8 * 7),
+      exp: "先求单价 24÷3=8（元/千克），再算总价 8×7=56（元）。" }
+  ]);
+
+  /* ---------------- 第八单元 · 数据的表示和分析（一） ---------------- */
+  QE.regKP("g4u8", "条形统计图的特点", [
+    { t: "tiankong", q: "条形统计图用直条的（____）来表示数量的多少。", a: "长短",
+      accept: ["长度", "长短不同"],
+      exp: "直条越长数量越多，能直观比较各类数据。" },
+    { t: "xuanze", q: "要清楚地看出各种数量的多少，应选择（　）。", a: "条形统计图",
+      opts: ["条形统计图", "折线统计图", "扇形统计图", "原始记录单"],
+      exp: "条形图比多少，折线图看变化趋势，扇形图看部分与整体的关系。" },
+    { t: "panduan", q: "制作条形统计图时，直条的宽度可以随意不同。", a: "错",
+      exp: "同一幅图中直条宽度必须相同，只能让长短不同，否则会产生错觉。" },
+    { t: "tiankong", q: "能同时表示两组数据、便于对比的是（____）条形统计图。", a: "复式",
+      accept: ["复式条形", "两组"],
+      exp: "复式条形统计图用不同颜色或图案的直条表示两组数据，需要加图例。" }
+  ]);
+
+  QE.regKP("g4u8", "1 格表示多少", [
+    { t: "tiankong", q: "1 格表示 5 本，画 40 本需要画（____）格。", a: "8",
+      exp: "40 ÷ 5 = 8（格）。先确定 1 格代表多少，再算需要几格。" },
+    { t: "tiankong", q: "1 格表示 4 人，6 人应画（____）格。", a: "1.5",
+      accept: ["一格半", "1格半"],
+      exp: "6÷4=1.5 格，即一格半；数据不能被整格整除时可用半格。" },
+    { t: "xuanze", q: "一组数据最大是 95、最小是 12，画图时 1 格表示（　）比较合适。", a: "10",
+      opts: ["10", "1", "50", "100"],
+      exp: "数据较大时选 1 格表示 10（或 20），否则格子太多画不下；1 格 100 又太大看不清。" },
+    { t: "panduan", q: "1 格只能表示 1 个单位。", a: "错",
+      exp: "1 格可以表示 1、2、5、10……要根据数据大小选择合适的单位长度。" },
+    { t: "tiankong", q: "1 格表示 2 个，画 18 个需要画（____）格。", a: "9", exp: "18 ÷ 2 = 9（格）。" }
+  ]);
+
+  QE.regKP("g4u8", "分析数据", [
+    { t: "tiankong", q: "四(1)班最喜欢的运动：篮球 12 人、足球 15 人、跳绳 8 人、游泳 10 人。最喜欢（____）的人数最多，全班共（____）人。", a: "足球,45",
+      accept: ["足球,45人"],
+      exp: "比较直条长短：足球 15 人最多；总人数 12+15+8+10=45 人。" },
+    { t: "tiankong", q: "上题中，喜欢足球的比喜欢跳绳的多（____）人。", a: String(15 - 8),
+      exp: "求相差数用减法：15 − 8 = 7（人）。" },
+    { t: "xuanze", q: "根据统计图，下面（　）需要计算才能回答。", a: "喜欢篮球和游泳的一共多少人",
+      opts: ["喜欢篮球和游泳的一共多少人", "哪项人数最多", "哪项人数最少", "喜欢足球的有几人"],
+      exp: "「最多/最少」「有几人」直接看图；「一共」「相差」要把数据相加或相减。" },
+    { t: "panduan", q: "分析统计数据后，可以根据结果提出合理的建议。", a: "对",
+      exp: "统计的价值就在于用数据帮助决策，比如人数多的项目可多安排器材。" },
+    { t: "yingyong", q: "三个班植树：一班 26 棵、二班 32 棵、三班 32 棵，平均每班植树多少棵？", a: String((26 + 32 + 32) / 3),
+      exp: "平均数 = 总数 ÷ 份数 =（26+32+32）÷3 = 90÷3 = 30（棵）。" }
+  ]);
+})();
+
 /* =====================================================================
  * 烧脑数学 · 题库扩容层
  * 按年级为每个单元批量注册参数化 应用题 / 填空题 / 判断题 / 选择题，
@@ -12776,13 +13315,15 @@ window.SCRATCH = (function () {
     if (current) { strokes.push(current); current = null; if (strokes.length > 30) strokes.shift(); }
   }
   function style() {
-    if (tool === "eraser") { ctx.strokeStyle = "#fffdf6"; ctx.lineWidth = 22; }
-    else { ctx.strokeStyle = "#3a4a7a"; ctx.lineWidth = 3; }
+    /* 画布透明，橡皮用 destination-out 真正擦除笔迹（不能涂白色，否则会盖住底下的题目） */
+    ctx.globalCompositeOperation = (tool === "eraser") ? "destination-out" : "source-over";
+    if (tool === "eraser") { ctx.strokeStyle = "rgba(0,0,0,1)"; ctx.fillStyle = "rgba(0,0,0,1)"; ctx.lineWidth = 22; }
+    else { ctx.strokeStyle = "#3a4a7a"; ctx.fillStyle = "#3a4a7a"; ctx.lineWidth = 3; }
   }
   function dot(p) {
-    if (!ctx) return; style(); ctx.beginPath(); ctx.arc(p.x, p.y, ctx.lineWidth / 2, 0, Math.PI * 2); ctx.fillStyle = ctx.strokeStyle; ctx.fill(); }
+    if (!ctx) return; style(); ctx.beginPath(); ctx.arc(p.x, p.y, ctx.lineWidth / 2, 0, Math.PI * 2); ctx.fill(); ctx.globalCompositeOperation = "source-over"; }
   function seg(x1, y1, x2, y2) {
-    if (!ctx) return; style(); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
+    if (!ctx) return; style(); ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.globalCompositeOperation = "source-over"; }
   function redraw() {
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -14530,7 +15071,62 @@ window.THINK = (function () {
       mu: "全班40人,喜欢数学的有28人,喜欢语文的有25人,两科都喜欢的有多少人?",
       steps: ["设两科都喜欢=x人", "只喜欢数学=28-x,只喜欢语文=25-x", "(28-x)+(25-x)+x=40", "53-x=40 → x=13"],
       key: "|A∪B|=|A|+|B|-|A∩B|,总数=只A+只B+都+都不",
-      tip: "画韦恩图,标出重叠部分" }
+      tip: "画韦恩图,标出重叠部分" },
+    { id: "zhouqiM", icon: "📅", name: "周期与星期", level: "中年级",
+      mu: "今天是星期五,再过 100 天是星期几?",
+      steps: ["一星期 7 天是一个周期", "100÷7=14…2", "余 2 就往后数 2 天:星期五→六→日", "再过 100 天是星期日"],
+      key: "总数÷7 看余数,余几就从今天往后推几天;整除正好差一天回到本周期。",
+      tip: "周期问题:除以 7 看余数" },
+    { id: "puzhM", icon: "🌉", name: "过桥问题", level: "中年级",
+      mu: "4 人夜里过桥分别要 1、2、5、10 分钟,只有一支手电,桥上最多 2 人同行,按慢的计算时间。全部过桥最少要几分钟?",
+      steps: ["先让 1、2 过去(2 分),1 送手电回来(1 分)", "再让 5、10 一起过去(10 分),2 送手电回来(2 分)", "最后 1、2 再过桥(2 分)", "共 2+1+10+2+2=17(分)"],
+      key: "让最慢的两人同行,用最快的两人接送手电,是省时关键。",
+      tip: "最慢结伴走,最快当跑腿" },
+    { id: "kongpingM", icon: "🍶", name: "空瓶换酒", level: "中年级",
+      mu: "商店促销:3 个空瓶可以换 1 瓶汽水。小明买了 10 瓶,一共能喝到几瓶?",
+      steps: ["喝 10 瓶,得 10 个空瓶", "10 个空瓶换 3 瓶,剩 1 个空瓶;喝 3 瓶又得 3 空瓶", "3+1=4 个空瓶再换 1 瓶,剩 2 空瓶;喝了它变 3 空瓶", "3 空瓶再换 1 瓶喝完;共喝 10+3+1+1=15(瓶)"],
+      key: "一步步换、别忘了新喝出的空瓶还能继续换。",
+      tip: "每 2 个空瓶约等于多喝 1 瓶(3 换 1 时)" },
+    { id: "maomaiM", icon: "🐔", name: "卖鸡盈亏", level: "中年级",
+      mu: "妈妈买一只鸡花了 8 元,9 元卖出;觉得卖亏了,又花 10 元买回,11 元卖出。妈妈一共赚了多少元?",
+      steps: ["第一次:9-8=1(元)", "第二次:11-10=1(元)", "两次分开算,各赚 1 元", "共赚 1+1=2(元)"],
+      key: "分笔算账,每笔单独求差,不要被\"买贵了\"迷惑。",
+      tip: "一笔一笔算,总利润=各笔利润之和" },
+    { id: "paixM", icon: "🔢", name: "组数计数", level: "中年级",
+      mu: "用数字 1、2、3 各用一次,能组成多少个不同的三位数?",
+      steps: ["百位有 3 种选择", "十位只剩 2 种选择", "个位只有 1 种选择", "3×2×1=6(个)"],
+      key: "分步完成用乘法:每步的选择数相乘。",
+      tip: "先定一位再定下一位,层层相乘" },
+    { id: "huanyM", icon: "🔙", name: "多步还原", level: "高年级",
+      mu: "一个数加上 6,乘 6,减去 6,除以 6,结果还是 6。这个数是多少?",
+      steps: ["从结果 6 倒着推", "逆去除以 6:6×6=36", "逆减去 6:36+6=42", "逆乘 6:42÷6=7", "逆加上 6:7-6=1,原数是 1"],
+      key: "倒推时运算顺序也要倒过来,每步做逆运算。",
+      tip: "倒推:先做的后还原" },
+    { id: "mianjiM", icon: "▦", name: "面积变化", level: "中年级",
+      mu: "一个长方形,长不变、宽增加 3 米,面积就增加 30 平方米;若宽不变、长增加 4 米,面积增加 24 平方米。原长方形面积是多少?",
+      steps: ["宽增 3 米多 30 ㎡ → 长=30÷3=10(米)", "长增 4 米多 24 ㎡ → 宽=24÷4=6(米)", "原面积=10×6=60(平方米)"],
+      key: "增加面积÷增加的那条边=另一条(不变的)边。",
+      tip: "变中抓不变,用增加量反推边长" },
+    { id: "shizM", icon: "🕐", name: "时针分针夹角", level: "高年级",
+      mu: "2 时 30 分,时针和分针的夹角是多少度?",
+      steps: ["分针指向 6:30×6=180°", "时针从 12 起走了 2.5 小时:2.5×30=75°", "夹角=180-75=105°"],
+      key: "分针每分钟 6°,时针每分钟 0.5°;分别算出位置再相减。",
+      tip: "时针位置=(时+分÷60)×30°" },
+    { id: "jitu2M", icon: "🕊️", name: "龟鹤问题", level: "高年级",
+      mu: "龟和鹤共 20 只,腿共 68 条。龟、鹤各几只?",
+      steps: ["假设 20 只全是鹤:20×2=40(条腿)", "比实际少:68-40=28(条腿)", "每只龟比鹤多 2 条腿:28÷2=14(只)", "龟 14 只,鹤 20-14=6(只)", "验算:14×4+6×2=56+12=68 ✓"],
+      key: "和鸡兔同笼完全同法:假设全是 2 条腿的,腿差÷2=4 条腿的只数。",
+      tip: "龟=(总腿-2×总头)÷2" },
+    { id: "xiangyuM", icon: "🚲", name: "多次相遇", level: "高年级",
+      mu: "两地相距 900 米,甲、乙同时相向出发,甲每分 55 米、乙每分 35 米。相遇后各自继续走到终点并立即返回,从出发到第二次相遇共几分钟?",
+      steps: ["速度和=55+35=90(米/分)", "第一次相遇合走 1 个全程,第二次相遇共合走 3 个全程", "合走路程=900×3=2700(米)", "时间=2700÷90=30(分)"],
+      key: "两端出发往返,第 2 次相遇两人合走 3 个全程(第 n 次合走 2n-1 个全程)。",
+      tip: "二次相遇=合走 3 个全程" },
+    { id: "loutiM", icon: "🪜", name: "爬楼梯", level: "中年级",
+      mu: "小明从 1 楼上到 3 楼用 12 秒。用同样的速度从 1 楼上到 6 楼要用多少秒?",
+      steps: ["1 楼到 3 楼实际爬 3-1=2 层,用 12 秒", "每层 12÷2=6(秒)", "1 楼到 6 楼要爬 6-1=5 层", "5×6=30(秒)"],
+      key: "楼层数要减 1:爬的层数=目标楼层-开始楼层。",
+      tip: "楼梯问题先算\"爬了几层\"" }
   ];
   return { topics: topics, MUTI: MUTI };
 })();
@@ -15261,15 +15857,22 @@ window.STATS = (function () {
     });
   }
 
+  var MM_NUM = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧", "⑨", "⑩"];
   function mindmapHtml(u) {
-    var html = '<div class="mm"><div class="mm-root"><span>' + u.emoji + ' 第' + u.num + '单元 · ' + esc(u.title) + '</span></div><div class="mm-branches">';
-    u.mindmap.forEach(function (b) {
-      html += '<div class="mm-branch" style="--bc:' + (b.c || "#ff7a2f") + '">' +
-        '<div class="mm-b-title">🔹 ' + esc(b.t) + '</div><div class="mm-leaves">' +
-        b.leaves.map(function (l) { return '<span class="mm-leaf">' + esc(l) + '</span>'; }).join("") +
+    var html = '<div class="mm"><div class="mmt">' +
+      '<div class="mmt-root"><span>' + u.emoji + ' 第' + u.num + '单元 · ' + esc(u.title) + '</span></div>' +
+      '<div class="mmt-stem"></div><div class="mmt-list">';
+    (u.mindmap || []).forEach(function (b) {
+      var c = b.c || "#ff7a2f";
+      html += '<div class="mmt-row" style="--bc:' + c + '">' +
+        '<div class="mmt-branch" style="background:' + c + '">' + esc(b.t) + '</div>' +
+        '<div class="mmt-detail">' +
+        (b.leaves || []).map(function (l, i) {
+          return '<div data-i="' + (MM_NUM[i] || "·") + '">' + esc(l) + '</div>';
+        }).join("") +
         '</div></div>';
     });
-    return html + '</div></div>';
+    return html + '</div></div></div>';
   }
 
   function exampleHtml(ex, idx) {
@@ -15398,8 +16001,69 @@ window.STATS = (function () {
         d += '<div class="section-title" style="margin-top:14px"><span class="bar" style="background:#06d6a0"></span>例题精讲</div>';
         exs.forEach(function (ex, ei) { d += exampleHtml(ex, ei); });
       }
+      d += kpDrillHtml(u, p.title);
       $("#kpDetail").innerHTML = d;
       wireMethodTabs($("#kpDetail"));
+      wireKpDrill($("#kpDetail"), u, p.title);
+    }
+
+    /* 题型专项：本知识点的针对性练习（参考教辅「潜能练基础 / 细研提能力」分题型设计） */
+    function kpDrillHtml(unit, kp) {
+      if (!window.QE || !QE.kpTypes) return "";
+      var types = QE.kpTypes(unit.id, kp);
+      var total = QE.kpCount(unit.id, kp);
+      var auto = false;
+      /* 没有手写专项题时，退回单元引擎按题型动态出题，保证每个知识点都能开练 */
+      if (!types.length) {
+        types = QE.unitTypes(unit.id).filter(function (t) { return !!QE.make(unit.id, t); });
+        auto = true;
+      }
+      if (!types.length) return "";
+      var TN = QE.TYPE_NAME;
+      return '<div class="section-title" style="margin-top:14px"><span class="bar" style="background:#e8930a"></span>题型专项 · ' + esc(kp) + '</div>' +
+        '<div class="kbox" style="background:#fffaf0;border:1.5px solid #ffd9a8">' +
+        '<div class="kb-title" style="color:#b06d00">' + (auto ? "🎲 按题型动态出题，每练一次都是新题" : "🎯 专项题库 " + total + " 道，按题型专练") + '</div>' +
+        '<div class="type-grid" style="margin:8px 0 0">' +
+        types.map(function (t) {
+          var n = auto ? "∞" : QE.kpQuestions(unit.id, kp, [t], 0).length;
+          return '<button class="type-chip kp-type" data-kt="' + t + '">' + TN[t] +
+            ' <b style="color:var(--primary-dark)">' + n + '</b></button>';
+        }).join("") + '</div>' +
+        '<div style="font-size:11.5px;color:#8a6a3a;margin:6px 0 8px">可多选，不选＝全部题型</div>' +
+        '<button class="btn block kp-start" style="margin-top:2px">✏️ 开始专项练习</button>' +
+        '<button class="btn block kp-mix" data-mix="1" style="margin-top:8px;background:#eef2ff;color:#3a4a7a">🎲 混练整个单元</button>' +
+        '</div>';
+    }
+    function wireKpDrill(root, unit, kp) {
+      var picked = [];
+      $$(".kp-type", root).forEach(function (b) {
+        b.onclick = function () {
+          b.classList.toggle("sel");
+          var t = b.dataset.kt;
+          var k = picked.indexOf(t);
+          if (k >= 0) picked.splice(k, 1); else picked.push(t);
+        };
+      });
+      var go = $(".kp-start", root);
+      if (go) go.onclick = function () {
+        var qs = QE.kpQuestions(unit.id, kp, picked, picked.length ? 10 : 12);
+        if (!qs.length) {
+          qs = QE.makePaper(unit.id, picked.length ? 10 : 12, picked, "normal");
+          qs.forEach(function (q) { q.kp = kp; });
+        }
+        if (!qs.length) { toast("这个知识点暂时没有题～"); return; }
+        startSession({
+          title: "第" + unit.num + "单元 · " + kp + " 专项",
+          unit: unit.id, questions: qs
+        });
+      };
+      $$(".kp-mix", root).forEach(function (b) {
+        b.onclick = function () {
+          var qs = QE.makePaper(unit.id, 10, null, "normal");
+          if (!qs.length) { toast("这个单元的题库还在路上～"); return; }
+          startSession({ title: "第" + unit.num + "单元 · " + unit.title + " 综合练", unit: unit.id, questions: qs });
+        };
+      });
     }
     function wireMethodTabs(root) {
       $$(".method-tabs", root).forEach(function (tabRow) {
@@ -16343,25 +17007,47 @@ window.STATS = (function () {
     "利息": "例：存1000元年利率3%存2年，利息=1000×3%×2=60。"
   };
   var formulaSearchTimer = null;
+  /* 统计某年级下各主题的条目数，用于给主题标签打计数、禁用空组合 */
+  function themeCounts(g) {
+    var c = {};
+    MD.formulas2.forEach(function (cat) {
+      if (g !== 0 && cat.g !== 0 && cat.g !== g) return;
+      var t = themeOf(cat);
+      c[t] = (c[t] || 0) + cat.items.length;
+    });
+    return c;
+  }
   function renderFormulas() {
     var grades = [ { v: 0, n: "全部" }, { v: 1, n: "一" }, { v: 2, n: "二" }, { v: 3, n: "三" }, { v: 4, n: "四" }, { v: 5, n: "五" }, { v: 6, n: "六" } ];
     var themes = ["all", "calc", "geo", "rel", "unit", "num", "other"];
     var fkw = formulaSearch.trim();
+    var tc = themeCounts(formulaGrade);
+    /* 当前主题在此年级下无内容时，自动回落到「全部」，避免点出空白页 */
+    if (formulaTheme !== "all" && !tc[formulaTheme]) formulaTheme = "all";
 
     /* 保留旧输入框元素（避免手机键盘收起） */
     var oldInput = document.getElementById("formulaSearchInput");
     var hadFocus = oldInput && document.activeElement === oldInput;
     var cursorPos = hadFocus ? oldInput.selectionStart : 0;
 
+    var total = 0;
+    themes.forEach(function (t) { if (t !== "all") total += (tc[t] || 0); });
+    var hint = formulaGrade === 0 ? "全年级" : ("仅 " + formulaGrade + " 年级（含通用）");
     var html = '<div class="section-title"><span class="bar" style="background:#8338ec"></span>公式知识库</div>' +
       '<input class="answer-input" id="formulaSearchInput" placeholder="🔍 搜索公式（如：周长、面积、进率）" value="' + esc(formulaSearch) + '" style="margin-bottom:10px">' +
+      '<div style="font-size:11.5px;color:var(--ink-2);margin:-4px 0 8px">👇 先选年级，再选主题（括号内是条数，0 条的置灰不可点）</div>' +
       '<div class="type-grid" style="margin-bottom:8px;flex-wrap:nowrap">' + grades.map(function (g) {
         return '<button class="type-chip fgrade' + (formulaGrade === g.v ? " sel" : "") + '" data-g="' + g.v + '" style="flex:1;min-width:0;padding:6px 8px;font-size:12px">' + g.n + '</button>';
       }).join("") + '</div>' +
-      '<div class="lv-tabs" style="margin-bottom:12px">' + themes.map(function (t) {
-        return '<button class="lv-tab' + (formulaTheme === t ? " sel" : "") + '" data-ft="' + t + '">' + THEME_NAME[t] + '</button>';
-      }).join("") + '</div>';
+      '<div class="lv-tabs" style="margin-bottom:6px;flex-wrap:wrap">' + themes.map(function (t) {
+        var n = t === "all" ? total : (tc[t] || 0);
+        return '<button class="lv-tab' + (formulaTheme === t ? " sel" : "") + (n ? "" : " dis") + '" data-ft="' + t + '"' +
+          (n ? "" : " disabled") + ' style="flex:1 0 30%;' + (n ? "" : "opacity:.35;cursor:not-allowed") + '">' +
+          THEME_NAME[t] + ' <b style="font-size:11px">' + n + '</b></button>';
+      }).join("") + '</div>' +
+      '<div style="font-size:11px;color:#a8a9b5;margin-bottom:12px">' + hint + ' · 共 ' + total + ' 条</div>';
 
+    var shown = 0;
     MD.formulas2.forEach(function (cat) {
       if (formulaGrade !== 0 && cat.g !== 0 && cat.g !== formulaGrade) return;
       if (formulaTheme !== "all" && themeOf(cat) !== formulaTheme) return;
@@ -16370,6 +17056,8 @@ window.STATS = (function () {
         items = items.filter(function (r) { return r.n.indexOf(fkw) !== -1 || (r.v || "").indexOf(fkw) !== -1; });
         if (cat.cat.indexOf(fkw) === -1 && items.length === 0) return;
       }
+      if (!items.length) return;
+      shown += items.length;
       var tag = cat.g === 0 ? "" : '<span class="chip">' + cat.g + '年级</span>';
       html += '<div class="formula-card"><h3>' + cat.icon + ' ' + esc(cat.cat) + ' ' + tag + '</h3>' +
         items.map(function (r) {
@@ -16378,6 +17066,13 @@ window.STATS = (function () {
             (ex ? '<div class="f-ex">📝 ' + esc(ex) + '</div>' : '');
         }).join("") + '</div>';
     });
+
+    if (!shown) {
+      html += '<div class="card" style="text-align:center;color:var(--ink-2);padding:26px 14px">' +
+        '😅 这个组合下没有公式<br><span style="font-size:12px">' +
+        (fkw ? '换个关键词，或点下面的「清空搜索」' : '换一个年级/主题看看') + '</span><br>' +
+        (fkw ? '<button class="btn" id="fClearKw" style="margin-top:12px">清空搜索</button>' : '') + '</div>';
+    }
 
     html += '<div class="formula-card"><h3>✖️ 九九乘法表 <span class="chip">通用</span></h3>' +
       '<div style="overflow-x:auto"><table class="mult-table" id="mt"></table></div>' +
@@ -16408,8 +17103,13 @@ window.STATS = (function () {
       c.onclick = function () { formulaGrade = parseInt(c.dataset.g, 10); renderFormulas(); };
     });
     $$("[data-ft]", $("#formulaWrap")).forEach(function (c) {
-      c.onclick = function () { formulaTheme = c.dataset.ft; renderFormulas(); };
+      c.onclick = function () {
+        if (c.disabled) return;
+        formulaTheme = c.dataset.ft; renderFormulas();
+      };
     });
+    var fck = $("#fClearKw");
+    if (fck) fck.onclick = function () { formulaSearch = ""; renderFormulas(); };
 
     var mt = $("#mt");
     var head = "<tr><td class='mt-head'>×</td>";
@@ -16806,7 +17506,9 @@ window.STATS = (function () {
     el.innerHTML = html;
     $("#thinkBack").onclick = renderThinkHome;
     /* 母题→训练营主题映射兜底（部分母题无同名主题，映射到最接近的主题） */
-    var MUTI_MAP = { dengbi: "dengcha", jishu: "jishu2", rongji2: "fangzhen", guilv2: "guilv", yidong: "xingcheng" };
+    var MUTI_MAP = { dengbi: "dengcha", jishu: "jishu2", rongji2: "fangzhen", guilv2: "guilv", yidong: "xingcheng",
+      zhouqiM: "zhouqi", kongpingM: "yingkui", maomaiM: "lirun", paixM: "paixu", huanyM: "huanyuan",
+      mianjiM: "qiege", shizM: "shizhong", jitu2M: "jitu", xiangyuM: "xingcheng", loutiM: "louti", puzhM: "tuili" };
     $$(".muti-cnt", el).forEach(function (btn) {
       btn.onclick = function () {
         var cnt = parseInt(btn.dataset.cnt, 10);
