@@ -668,6 +668,16 @@ main{padding:14px 14px 92px}
 /* ===== 应用题图解 ===== */
 .pw-svg{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px;margin:10px 0;overflow-x:auto}
 .pw-steps .step-item{background:#f0f7ff}
+
+/* ===== v4.9.0 专题配套练习样式（补齐缺失类） ===== */
+.p6-pick{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.p6-pick button{flex:1;min-width:78px;padding:9px 6px;border-radius:11px;border:1.5px solid #e7e8ee;background:#fff;font-size:13px;font-weight:700;color:#41424e;cursor:pointer;text-align:left}
+.p6-pick button.sel{border-color:#ff7a2f;background:#fff3e6;color:#c85a08}
+.p6-pick .answer-input{flex:1;min-width:160px}
+.lay-tag{display:inline-block;font-size:10.5px;font-weight:800;border-radius:6px;padding:1px 6px;margin-right:5px;vertical-align:1px}
+.lay-base{color:#0b8a68;background:#d8f3e7}
+.lay-adv{color:#c85a08;background:#ffe3cd}
+.kp-card h4{line-height:1.6}
 </style>
 </head>
 <body>
@@ -868,11 +878,21 @@ main{padding:14px 14px 92px}
  * 烧脑数学 · 教材内容数据（北师大版 2024 新课标版 三年级上册）
  * ===================================================================== */
 window.MD = {
-  version: "4.8.2",
+  version: "4.9.0",
   textbook: { grade: "三年级", term: "上册", edition: "北师大版（新课标）" },
 
   /* ---------------- 版本日志（应用内展示） ---------------- */
   changelog: [
+    { ver: "v4.9.0", date: "2026-10-14", items: [
+      "超纲治理：奥数专题（数论/组合/同余/不定方程）五年级以上才开放，其余年级显示说明而非可点列表",
+      "有思维按年级过滤：1-4 年级只看低年级+中年级主题，母题精讲同步过滤，训练营计数改为适合本年级的数量",
+      "奥数独立页与首页入口加护栏，误触会自动退回并提示",
+      "有公式默认只显示当前年级 + 通用公式，不再一上来就出现圆柱圆锥比例尺",
+      "综合实践·编码大幅重写（月考高频）：身份证 18 位逐段拆解、第 17 位看性别、学号设计补 0 占位、邮编/房号/条码、四类题型解法、五条易错清单",
+      "数学好玩·数图形的学问扩充：三种数法 + 点数-线段数对照表 + 握手/比赛/车票同模型辨析",
+      "综合实践·导航给的时间准吗扩充：预估与实测误差率 + 单位换算易错",
+      "三个专题全部新增配套练习（共 17 题），点选即时判对错并展开解析，学完当堂测"
+    ]},
     { ver: "v4.8.2", date: "2026-09-20", items: [
       "修复题型专项点进去没有反应的真正原因:个别出题代码报错导致整个专项无法开始(四年级上「计数器填空」),已修正并全库复测 1.7 万题零报错",
       "修复从学一学进入练习时题目页被隐藏的问题:现在会自动切到练习页显示题目,退出时原路返回同一个知识点的专项页",
@@ -5498,6 +5518,750 @@ window.BLOCKS = (function () {
       '<p>先认识方向：<b>东、南、西、北</b>。早晨面向太阳：前面是东，后面是西，左面是北，右面是南。东与西相对，南与北相对。</p>' +
       '<div class="formula-line">地图规则：上北、下南、左西、右东</div>' +
       '<p>画路线图：选定观测点，按方向标确定每栋建筑的位置。</p>' }
+  ];
+
+  /* ---------------- 题库与生成器注册 ---------------- */
+
+  /* g2u1 100以内加与减（二） */
+  RV("g2u1", "shushi", "进位加法", function () {
+    var a = R(15, 78), b = R(15, 99 - a);
+    return { type: "shushi", q: "列竖式计算：<div class='vcalc'>   " + a + "\n+  " + b + "\n──────</div>", input: "num", ans: String(a + b),
+      explain: "个位相加满十向十位进 1。" + a + "+" + b + "=" + (a + b) + "。" };
+  });
+  RV("g2u1", "shushi", "退位减法", function () {
+    var a = R(32, 99), b = R(13, a - 12);
+    return { type: "shushi", q: "列竖式计算：<div class='vcalc'>   " + a + "\n−  " + b + "\n──────</div>", input: "num", ans: String(a - b),
+      explain: "个位不够减，从十位退 1 当 10 再减。" + a + "−" + b + "=" + (a - b) + "。" };
+  });
+  RV("g2u1", "shushi", "三个数连加", function () {
+    var a = R(12, 35), b = R(12, 35), c = R(12, 35);
+    return { type: "shushi", q: "连加计算：<div class='vcalc'>    " + a + "\n    " + b + "\n+   " + c + "\n──────</div>", input: "num", ans: String(a + b + c),
+      explain: "从左到右依次加，满十进一。" + a + "+" + b + "+" + c + "=" + (a + b + c) + "。" };
+  });
+  RV("g2u1", "shushi", "连减", function () {
+    var a = R(60, 99), b = R(12, 30), c = R(12, Math.max(12, a - b - 10));
+    return { type: "shushi", q: "连减计算：<div class='vcalc'>    " + a + "\n−   " + b + "\n−   " + c + "\n──────</div>", input: "num", ans: String(a - b - c),
+      explain: "从左到右依次减。" + a + "−" + b + "−" + c + "=" + (a - b - c) + "。" };
+  });
+  RV("g2u1", "kousuan", "两位数加一位数", function () {
+    var a = R(21, 88), b = R(2, 9); if (a + b > 99) a = 99 - b;
+    return { type: "kousuan", q: "<span class='expr'>" + a + " + " + b + " = ?</span>", input: "num", ans: String(a + b),
+      explain: "先算个位，满十向十位进 1。" };
+  });
+  RV("g2u1", "kousuan", "两位数减一位数", function () {
+    var a = R(25, 99), b = R(2, 9);
+    return { type: "kousuan", q: "<span class='expr'>" + a + " − " + b + " = ?</span>", input: "num", ans: String(a - b),
+      explain: "个位不够减时从十位退 1 当 10。" };
+  });
+  RV("g2u1", "kousuan", "整十数加减", function () {
+    var a = R(1, 8) * 10, b = R(1, 9) * 10;
+    if (Math.random() < 0.5) return { type: "kousuan", q: "<span class='expr'>" + a + " + " + b + " = ?</span>", input: "num", ans: String(a + b),
+      explain: (a / 10) + " 个十加 " + (b / 10) + " 个十 = " + ((a + b) / 10) + " 个十。" };
+    if (b > a) { var t = a; a = b; b = t; }
+    return { type: "kousuan", q: "<span class='expr'>" + a + " − " + b + " = ?</span>", input: "num", ans: String(a - b),
+      explain: (a / 10) + " 个十减 " + (b / 10) + " 个十 = " + ((a - b) / 10) + " 个十。" };
+  });
+  RB("g2u1", "tiankong", "加减法关系", [
+    { q: "被减数 − 减数 = （____）。", ans: "差", exp: "反过来：差 + 减数 = 被减数。" },
+    { q: "45 + （____）= 70，括号里填几？", ans: "25", exp: "70 − 45 = 25。" },
+    { q: "（____）− 18 = 34，括号里填几？", ans: "52", exp: "被减数 = 差 + 减数：34+18=52。" },
+    { q: "28 + 35 + 12 中，先算 28 + 12 比较简便，因为能凑成（____）。", ans: "40", accept: ["40", "整十"], exp: "28+12=40，凑整再算 40+35=75。" }
+  ]);
+  RB("g2u1", "yingyong", "生活加减", [
+    { q: "合唱队原来有 52 人，毕业了 15 人，又新加入了 21 人，现在合唱队有多少人？", ans: "58", exp: "52−15+21=58（人），从左到右依次算。" },
+    { q: "小明跳了三次绳一共 90 下，第一次 26 下，第二次 35 下，第三次跳了多少下？", ans: "29", exp: "90−26−35=29（下）。" },
+    { q: "手工小组做了 32 朵红花、28 朵黄花，送给幼儿园 24 朵，还剩多少朵？", ans: "36", exp: "32+28−24=36（朵）。" },
+    { q: "小红有 35 张邮票，小明比她多 8 张，小明有多少张？", ans: "43", exp: "求比 35 多 8 的数：35+8=43（张）。" },
+    { q: "李叔叔要送 90 件快递，上午送了 47 件，下午送了 25 件，还剩多少件？", ans: "18", exp: "90−47−25=18（件），也可以 90−(47+25)=18。" }
+  ]);
+  RB("g2u1", "panduan", "竖式判断", [
+    { q: "列竖式计算加法时，要从十位算起。", ans: "错", exp: "要从个位算起。" },
+    { q: "个位相加满十，要向十位进 1。", ans: "对", exp: "满十进一，十位相加时别忘进上来的 1。" },
+    { q: "连加、连减、加减混合都按从左到右的顺序计算。", ans: "对", exp: "这是运算顺序的基本规则。" },
+    { q: "52−18 的个位：2 减 8 不够减，要从十位退 1 当 10。", ans: "对", exp: "12−8=4，十位 5 退 1 剩 4，得 34。" }
+  ]);
+
+  /* g2u2 测量（一） */
+  RV("g2u2", "tiankong", "米和厘米换算", function () {
+    if (Math.random() < 0.5) { var n = R(1, 9);
+      return { type: "tiankong", q: n + " 米 = （____）厘米", input: "num", ans: String(n * 100), explain: "1 米 = 100 厘米：" + n + "×100=" + (n * 100) + "。" }; }
+    var m = R(1, 9);
+    return { type: "tiankong", q: (m * 100) + " 厘米 = （____）米", input: "num", ans: String(m), explain: (m * 100) + "÷100=" + m + "。" };
+  });
+  RV("g2u2", "tiankong", "刻度读数", function () {
+    var s = R(0, 4), len = R(3, 8);
+    return { type: "tiankong", q: "一支铅笔左端对着刻度 " + s + "，右端对着刻度 " + (s + len) + "，铅笔长（____）厘米。", input: "num", ans: String(len),
+      explain: "大刻度减小刻度：" + (s + len) + "−" + s + "=" + len + "（厘米）。" };
+  });
+  RV("g2u2", "tiankong", "复名数", function () {
+    var m = R(1, 3), cm = R(5, 9) * 10;
+    return { type: "tiankong", q: m + " 米 " + cm + " 厘米 = （____）厘米", input: "num", ans: String(m * 100 + cm),
+      explain: m + " 米 = " + (m * 100) + " 厘米，再加 " + cm + " 厘米 = " + (m * 100 + cm) + " 厘米。" };
+  });
+  RB("g2u2", "xuanze", "选单位", [
+    { q: "黑板的长约是 3（　）", opts: ["厘米", "米", "分米"], ans: "米", exp: "黑板很长，用米作单位。" },
+    { q: "一支铅笔长约 15（　）", opts: ["米", "厘米", "千米"], ans: "厘米", exp: "铅笔较短，用厘米。" },
+    { q: "小明身高约 1（　）30（　）", opts: ["米、厘米", "厘米、米", "米、米"], ans: "米、厘米", exp: "身高 1 米 30 厘米。" },
+    { q: "下面哪个最接近 1 米？（　）", opts: ["小朋友张开双臂的长度", "橡皮的长度", "教室的长度"], ans: "小朋友张开双臂的长度", exp: "张开双臂大约 1 米。" },
+    { q: "要准确测量教室的长，选用（　）最合适。", opts: ["皮尺", "数学书", "脚步"], ans: "皮尺", exp: "皮尺有刻度且够长，能准确测量。" }
+  ]);
+  RB("g2u2", "panduan", "测量判断", [
+    { q: "1 米 = 100 厘米。", ans: "对", exp: "米和厘米的进率是 100。" },
+    { q: "测量物体长度时，必须从尺子的 0 刻度开始。", ans: "错", exp: "也可以从其他整刻度开始，用两端刻度相减。" },
+    { q: "量比较短的物体，一般用厘米作单位。", ans: "对", exp: "量较长的物体用米。" },
+    { q: "99 厘米比 1 米长。", ans: "错", exp: "1 米=100 厘米，99 厘米 < 100 厘米。" }
+  ]);
+
+  /* g2u3 数一数与乘法 */
+  RV("g2u3", "tiankong", "连加改乘法", function () {
+    var a = R(2, 6), n = R(2, 5), s = a * n;
+    var arr = []; for (var i = 0; i < n; i++) arr.push(a);
+    return { type: "tiankong", q: arr.join("+") + " = " + s + "<br>改写成乘法算式：" + a + " ×（____）= " + s, input: "num", ans: String(n),
+      explain: n + " 个 " + a + " 相加：" + a + "×" + n + "=" + s + "（或 " + n + "×" + a + "=" + s + "）。" };
+  });
+  RV("g2u3", "tiankong", "乘法各部分", function () {
+    var a = R(2, 5), b = R(2, 5);
+    return { type: "tiankong", q: a + " × " + b + " = （____）", input: "num", ans: String(a * b),
+      explain: a + " 乘 " + b + " 等于 " + (a * b) + "。乘数×乘数=积。" };
+  });
+  RV("g2u3", "tiankong", "倍的认识", function () {
+    var b = R(2, 6), n = R(2, 5);
+    return { type: "tiankong", q: "○有 " + (b * n) + " 个，●有 " + b + " 个，○的个数是●的（____）倍。", input: "num", ans: String(n),
+      explain: (b * n) + "÷" + b + "=" + n + "，○里面有 " + n + " 个 " + b + "。" };
+  });
+  RB("g2u3", "xuanze", "乘法的意义", [
+    { q: "3 个 9 相加，写成乘法算式正确的是（　）", opts: ["9×3=27", "3×3=9", "3+9=12"], ans: "9×3=27", exp: "相同加数是 9，有 3 个。" },
+    { q: "4×6 可以表示（　）", opts: ["4 个 6 相加", "4 加 6", "6 个 4 相减"], ans: "4 个 6 相加", exp: "4×6 也可以表示 6 个 4 相加。" },
+    { q: "下面哪个算式能改成乘法？（　）", opts: ["3+3+3+3", "3+4+5", "2+2+3"], ans: "3+3+3+3", exp: "只有加数相同的连加才能改成乘法。" },
+    { q: "5×2 读作（　）", opts: ["5 乘 2", "2 乘 5", "5 加 2"], ans: "5 乘 2", exp: "从左往右读。" }
+  ]);
+  RB("g2u3", "panduan", "乘法判断", [
+    { q: "2+2 = 2×2。", ans: "对", exp: "两边都等于 4，但意义不同。" },
+    { q: "4×4 = 4+4+4。", ans: "错", exp: "4×4 是 4 个 4 相加：4+4+4+4=16。" },
+    { q: "求几个相同加数的和，用乘法比较简便。", ans: "对", exp: "这正是乘法的意义。" },
+    { q: "3×5 既可以表示 3 个 5，也可以表示 5 个 3。", ans: "对", exp: "乘数不同时，一个算式有两种含义。" },
+    { q: "求 6 是 2 的几倍，用乘法计算。", ans: "错", exp: "求倍数用除法：6÷2=3。" }
+  ]);
+
+  /* g2u4 乘法口诀（一） */
+  RV("g2u4", "kousuan", "2~5口诀", function () {
+    var a = R(2, 5), b = R(1, 9);
+    return { type: "kousuan", q: "<span class='expr'>" + a + " × " + b + " = ?</span>", input: "num", ans: String(a * b),
+      explain: "想 " + Math.min(a, b) + " 的乘法口诀：" + a + "×" + b + "=" + (a * b) + "。" };
+  });
+  RV("g2u4", "tiankong", "口诀填空", function () {
+    var a = R(2, 5), b = R(1, 9);
+    return { type: "tiankong", q: a + " × " + b + " = （____）", input: "num", ans: String(a * b),
+      explain: "想口诀：" + a + "×" + b + "=" + (a * b) + "。" };
+  });
+  RV("g2u4", "tiankong", "想口诀填乘数", function () {
+    var a = R(2, 5), b = R(2, 9);
+    return { type: "tiankong", q: "（____）× " + a + " = " + (a * b), input: "num", ans: String(b),
+      explain: "想口诀：" + b + "×" + a + "=" + (a * b) + "，所以填 " + b + "。" };
+  });
+  RV("g2u4", "yingyong", "口诀应用", function () {
+    var per = R(2, 5), n = R(2, 9);
+    var scenes = ["每束花有 " + per + " 朵，" + n + " 束一共有多少朵？",
+      "每盒铅笔有 " + per + " 支，" + n + " 盒一共有多少支？",
+      "每辆车坐 " + per + " 人，" + n + " 辆车一共坐多少人？"];
+    return { type: "yingyong", q: P(scenes), input: "num", ans: String(per * n),
+      explain: "每组 " + per + " 个，有 " + n + " 组：" + per + "×" + n + "=" + (per * n) + "。" };
+  });
+  RB("g2u4", "panduan", "口诀判断", [
+    { q: "4×4 = 4+4+4+4。", ans: "对", exp: "4×4 表示 4 个 4 相加。" },
+    { q: "2×3 和 3×2 用的口诀相同，结果也相同。", ans: "对", exp: "都用“二三得六”，结果都是 6。" },
+    { q: "每相邻两句 5 的乘法口诀，积相差 5。", ans: "对", exp: "如三五十五、四五二十，相差 5。" },
+    { q: "求 4 个 3 是多少，列式是 4+3。", ans: "错", exp: "应该是 4×3=12。" }
+  ]);
+
+  /* g2u5 分一分与除法 */
+  RV("g2u5", "kousuan", "表内除法(2~5)", function () {
+    var b = R(2, 5), q = R(2, 9);
+    return { type: "kousuan", q: "<span class='expr'>" + (b * q) + " ÷ " + b + " = ?</span>", input: "num", ans: String(q),
+      explain: "想口诀：" + b + "×" + q + "=" + (b * q) + "，商是 " + q + "。" };
+  });
+  RV("g2u5", "tiankong", "除法填空", function () {
+    var b = R(2, 5), q = R(2, 9);
+    return { type: "tiankong", q: (b * q) + " ÷（____）= " + q, input: "num", ans: String(b),
+      explain: "想口诀：" + b + "×" + q + "=" + (b * q) + "，除数是 " + b + "。" };
+  });
+  RV("g2u5", "yingyong", "等分除", function () {
+    var b = R(2, 5), q = R(2, 9);
+    return { type: "yingyong", q: "把 " + (b * q) + " 个桃子平均分给 " + b + " 只小猴，每只小猴分几个？", input: "num", ans: String(q),
+      explain: "总数÷份数：" + (b * q) + "÷" + b + "=" + q + "（个）。" };
+  });
+  RV("g2u5", "yingyong", "包含除", function () {
+    var b = R(2, 5), q = R(2, 9);
+    return { type: "yingyong", q: "有 " + (b * q) + " 个橘子，每 " + b + " 个装一袋，可以装几袋？", input: "num", ans: String(q),
+      explain: "总数÷每份个数：" + (b * q) + "÷" + b + "=" + q + "（袋）。" };
+  });
+  RB("g2u5", "xuanze", "除法与倍", [
+    { q: "把 10 个苹果平均分成 2 份，每份几个？正确的算式是（　）", opts: ["10÷2=5", "10×2=20", "10−2=8"], ans: "10÷2=5", exp: "平均分用除法。" },
+    { q: "12 是 3 的（　）倍", opts: ["4", "3", "9"], ans: "4", exp: "12÷3=4。" },
+    { q: "5 的 3 倍是多少？列式是（　）", opts: ["5×3", "5÷3", "5+3"], ans: "5×3", exp: "求一个数的几倍是多少，用乘法：5×3=15。" },
+    { q: "18÷3=6 读作（　）", opts: ["18 除以 3 等于 6", "18 除 3 等于 6", "3 除以 18 等于 6"], ans: "18 除以 3 等于 6", exp: "÷ 读作“除以”。" }
+  ]);
+  RB("g2u5", "panduan", "除法判断", [
+    { q: "把 8 个糖平均分给 2 个小朋友，每人分 4 个。", ans: "对", exp: "8÷2=4。" },
+    { q: "15÷5=3 表示 15 里面有 3 个 5。", ans: "对", exp: "除法可以表示“包含”。" },
+    { q: "每份分得同样多，叫做平均分。", ans: "对", exp: "这是平均分的定义。" },
+    { q: "求一个数的几倍是多少，用除法。", ans: "错", exp: "求一个数的几倍是多少用乘法；求几倍才用除法。" }
+  ]);
+
+  /* g2u6 图形的运动（一） */
+  RB("g2u6", "xuanze", "对称平移旋转", [
+    { q: "下面的运动中，属于旋转的是（　）", opts: ["风车转动", "电梯升降", "滑滑梯"], ans: "风车转动", exp: "绕一个点或轴转动是旋转。" },
+    { q: "下面的运动中，属于平移的是（　）", opts: ["推拉窗户", "拧水龙头", "荡秋千"], ans: "推拉窗户", exp: "沿直线运动是平移。" },
+    { q: "把一张纸对折后剪出一个图案，展开得到的是（　）", opts: ["轴对称图形", "不规则图形", "无法确定"], ans: "轴对称图形", exp: "对折剪出的图形沿折痕两边完全重合。" },
+    { q: "下面的汉字中，是轴对称图形的是（　）", opts: ["中", "飞", "风"], ans: "中", exp: "“中”沿竖中线对折两边完全重合。" },
+    { q: "图形平移后，它的形状和大小（　）", opts: ["不变", "变大", "变小"], ans: "不变", exp: "平移只改变位置。" }
+  ]);
+  RB("g2u6", "panduan", "运动判断", [
+    { q: "轴对称图形对折后，两边能完全重合。", ans: "对", exp: "这是轴对称图形的定义。" },
+    { q: "旋转后的图形，大小会发生改变。", ans: "错", exp: "旋转只改变方向，形状大小不变。" },
+    { q: "火箭升空是平移现象。", ans: "对", exp: "火箭沿直线向上运动。" },
+    { q: "钟面上时针的运动是平移现象。", ans: "错", exp: "时针绕中心转动，是旋转。" },
+    { q: "把一个正方形向上平移，正方形的大小发生了改变。", ans: "错", exp: "平移不改变形状和大小。" }
+  ]);
+
+  /* g2u7 乘法口诀（二） */
+  RV("g2u7", "kousuan", "6~9口诀", function () {
+    var a = R(6, 9), b = R(1, 9);
+    return { type: "kousuan", q: "<span class='expr'>" + a + " × " + b + " = ?</span>", input: "num", ans: String(a * b),
+      explain: "想 " + a + " 的乘法口诀：" + a + "×" + b + "=" + (a * b) + "。" };
+  });
+  RV("g2u7", "tiankong", "口诀填空", function () {
+    var a = R(6, 9), b = R(2, 9);
+    return { type: "tiankong", q: a + " × " + b + " = （____）", input: "num", ans: String(a * b),
+      explain: "口诀：" + a + "×" + b + "=" + (a * b) + "。" };
+  });
+  RV("g2u7", "tiankong", "逆向填乘数", function () {
+    var a = R(6, 9), b = R(2, 9);
+    return { type: "tiankong", q: "（____）× " + a + " = " + (a * b), input: "num", ans: String(b),
+      explain: "想 " + a + " 的口诀中积为 " + (a * b) + " 的那句，填 " + b + "。" };
+  });
+  RV("g2u7", "yingyong", "口诀应用", function () {
+    var per = R(6, 9), n = R(2, 6);
+    var scenes = ["每张贴画 " + per + " 元，买 " + n + " 张要多少元？",
+      "每天读 " + per + " 页书，" + n + " 天一共读多少页？",
+      "每盒装 " + per + " 个球，" + n + " 盒一共装多少个？"];
+    return { type: "yingyong", q: P(scenes), input: "num", ans: String(per * n),
+      explain: per + "×" + n + "=" + (per * n) + "。" };
+  });
+  RB("g2u7", "panduan", "口诀判断", [
+    { q: "六八四十八和七八五十六的积相差 8。", ans: "对", exp: "56−48=8，相邻 8 的口诀积相差 8。" },
+    { q: "9×6 可以想“六十减六”来算，得 54。", ans: "对", exp: "几个 9 就是几十减几：60−6=54。" },
+    { q: "7×8 和 8×7 的结果相同。", ans: "对", exp: "都等于 56，乘数交换位置积不变。" },
+    { q: "6×7 = 41。", ans: "错", exp: "六七四十二，得 42。" }
+  ]);
+
+  /* g2u8 乘除法的应用（一） */
+  RV("g2u8", "kousuan", "表内乘除混合", function () {
+    if (Math.random() < 0.5) { var a = R(2, 9), b = R(2, 9);
+      return { type: "kousuan", q: "<span class='expr'>" + a + " × " + b + " = ?</span>", input: "num", ans: String(a * b), explain: "想口诀求积。" }; }
+    var d = R(2, 9), q = R(2, 9);
+    return { type: "kousuan", q: "<span class='expr'>" + (d * q) + " ÷ " + d + " = ?</span>", input: "num", ans: String(q), explain: "想乘法算除法。" };
+  });
+  RV("g2u8", "tiankong", "乘加乘减", function () {
+    var per = R(3, 8), n = R(2, 6), extra = R(1, 9);
+    if (Math.random() < 0.5) {
+      return { type: "tiankong", q: "每盒装 " + per + " 块糖，" + n + " 盒装满后又放进去 " + extra + " 块，现在一共有（____）块。", input: "num", ans: String(per * n + extra),
+        explain: "先乘后加：" + per + "×" + n + "+" + extra + "=" + (per * n + extra) + "。" };
+    }
+    var take = R(1, per * n - 1);
+    return { type: "tiankong", q: "书架每层放 " + per + " 本书，" + n + " 层放满后拿走 " + take + " 本，还剩（____）本。", input: "num", ans: String(per * n - take),
+      explain: "先乘后减：" + per + "×" + n + "−" + take + "=" + (per * n - take) + "。" };
+  });
+  RV("g2u8", "yingyong", "乘除应用", function () {
+    var kind = R(1, 3);
+    if (kind === 1) { var p = R(3, 8), n = R(2, 7), paid = p * n + P([5, 10]);
+      return { type: "yingyong", q: "每本故事书 " + p + " 元，买 " + n + " 本付了 " + paid + " 元，应找回多少元？", input: "num", ans: String(paid - p * n),
+        explain: "先算花的钱 " + p + "×" + n + "=" + (p * n) + "，再算找回 " + paid + "−" + (p * n) + "=" + (paid - p * n) + "（元）。" }; }
+    if (kind === 2) { var d = R(2, 6), q = R(3, 8);
+      return { type: "yingyong", q: "有 " + (d * q) + " 个同学做游戏，平均分成 " + d + " 组，每组几人？", input: "num", ans: String(q),
+        explain: (d * q) + "÷" + d + "=" + q + "（人）。" }; }
+    var p2 = R(4, 9), n2 = R(3, 6), extra2 = R(2, 9);
+    return { type: "yingyong", q: "每辆车坐 " + p2 + " 人，" + n2 + " 辆车坐满后还有 " + extra2 + " 人站着，一共有多少人？", input: "num", ans: String(p2 * n2 + extra2),
+      explain: p2 + "×" + n2 + "+" + extra2 + "=" + (p2 * n2 + extra2) + "（人）。" };
+  });
+  RB("g2u8", "panduan", "乘除判断", [
+    { q: "求几个几是多少，用乘法计算。", ans: "对", exp: "乘法的意义。" },
+    { q: "把总数平均分成几份，求每份是多少，用除法。", ans: "对", exp: "等分除用除法。" },
+    { q: "每辆车坐 7 人，8 辆车坐满后还有 4 人，一共 52 人。", ans: "错", exp: "7×8+4=56+4=60 人。" },
+    { q: "乘加乘减的算式要先算加减。", ans: "错", exp: "先算乘法，再算加减。" }
+  ]);
+})();
+/* =====================================================================
+ * 烧脑数学 · 北师大版（新课标）四年级上册 内容库
+ * 目录依据：2026 秋新版教材目录（用户提供教材目录页核对）
+ * 一 认识更大的数 / 二 线与角 / 三 整数乘法（二）/
+ * 四 我们生活的空间（二）/ 五 运算律 / 六 图形的奥秘 /
+ * 七 运用数量关系解决问题 / 八 数据的表示和分析（一）
+ * ===================================================================== */
+(function () {
+  var R = function (a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; };
+  var P = function (arr) { return arr[Math.floor(Math.random() * arr.length)]; };
+
+  window.REG = window.REG || { variants: {}, banks: {} };
+  function RV(u, t, kp, fn) {
+    var uu = REG.variants[u] = REG.variants[u] || {};
+    var s = uu[t] = uu[t] || { kp: kp, fns: [] };
+    s.fns.push(fn);
+  }
+  function RB(u, t, kp, items) {
+    var bb = REG.banks[u] = REG.banks[u] || {};
+    var s = bb[t] = bb[t] || { kp: kp, items: [] };
+    s.items = s.items.concat(items);
+  }
+
+  MD.books = MD.books || {};
+  MD.books["4-上"] = {
+    key: "4-上", label: "四年级上册", grade: "4", term: "上", edition: "北师大版（新课标）",
+    units: [
+      { id: "g4u1", num: "一", title: "认识更大的数", emoji: "🔭", color: "#ff7a2f",
+        lessons: ["数一数", "人口普查", "国土面积", "从结绳计数说起"],
+        mindmap: [
+          { t: "数位与计数单位", c: "#ff7a2f", leaves: ["个级·万级·亿级", "相邻单位进率是10", "十进制计数法"] },
+          { t: "读写大数", c: "#3a86ff", leaves: ["先分级再从高位读", "万级读完加万字", "每级末尾0不读", "中间连续0只读一个"] },
+          { t: "改写与近似", c: "#06d6a0", leaves: ["整万数改写成万", "整亿数改写成亿", "四舍五入求近似数"] }
+        ],
+        points: [
+          { title: "数位顺序表", html:
+            '<p>一（个）、十、百、千、万、十万、百万、千万、亿……都是<b>计数单位</b>，所占的位置叫<b>数位</b>。从右边起每 4 个数位为一级：<b>个级、万级、亿级</b>。</p>' +
+            '<div class="kbox method"><div class="kb-title">📌 十进制计数法</div>每相邻两个计数单位之间的进率都是 <b>10</b>：10 个一万是十万，10 个十万是一百万，10 个一百万是一千万。</div>' +
+            '<div class="kbox" style="background:#fffdf6;border:1.5px solid #f0d9a8"><div class="kb-title">🗂️ 数位顺序表（重要！）</div>' +
+            '<div style="overflow-x:auto"><table class="place-table">' +
+            '<tr class="pt-grade"><td class="pt-lab">数级</td><td colspan="4" class="pt-yi">亿级</td><td colspan="4" class="pt-wan">万级</td><td colspan="4" class="pt-ge">个级</td></tr>' +
+            '<tr class="pt-pos"><td class="pt-lab">数位</td><td>千亿位</td><td>百亿位</td><td>十亿位</td><td>亿位</td><td>千万位</td><td>百万位</td><td>十万位</td><td>万位</td><td>千位</td><td>百位</td><td>十位</td><td>个位</td></tr>' +
+            '<tr class="pt-unit"><td class="pt-lab">计数单位</td><td>千亿</td><td>百亿</td><td>十亿</td><td>亿</td><td>千万</td><td>百万</td><td>十万</td><td>万</td><td>千</td><td>百</td><td>十</td><td>一(个)</td></tr>' +
+            '</table></div>' +
+            '<div style="font-size:11px;color:#8a6a3a;margin-top:6px">💡 记牢：从右往左每 4 位一级；相邻计数单位进率都是 10。</div></div>' },
+          { title: "大数的读法和写法", html:
+            '<p>读法：先<b>分级</b>，从高位读起。亿级、万级的数按个级的读法读，再在后面加上"亿"或"万"字。<span class="hl">每级末尾的 0 不读，其他数位有一个或连续几个 0，都只读一个零</span>。</p>' +
+            '<p>写法：从高位写起，哪一位上一个单位也没有，就写 0 占位。</p>' },
+          { title: "改写和求近似数", html:
+            '<p>整万数改写成用"万"作单位：去掉末尾 4 个 0，写上"万"字。例：360 0000 = <b>360 万</b>。整亿数去掉末尾 8 个 0 添"亿"字。</p>' +
+            '<p>求近似数用<b>四舍五入</b>法：精确到万位只看千位，满 5 进 1，不满 5 舍去。</p>' }
+        ],
+        examples: [
+          { tag: "例题 1 · 读数",
+            scene: "读出 3 0500 0000。",
+            q: "3 0500 0000 读作什么？",
+            methods: [
+              { name: "标准解法", steps: [
+                "分级：3 | 0500 | 0000",
+                "读作：<span class='calc'>三亿零五百万</span>" ],
+                formula: "每级末尾的 0 不读，级中间的 0 要读出来。" }
+            ], tip: "" },
+          { tag: "例题 2 · 求近似数",
+            scene: "把 84 5000 四舍五入到万位。",
+            q: "84 5000 ≈ 多少万？",
+            methods: [
+              { name: "标准解法", steps: [
+                "精确到万位，看千位：千位是 5，向前一位进 1",
+                "<span class='calc'>84 5000 ≈ 85 万</span>" ],
+                formula: "四舍五入看保留位数的下一位。" }
+            ], tip: "" }
+        ],
+        warns: [
+          "读数时每个 0 都读 → 每级末尾的 0 不读，连续的 0 只读一个。",
+          "改写时丢单位\"万\" → 360 0000 = 360 万，万字不能少。",
+          "四舍五入看错数位 → 精确到万位，看的是千位。"
+        ] },
+
+      { id: "g4u2", num: "二", title: "线与角", emoji: "📐", color: "#3a86ff",
+        lessons: ["线的认识", "相交与垂直", "平移与平行", "旋转与角", "角的度量", "画角"],
+        mindmap: [
+          { t: "线", c: "#3a86ff", leaves: ["线段：2个端点可测量", "射线：1个端点", "直线：没有端点", "两点之间线段最短"] },
+          { t: "位置关系", c: "#06d6a0", leaves: ["相交成直角→互相垂直", "同一平面不相交→互相平行", "平行线间距离处处相等"] },
+          { t: "角", c: "#ff7a2f", leaves: ["锐角<直角<钝角<平角<周角", "1平角=2直角=180°", "1周角=2平角=360°", "量角器两合一看"] }
+        ],
+        points: [
+          { title: "线段、射线、直线", html:
+            '<p><b>线段</b>：2 个端点，可以测量。<b>射线</b>：1 个端点，向一端无限延伸。<b>直线</b>：没有端点，向两端无限延伸。线段和射线都是直线的一部分。</p>' +
+            '<div class="formula-line">过一点可以画无数条直线，过两点只能画一条直线，两点之间线段最短</div>' },
+          { title: "垂直与平行", html:
+            '<p>两条直线<b>相交成直角</b>，就说它们<b>互相垂直</b>，交点叫<b>垂足</b>。在同一平面内<b>不相交</b>的两条直线<b>互相平行</b>。</p>' +
+            '<div class="kbox tip"><div class="kb-title">💡 重要结论</div>从直线外一点到这条直线所画的<b>垂直线段最短</b>，它的长度叫做这点到直线的距离。两条平行线之间的距离处处相等。</div>' },
+          { title: "角的认识与度量", html:
+            '<p>角可以看成一条射线绕着端点旋转而成。旋转成一条直线时形成<b>平角</b>，旋转一周重合时形成<b>周角</b>。</p>' +
+            '<div class="formula-line">1 平角 = 2 直角 = 180°　　1 周角 = 2 平角 = 4 直角 = 360°</div>' +
+            '<div class="kbox method"><div class="kb-title">📌 量角器用法：两合一看</div>① 中心点与角的顶点重合；② 0 刻度线与角的一条边重合；③ 看角的另一边所对的刻度。开口向右看内刻度，开口向左看外刻度。</div>' }
+        ],
+        examples: [
+          { tag: "例题 1 · 角的换算",
+            scene: "一个角是 135°。",
+            q: "它比直角大多少度？它是什么角？",
+            methods: [
+              { name: "标准解法", steps: [
+                "135° − 90° = <span class='calc'>45°</span>",
+                "90° < 135° < 180° → <span class='calc'>钝角</span>" ],
+                formula: "比直角大 45°，是钝角。" }
+            ], tip: "" },
+          { tag: "例题 2 · 钟面上的角",
+            scene: "3 时整，钟面上时针和分针形成的角。",
+            q: "3 时整，时针和分针成什么角？",
+            methods: [
+              { name: "标准解法", steps: [
+                "钟面一圈 360°，共 12 大格，每大格 30°",
+                "3 时整相差 3 大格：30° × 3 = <span class='calc'>90°</span>",
+                "90° 是 <span class='calc'>直角</span>" ],
+                formula: "6 时整成平角（180°）哦！" }
+            ], tip: "" }
+        ],
+        warns: [
+          "以为直线可以量出长度 → 直线、射线无限长，不能测量。",
+          "平角看成一条直线 → 平角有顶点，是角不是线。",
+          "量角时读错内外圈刻度 → 先看角的开口方向。"
+        ] },
+
+      { id: "g4u3", num: "三", title: "整数乘法（二）", emoji: "✖️", color: "#06d6a0",
+        lessons: ["两位数乘两位数", "三位数乘两位数", "估算", "电影院"],
+        mindmap: [
+          { t: "竖式乘法", c: "#06d6a0", leaves: ["先用个位乘", "再用十位乘，积对十位", "两次积相加"] },
+          { t: "0的处理", c: "#ff7a2f", leaves: ["中间有0：0也要乘", "末尾有0：先乘再添0"] },
+          { t: "估算", c: "#3a86ff", leaves: ["估成整十整百再乘", "判断够不够：估大估小看情况"] }
+        ],
+        points: [
+          { title: "三位数乘两位数的竖式", html:
+            '<div class="kbox method"><div class="kb-title">📌 竖式步骤</div>① 先用两位数的<b>个位</b>去乘三位数，积的末位和个位对齐；② 再用<b>十位</b>去乘，积的末位和十位对齐；③ 把两次乘得的积<b>相加</b>。</div>' +
+            '<div class="vcalc">    114\n×    23\n──────\n    342   …114×3\n   228    …114×20\n──────\n   2622</div>' },
+          { title: "乘数中间或末尾有 0", html:
+            '<p>中间有 0：0 也要参与运算，有进位要加上，没有进位写 0 占位。末尾有 0：先把 0 前面的数相乘，再看两个乘数末尾一共有几个 0，就在积的末尾添几个 0。</p>' },
+          { title: "估算的策略", html:
+            '<p>把乘数看成接近的整十、整百数再乘。判断"够不够"时要选对方向：</p>' +
+            '<div class="kbox tip"><div class="kb-title">💡 估大还是估小</div>判断座位、材料<b>够不够用</b> → 往<b>小</b>估，估出来都够才真够；判断会不会超载、钱不够 → 往<b>大</b>估。</div>' }
+        ],
+        examples: [
+          { tag: "例题 1 · 竖式",
+            scene: "卫星绕地球一圈要 114 分钟。",
+            q: "绕地球 23 圈要多少分钟？",
+            methods: [
+              { name: "标准解法", steps: [
+                "列式：<span class='calc'>114 × 23</span>",
+                "114×3=342，114×20=2280",
+                "342 + 2280 = <span class='calc'>2622（分钟）</span>" ],
+                formula: "答：绕 23 圈要 2622 分钟。" }
+            ], tip: "" },
+          { tag: "例题 2 · 估算（电影院）",
+            scene: "485 名师生看电影，电影院有 21 排座位，每排可坐 26 人。",
+            q: "座位够吗？",
+            methods: [
+              { name: "往小估", steps: [
+                "把 21 看成 20，26 看成 25",
+                "<span class='calc'>20 × 25 = 500</span>",
+                "往小估都有 500 个，500 > 485，<span class='calc'>座位够</span>" ],
+                formula: "估小后都够，实际肯定够！" }
+            ], tip: "往大估得到 630 不能说明问题，因为实际比 630 小。" }
+        ],
+        warns: [
+          "用十位乘的积末位对错位 → 必须和十位对齐。",
+          "忘记向前一位进位。",
+          "乘数末尾有 0 时忘记添 0 → 数清一共有几个 0。"
+        ] },
+
+      { id: "g4u4", num: "四", title: "我们生活的空间（二）", emoji: "🧭", color: "#8338ec",
+        lessons: ["确定位置（数对）", "描述路线图"],
+        mindmap: [
+          { t: "数对", c: "#8338ec", leaves: ["(列，行)先列后行", "列从左往右数", "行从下往上数"] },
+          { t: "方向描述", c: "#ff7a2f", leaves: ["八个方向", "观测点要找准"] },
+          { t: "路线图", c: "#3a86ff", leaves: ["方向+距离+转折点", "一段一段说清楚"] }
+        ],
+        points: [
+          { title: "用数对确定位置", html:
+            '<p>用有顺序的两个数表示一个确定的位置，叫做<b>数对</b>，格式是 <span class="hl">（列，行）</span>：<b>先列后行</b>。列从左往右数，行从下往上（或从前往后）数。</p>' +
+            '<div class="kbox warn"><div class="kb-title">⚠️ 顺序不能反</div>(3, 2) 和 (2, 3) 表示<b>不同</b>的位置！第一个数是列，第二个数是行。</div>' },
+          { title: "用方向描述位置", html:
+            '<p>东、南、西、北、东北、东南、西北、西南八个方向。描述位置要先找准<b>观测点</b>：学校在超市东北方向，观测点是超市。</p>' },
+          { title: "描述简单的路线", html:
+            '<div class="kbox method"><div class="kb-title">📌 路线描述格式</div>从起点出发，向某方向走多少米到某地，再向某方向走多少米……<b>方向、距离、转折点</b>都要交代清楚。</div>' }
+        ],
+        examples: [
+          { tag: "例题 1 · 数对",
+            scene: "小红坐在第 5 列第 2 行。",
+            q: "用数对怎么表示？",
+            methods: [
+              { name: "标准解法", steps: [
+                "先列后行",
+                "记作：<span class='calc'>(5, 2)</span>" ],
+                formula: "答：小红的座位是 (5, 2)。" }
+            ], tip: "" },
+          { tag: "例题 2 · 找位置",
+            scene: "点 A 在方格纸从左数第 3 列、从下数第 4 行。",
+            q: "点 A 的位置用数对怎么表示？",
+            methods: [
+              { name: "标准解法", steps: [
+                "列是 3，行是 4",
+                "<span class='calc'>A (3, 4)</span>" ],
+                formula: "先找列对应的竖线，再找行对应的横线，交点就是位置。" }
+            ], tip: "" }
+        ],
+        warns: [
+          "数对先行后列 → 必须先列后行。",
+          "选错观测点 → \"A 在 B 的东北方向\"，观测点是 B。",
+          "描述路线漏掉距离或转折点。"
+        ] },
+
+      { id: "g4u5", num: "五", title: "运算律", emoji: "⚖️", color: "#e63999",
+        lessons: ["加法交换律和乘法交换律", "加法结合律和乘法结合律", "乘法分配律"],
+        mindmap: [
+          { t: "交换律", c: "#e63999", leaves: ["a+b=b+a", "a×b=b×a"] },
+          { t: "结合律", c: "#3a86ff", leaves: ["(a+b)+c=a+(b+c)", "(a×b)×c=a×(b×c)"] },
+          { t: "分配律", c: "#ff7a2f", leaves: ["(a+b)×c=a×c+b×c", "分别相乘再相加"] }
+        ],
+        points: [
+          { title: "交换律和结合律", html:
+            '<div class="formula-line">加法交换律：a + b = b + a</div>' +
+            '<div class="formula-line">加法结合律：(a + b) + c = a + (b + c)</div>' +
+            '<div class="formula-line">乘法交换律：a × b = b × a</div>' +
+            '<div class="formula-line">乘法结合律：(a × b) × c = a × (b × c)</div>' +
+            '<div class="kbox tip"><div class="kb-title">💡 简便计算</div>25×17×4 = 25×4×17 = <b>100×17 = 1700</b>（先凑 25×4=100）。</div>' },
+          { title: "乘法分配律（重点）", html:
+            '<div class="formula-line">(a + b) × c = a × c + b × c</div>' +
+            '<p>两个数的和与一个数相乘，可以先把它们<b>分别</b>与这个数相乘，再相加。</p>' +
+            '<div class="kbox tip"><div class="kb-title">💡 简便计算</div>(40 + 4) × 25 = 40×25 + 4×25 = 1000 + 100 = <b>1100</b>。</div>' },
+          { title: "好朋友数（必背）", html:
+            '<div class="formula-line">25 × 4 = 100　　125 × 8 = 1000</div>' +
+            '<p>看到 25 就找 4，看到 125 就找 8，凑整百整千算得快！</p>' }
+        ],
+        examples: [
+          { tag: "例题 1 · 结合律简算",
+            scene: "计算 125 × 7 × 8。",
+            q: "怎样算简便？",
+            methods: [
+              { name: "标准解法", steps: [
+                "先算 125 × 8 = 1000（好朋友数）",
+                "<span class='calc'>125 × 7 × 8 = 125 × 8 × 7 = 1000 × 7 = 7000</span>" ],
+                formula: "交换位置凑整，又快又准！" }
+            ], tip: "" },
+          { tag: "例题 2 · 分配律简算",
+            scene: "计算 36 × 101。",
+            q: "怎样算简便？",
+            methods: [
+              { name: "标准解法", steps: [
+                "把 101 拆成 100 + 1",
+                "<span class='calc'>36 × 101 = 36×100 + 36×1 = 3600 + 36 = 3636</span>" ],
+                formula: "拆数 + 分配律，大数变小算！" }
+            ], tip: "" }
+        ],
+        warns: [
+          "分配律漏乘一项：(20+4)×25 算成 20×25+4 → 两项都要乘！",
+          "混淆结合律和分配律 → 结合律是连乘只变括号位置；分配律是乘加要分别乘。",
+          "减法、除法套用交换律 → 减法和除法没有交换律！"
+        ] },
+
+      { id: "g4u6", num: "六", title: "图形的奥秘", emoji: "🔷", color: "#0a7fa0",
+        lessons: ["长方形和正方形的特征", "平行四边形和梯形", "四边形之间的关系"],
+        mindmap: [
+          { t: "长方形", c: "#0a7fa0", leaves: ["对边相等", "四个直角"] },
+          { t: "正方形", c: "#ff7a2f", leaves: ["四边相等", "四个直角", "是特殊的长方形"] },
+          { t: "平行四边形与梯形", c: "#3a86ff", leaves: ["两组对边分别平行", "只有一组对边平行", "平行四边形易变形", "三角形有稳定性"] }
+        ],
+        points: [
+          { title: "长方形和正方形的特征", html:
+            '<p><b>长方形</b>：对边相等，四个角都是直角。<b>正方形</b>：四条边都相等，四个角都是直角。<span class="hl">正方形是特殊的长方形</span>。</p>' +
+            '<div class="kbox method"><div class="kb-title">📌 验证方法</div>量一量（用尺量边）、折一折（对折比重合）、比一比（用三角板比直角）。对角线也藏着奥秘：长方形、正方形的对角线相等。</div>' },
+          { title: "平行四边形和梯形", html:
+            '<p><b>平行四边形</b>：两组对边分别平行的四边形，容易变形（不稳定性）。<b>梯形</b>：只有一组对边平行的四边形。</p>' +
+            '<div class="kbox tip"><div class="kb-title">💡 四边形关系</div>长方形、正方形具备平行四边形的所有特征，所以它们是<b>特殊的平行四边形</b>。</div>' },
+          { title: "稳定性与不稳定性", html:
+            '<p><b>三角形具有稳定性</b>（房顶支架、自行车车架）；<b>四边形容易变形</b>（伸缩门、升降机）。</p>' }
+        ],
+        examples: [
+          { tag: "例题 1 · 特征判断",
+            scene: "判断下面说法的对错。",
+            q: "正方形是特殊的长方形，对吗？",
+            methods: [
+              { name: "标准解法", steps: [
+                "长方形特征：对边相等、四个直角",
+                "正方形四边相等，满足对边相等，也有四个直角",
+                "所以正方形具备长方形的全部特征 → <span class='calc'>对</span>" ],
+                formula: "正方形是特殊的长方形。" }
+            ], tip: "" }
+        ],
+        warns: [
+          "说\"长方形是正方形\" → 反了！正方形才是特殊的长方形。",
+          "以为所有四边形都容易变形 → 要看是不是平行四边形结构。",
+          "数四边形特征时漏掉\"四个角\"的条件。"
+        ] },
+
+      { id: "g4u7", num: "七", title: "运用数量关系解决问题", emoji: "🚄", color: "#ffb703",
+        lessons: ["速度、时间和路程", "单价、数量和总价"],
+        mindmap: [
+          { t: "路程问题", c: "#ffb703", leaves: ["速度×时间=路程", "路程÷时间=速度", "路程÷速度=时间"] },
+          { t: "速度表示", c: "#3a86ff", leaves: ["千米/时", "米/分", "米/秒", "单位时间走的路"] },
+          { t: "购物问题", c: "#06d6a0", leaves: ["单价×数量=总价", "总价÷单价=数量", "总价÷数量=单价"] }
+        ],
+        points: [
+          { title: "速度、时间和路程", html:
+            '<p>一共走了多长的路叫<b>路程</b>；每小时（每分钟、每秒）走的路叫<b>速度</b>；走了几小时叫<b>时间</b>。速度的单位很特殊：千米/时、米/分、米/秒。</p>' +
+            '<div class="formula-line">速度 × 时间 = 路程　　路程 ÷ 时间 = 速度　　路程 ÷ 速度 = 时间</div>' },
+          { title: "单价、数量和总价", html:
+            '<div class="formula-line">单价 × 数量 = 总价　　总价 ÷ 单价 = 数量　　总价 ÷ 数量 = 单价</div>' +
+            '<div class="kbox tip"><div class="kb-title">💡 比便宜</div>哪种包装更便宜？算出<b>每千克（每支）的单价</b>再比较：12 元 3 千克 → 12÷3=4 元/千克。</div>' }
+        ],
+        examples: [
+          { tag: "例题 1 · 谁最快",
+            scene: "猎豹每分钟跑 2 千米，轨道摄像机每小时行 90 千米。",
+            q: "谁更快？",
+            methods: [
+              { name: "标准解法", steps: [
+                "统一单位：1 小时 = 60 分钟",
+                "猎豹 1 小时跑：<span class='calc'>2 × 60 = 120（千米）</span>",
+                "120 > 90 → <span class='calc'>猎豹更快</span>" ],
+                formula: "比较速度要先统一单位！" }
+            ], tip: "" },
+          { tag: "例题 2 · 路程问题",
+            scene: "一列火车平均每小时行驶 98 千米，从甲地到乙地用了 15 小时。",
+            q: "甲地到乙地的铁路长多少千米？",
+            methods: [
+              { name: "标准解法", steps: [
+                "速度 × 时间 = 路程",
+                "<span class='calc'>98 × 15 = 1470（千米）</span>" ],
+                formula: "答：铁路长 1470 千米。" }
+            ], tip: "" }
+        ],
+        warns: [
+          "混淆速度和路程 → 速度是单位时间走的路，带复合单位。",
+          "比较速度不统一单位 → 千米/时和米/秒没法直接比。",
+          "求单价用乘法 → 总价÷数量=单价。"
+        ] },
+
+      { id: "g4u8", num: "八", title: "数据的表示和分析（一）", emoji: "📊", color: "#5f2fd6",
+        lessons: ["栽蒜苗", "条形统计图"],
+        mindmap: [
+          { t: "条形统计图", c: "#5f2fd6", leaves: ["直条表示数量", "直观看出多少", "便于比较"] },
+          { t: "1格表示几", c: "#ff7a2f", leaves: ["数据小：1格表示1", "数据大：1格表示2、5、10"] },
+          { t: "分析数据", c: "#06d6a0", leaves: ["最多最少", "相差多少", "根据数据提建议"] }
+        ],
+        points: [
+          { title: "条形统计图的特点", html:
+            '<p>用一个单位长度表示一定的数量，根据数量的多少画成长短不同的<b>直条</b>。条形统计图能<span class="hl">直观看出各种数量的多少，便于比较</span>。</p>' },
+          { title: "1 格表示多少", html:
+            '<p>画统计图时，1 格表示几要根据数据大小确定：数据在 10 以内，1 格表示 1；数据在几十，1 格表示 2 或 5；数据在一百左右，1 格表示 10。<b>同一幅图中，每格表示的数量必须相同</b>。</p>' },
+          { title: "分析数据", html:
+            '<div class="kbox method"><div class="kb-title">📌 常考问题</div>① 哪种最多、哪种最少；② 多的比少的多几个（相减）；③ 一共多少（求和）；④ 根据数据提出合理建议。</div>' }
+        ],
+        examples: [
+          { tag: "例题 1 · 读统计图",
+            scene: "四（2）班最喜欢的玩具统计：遥控赛车 14 人，拼图 8 人，积木 7 人，陀螺 13 人。",
+            q: "哪种玩具最受欢迎？全班一共调查了多少人？",
+            methods: [
+              { name: "标准解法", steps: [
+                "直条最高的是遥控赛车 → <span class='calc'>遥控赛车最受欢迎</span>",
+                "总人数：14+8+7+13 = <span class='calc'>42（人）</span>" ],
+                formula: "最多看最高的直条，总数要全部加起来。" }
+            ], tip: "" }
+        ],
+        warns: [
+          "画图时直条宽窄不一样 → 同一幅图直条必须等宽。",
+          "忘记标图例和标题。",
+          "读数时看错 1 格表示的数量。"
+        ] }
+    ]
+  };
+
+  /* 数学好玩 + 综合实践（四年级上册） */
+  MD.bonuses = MD.bonuses || {};
+  MD.bonuses["4-上"] = [
+    { title: "数学好玩 · 数图形的学问", emoji: "🕳️", color: "#e63999",
+      html:
+      '<p>小鼹鼠钻洞：4 个洞口，任选一个进、再选一个出，有多少条不同路线？把洞口看成<b>点</b>，路线就是<b>线段</b>——数路线就变成了数线段！</p>' +
+      '<div class="kbox method"><div class="kb-title">📌 有序数线段（两种数法结果一样）</div>' +
+      '<b>方法一 按出发点数</b>：从 A 出发有 3 条，从 B 出发有 2 条（不回数 A），从 C 出发 1 条 → 3+2+1=6 条。<br>' +
+      '<b>方法二 按长短数</b>：相邻的短线 3 条、跨 1 个点的较长线 2 条、最长的 1 条 → 也是 6 条。<br>' +
+      '<b>方法三 用公式</b>：n 个点，每个点能和其余 (n−1) 个点连线，共 n×(n−1) 条，但每条被数了两次，所以要 ÷2。</div>' +
+      '<div class="formula-line">线段条数 = n × (n − 1) ÷ 2</div>' +
+      '<div class="kbox"><div class="kb-title">🗂️ 熟记这张表</div>' +
+      '<div style="overflow-x:auto"><table class="stat-table"><tr><th>点数 n</th><td>3</td><td>4</td><td>5</td><td>6</td><td>7</td><td>8</td></tr>' +
+      '<tr><th>线段数</th><td>3</td><td>6</td><td>10</td><td class="hl">15</td><td>21</td><td>28</td></tr>' +
+      '<tr><th>累加写法</th><td>2+1</td><td>3+2+1</td><td>4+3+2+1</td><td>5+4+3+2+1</td><td>6+…+1</td><td>7+…+1</td></tr></table></div></div>' +
+      '<div class="kbox tip"><div class="kb-title">💡 同一模型的生活题</div>' +
+      '<b>握手</b>：8 人两两握手，握 8×7÷2=28 次。<br>' +
+      '<b>比赛</b>：6 球队单循环，赛 6×5÷2=15 场。<br>' +
+      '<b>车票</b>：5 个站点，需要准备 5×4=20 种<b>不同</b>车票（A→B 和 B→A 是两种，不能再 ÷2！）。<br>' +
+      '这三个都是「每两点连一条线」的模型，只是车票讲方向、握手不分方向。</div>' +
+      '<div class="kbox warn"><div class="kb-title">⚠️ 月考易错点</div>' +
+      '① 忘记 ÷2，把重复的算进去；<br>' +
+      '② 车票/信件类题目<b>方向不同算不同</b>，不能 ÷2，要看清有没有「往返」二字；<br>' +
+      '③ 数图形时不分类乱数，一定<b>先数基本图形再数组合图形</b>，才能不重不漏。</div>',
+      quiz: [
+        { t: "选择", q: "一条直线上有 6 个点，一共可以连成多少条线段？", opts: ["30", "15", "12"], a: "15", e: "6×(6−1)÷2=15。别漏了 ÷2，每条线段被两端各数了一次。" },
+        { t: "选择", q: "8 个小朋友两两握手一次，一共握手多少次？", opts: ["56", "28", "64"], a: "28", e: "握手不分方向，8×7÷2=28 次。" },
+        { t: "填空", q: "6 个球队进行单循环赛（每两队赛一场），一共要赛（____）场。", a: "15", e: "6×5÷2=15 场。" },
+        { t: "选择", q: "铁路沿线有 5 个车站，需要准备多少种不同的单程车票？", opts: ["10", "20", "25"], a: "20", e: "车票有方向，A→B 与 B→A 不同：5×4=20 种，不能 ÷2。" },
+        { t: "判断", q: "数图形时只要按顺序数，就不会重复也不会遗漏。", a: "对", e: "分类分步地数（先数最小的，再数由它们组成的）才能不重不漏。" },
+        { t: "填空", q: "1+2+3+…+9 =（____），它正好是（　）个点时的线段总数？答：线段数。（提示：n 个点等于 1 加到 n−1）", a: "45", e: "1+2+…+9=45；由公式 n(n−1)÷2 反推，45=10×9÷2，所以是 10 个点。" }
+      ] },
+
+    { title: "综合实践 · 编码", emoji: "🪪", color: "#3a86ff",
+      html:
+      '<p>数不仅能表示<b>多少</b>和<b>顺序</b>，还能用来<b>编码</b>传递信息。编码的三个要求：<b>唯一</b>（一人一码，不重复）、<b>简洁</b>（短小好记）、<b>有规则</b>（别人能按规则看懂）。</p>' +
+
+      '<div class="kbox method"><div class="kb-title">📌 核心考点一：身份证号码（18 位，必考）</div>' +
+      '<div style="overflow-x:auto"><table class="stat-table">' +
+      '<tr><th>位置</th><td>1~6 位</td><td>7~14 位</td><td>15~17 位</td><td>第 18 位</td></tr>' +
+      '<tr><th>含义</th><td>地址码<br>（省/市/县）</td><td>出生日期码<br>（年年月月日日日日）</td><td>顺序码<br>（同地区同生日的人编号）</td><td>校验码<br>（0~9 或 X，X 代表 10）</td></tr></table></div>' +
+      '<div class="formula-line">例：4 4 0 3 0 6 | 1 9 8 5 0 7 2 3 | 0 4 1 | 5 → 广东深圳福田区、1985 年 7 月 23 日出生</div>' +
+      '<b>看性别看第 17 位</b>（顺序码的最后一位）：<b>单数是男，双数是女</b>。上例第 17 位是 1（单数）→ 男性。<br>' +
+      '<span style="color:#c85a08">注意：不是看最后一个数字！第 18 位是校验码，和性别无关。</span></div>' +
+
+      '<div class="kbox"><div class="kb-title">📌 核心考点二：自己设计学号</div>' +
+      '题目常给一段规则，让你<b>按规则写码</b>或<b>从码里读信息</b>。示例规则：<br>' +
+      '<div class="formula-line">学号 = 入学年份(4位) + 班级(2位) + 班内序号(2位) + 性别(1位：1 男 2 女)</div>' +
+      '那么 2020 年入学、3 班、第 8 号、男生 → <b>202003081</b>。<br>' +
+      '反过来看 202205122：2022 年入学、5 班、12 号、女生。<br>' +
+      '<b>关键：位数要固定，不足补 0。</b>3 班必须写成「03」，序号 8 要写成「08」，否则码就乱了，别人无法判断哪里是班级、哪里是序号。</div>' +
+
+      '<div class="kbox method"><div class="kb-title">📌 核心考点三：生活中的其他编码</div>' +
+      '<b>邮政编码</b>（6 位）：前 2 位省、3~4 位市、5~6 位县/投递局。例：518000 是深圳。<br>' +
+      '<b>房间号</b>：0305 一般表示 3 楼 5 号房（前两位楼层、后两位房号）。<br>' +
+      '<b>ISBN 书号</b>：978-7-107-… 开头 978 是图书代号，7 是中国。<br>' +
+      '<b>商品条码</b>：690~699 开头代表中国产。<br>' +
+      '<b>车牌号</b>：粤B·1234D，粤=省、B=城市字母代码。<br>' +
+      '<b>红绿灯/旗语/二进制</b>：编码不一定用数字，颜色、形状、长短信号都能编成信息。</div>' +
+
+      '<div class="kbox tip"><div class="kb-title">🧭 月考四类题型怎么做</div>' +
+      '<b>① 按规则写码</b>：先照抄规则表逐段填，再检查每段位数对不对（该补 0 的补 0）。<br>' +
+      '<b>② 从码中读信息</b>：先在码下面标出每段边界，再定位题目要的字段（尤其性别只看第 17 位）。<br>' +
+      '<b>③ 判断码是否合理 / 改错</b>：查三点——位数够不够、每段取值范围合不合理（月份不会有 13，日期不会 32 号）、会不会两人同号（违反唯一性）。<br>' +
+      '<b>④ 设计编码方案</b>：要说清<b>用几段、每段几位、表示什么</b>，并说明为什么<b>唯一、简洁、有规则</b>。只给一串号码不给规则，是要扣分的。</div>' +
+
+      '<div class="kbox warn"><div class="kb-title">⚠️ 高频易错清单</div>' +
+      '① 用性别看<b>第 18 位</b>（错，是第 17 位）；<br>' +
+      '② 班级 3 班直接写「3」不补 0，导致 11 班和 1 班混淆；<br>' +
+      '③ 把编码当成数来比较大小（0305 与 0503）——编码只比<b>每一位上的符号</b>，不看数的大小；<br>' +
+      '④ 身份证月份写成 13、日期写成 32，或 2 月 30 日，属于不合理编码；<br>' +
+      '⑤ 设计方案漏写「规则说明」，只写号码。</div>',
+      quiz: [
+        { t: "填空", q: "身份证 440306<b>19981205</b>0041 中，加粗的 8 位表示（____）。", a: "出生日期", e: "第 7~14 位是出生日期码，这里是 1998 年 12 月 5 日出生。" },
+        { t: "选择", q: "上面这个身份证的主人，性别怎么判断？", opts: ["看第 18 位，是 1 所以是男性", "看第 17 位，是 0 所以是女性", "看最后一位，X 才是男性"], a: "看第 17 位，是 0 所以是女性", e: "顺序码的第 17 位单数为男、双数为女。此码第 17 位是 0（双数）→ 女性。" },
+        { t: "选择", q: "按「入学年(4)+班级(2)+序号(2)+性别(1，1 男 2 女)」，2021 年入学、6 班、15 号、男生的学号是（　）", opts: ["20216151", "202106151", "202106152"], a: "202106151", e: "6 班要补 0 写成 06，15 号写 15，男生写 1 → 202106151。选 A 是忘了补 0，学号变成 9 位。" },
+        { t: "判断", q: "编码中每一位数字都是越大越好。", a: "错", e: "编码只要求符合规则、不重复，数字大小没有意义，0305 并不比 0503 小或大。" },
+        { t: "选择", q: "下面哪个身份证号码<b>一定</b>不合理？", opts: ["440306199013050011", "440306199002280011", "440306198812310011"], a: "440306199013050011", e: "第 11~12 位是月份，一年只有 12 个月，出现「13 月」一定错。另外还要会查：2 月只有到 29 日、且 29 日只能出现在闰年。" },
+        { t: "选择", q: "邮政编码 518000 是 6 位，如果某同学的编码规则是「市(2)+区(2)+街道(2)」，那么只写 4 位「4403」的问题是（　）", opts: ["太长了", "位数不固定，无法区分是市+区还是缺了街道", "数字不对"], a: "位数不固定，无法区分是市+区还是缺了街道", e: "编码必须<b>位数固定</b>，否则读码的人无法分段，违反「有规则、唯一」。" },
+        { t: "填空", q: "房间号 0305 表示 3 楼 5 号房，照此规则，5 楼 12 号房应写成（____）。", a: "0512", e: "前两位楼层（5 楼补 0 成 05），后两位房号 12 → 0512。" }
+      ] },
+
+    { title: "综合实践 · 导航给的时间准吗", emoji: "🗺️", color: "#06d6a0",
+      html:
+      '<p>导航预估到达时间，用的就是本单元第七单元的数量关系：<b>路程 ÷ 速度 = 时间</b>。</p>' +
+      '<div class="kbox method"><div class="kb-title">📌 算一算：导航为什么说 40 分钟</div>' +
+      '例：家到学校 18 千米，导航按 27 千米/时（城市道路平均车速）预估：18 ÷ 27 = 2/3 时 = <b>40 分钟</b>。</div>' +
+      '<div class="kbox tip"><div class="kb-title">🧪 动手做：实测与对比</div>' +
+      '连续一周记录「导航预估时间」和「实际用时」，做成统计表，再算一算：<br>' +
+      '① 哪一天差得最多？② 平均误差大约几分钟？③ 误差率 = 误差 ÷ 预估时间 × 100%，大约百分之几？<br>' +
+      '④ 什么时候最容易不准？（早高峰、雨天、放学时段——因为<b>堵车和红灯让实际速度变慢</b>，而路程不变。）</div>' +
+      '<div class="kbox"><div class="kb-title">💡 结论</div>' +
+      '当<b>路程不变</b>时，速度越慢，时间越长；预估用的速度和实际速度不一样，时间就有出入。这就是「估大估小」判断的实际应用：想判断<b>够不够时间</b>，宁可用<b>偏慢的速度</b>来估时间。</div>' +
+      '<div class="kbox warn"><div class="kb-title">⚠️ 答题要点</div>' +
+      '这类题要看清求的是<b>路程、速度还是时间</b>，并<b>统一单位</b>：分钟与小时之间进率是 60，15 分钟 = 0.25 小时，不是 0.15 小时！</div>',
+      quiz: [
+        { t: "填空", q: "路程 24 千米，车速 40 千米/时，需要（____）分钟。", a: "36", e: "24÷40=0.6 时，0.6×60=36 分钟。" },
+        { t: "选择", q: "导航预估 30 分钟，实际用了 42 分钟，多用了百分之几？", opts: ["40%", "28%", "12%"], a: "40%", e: "(42−30)÷30=12÷30=40%。" },
+        { t: "判断", q: "同样的路程，速度越快，用的时间越少。", a: "对", e: "路程一定，速度和时间成反向变化，这是本单元数量关系的核心。" },
+        { t: "填空", q: "要在 15 分钟内赶到 6 千米外的少年宫，车速至少要是（____）千米/时。", a: "24", e: "15 分钟=0.25 小时，6÷0.25=24 千米/时。注意单位换算！" }
+      ] }
   ];
 
   /* ---------------- 题库与生成器注册 ---------------- */
@@ -16237,6 +17001,52 @@ window.STATS = (function () {
     window.scrollTo(0, 0);
   }
 
+  /* 专题配套练习：点选项即时判对错，并展开解析 */
+  function bonusQuizHtml(bn) {
+    if (!bn || !bn.quiz || !bn.quiz.length) return "";
+    var h = '<div class="section-title" style="margin-top:14px"><span class="bar" style="background:#3a86ff"></span>配套练习（' + bn.quiz.length + ' 题，学完就测）</div>';
+    bn.quiz.forEach(function (q, qi) {
+      h += '<div class="kp-card" data-qi="' + qi + '"><h4>' + (qi + 1) + '. <span class="lay-tag lay-base">' + q.t + '</span>' + q.q + '</h4>' +
+        '<div class="p6-pick">' +
+        (q.t === "填空"
+          ? '<input class="answer-input" data-fill="' + qi + '" placeholder="填答案" style="width:100%">'
+          : (q.t === "判断"
+              ? ['对','错'].map(function(o){return '<button data-qa="'+qi+'" data-qopt="'+o+'" style="min-width:70px">'+o+'</button>';}).join("")
+              : q.opts.map(function(o){return '<button data-qa="'+qi+'" data-qopt="'+esc(o).replace(/"/g,'&quot;')+'">'+esc(o)+'</button>';}).join(""))) +
+        '</div><div class="feedback" id="bqFb'+qi+'"></div></div>';
+    });
+    h += '<div class="card" style="font-size:11.5px;color:#a8a9b5;margin-top:8px">做错不要紧，点开解析看懂就好。这类题在月考里出现频率很高。</div>';
+    return h;
+  }
+  function wireBonusQuiz(root, bn) {
+    if (!bn || !bn.quiz) return;
+    function reveal(qi, ok, chosen) {
+      var q = bn.quiz[qi];
+      var fb = $("#bqFb" + qi, root);
+      if (!fb) return;
+      fb.className = "feedback show " + (ok ? "ok" : "no");
+      fb.innerHTML = '<div class="fb-title">' + (ok ? "🎉 答对了！" : "❌ 正确答案：" + esc(q.a)) + '</div>' +
+        (q.e ? '<div class="fb-why">💡 ' + q.e + '</div>' : '');
+    }
+    $$("[data-qa]", root).forEach(function (b) {
+      b.onclick = function () {
+        var qi = parseInt(b.dataset.qa, 10), q = bn.quiz[qi];
+        $$('.p6-pick button[data-qa="' + qi + '"]', root).forEach(function (x) { x.classList.remove("sel"); });
+        b.classList.add("sel");
+        reveal(qi, b.dataset.qopt === String(q.a), b.dataset.qopt);
+      };
+    });
+    $$("[data-fill]", root).forEach(function (inp) {
+      function go() {
+        var qi = parseInt(inp.dataset.fill, 10), q = bn.quiz[qi];
+        if (!inp.value.trim()) return;
+        reveal(qi, inp.value.trim().replace(/\s/g, "") === String(q.a).replace(/\s/g, ""), inp.value);
+      }
+      inp.onkeydown = function (e) { if (e.key === "Enter") go(); };
+      inp.onblur = go;
+    });
+  }
+
   function openBonus(bn) {
     if (!bn) return;
     $("#learnList").classList.add("hidden");
@@ -16249,8 +17059,9 @@ window.STATS = (function () {
     el.innerHTML = '<div class="back-row"><button class="back-btn" id="backLearn">‹</button>' +
       '<div class="page-title">' + bn.emoji + ' ' + esc(bn.title) + '</div></div>' +
       '<div class="kp-card"><div class="kp-body" style="padding-top:14px">' + bn.html + '</div></div>' +
-      tipHtml;
+      tipHtml + bonusQuizHtml(bn);
     $("#backLearn").onclick = function () { if (window.GARDEN) GARDEN.endActivity(); renderLearnList(); };
+    wireBonusQuiz(el, bn);
     window.scrollTo(0, 0);
   }
 
@@ -17140,7 +17951,16 @@ window.STATS = (function () {
   /* =====================================================
    * 有公式
    * ===================================================== */
-  var formulaGrade = 0; // 0=全部
+  /* ===== 超纲门控：按当前年级过滤思维主题 / 母题 / 奥数 ===== */
+  function curGradeNum() {
+    try { return parseInt(currentBook().grade, 10) || 3; } catch (e) { return 3; }
+  }
+  function lvRank(l) { return l === "低年级" ? 1 : (l === "中年级" ? 2 : 3); }
+  /* 低年级(1-4 年级)只学低+中难度；高难度(含奥数式内容)五年级以上开放 */
+  function lvAllowed(level) { return lvRank(level) <= 2 || curGradeNum() >= 5; }
+  function olympiadAllowed() { return curGradeNum() >= 5; }
+
+  var formulaGrade = -1; // -1=跟随当前年级，0=全部
   var formulaTheme = "all"; // all|calc|geo|rel|unit|num|other
   var formulaSearch = "";
   var THEME_NAME = { all: "全部", calc: "计算", geo: "几何", rel: "数量关系", unit: "单位换算", num: "数论", other: "其他" };
@@ -17219,6 +18039,7 @@ window.STATS = (function () {
     var fkw = formulaSearch.trim();
     var tc = themeCounts(formulaGrade);
     /* 当前主题在此年级下无内容时，自动回落到「全部」，避免点出空白页 */
+    if (formulaGrade < 0) formulaGrade = curGradeNum();
     if (formulaTheme !== "all" && !tc[formulaTheme]) formulaTheme = "all";
 
     /* 保留旧输入框元素（避免手机键盘收起） */
@@ -17568,7 +18389,7 @@ window.STATS = (function () {
         '<div class="card" style="font-size:12.5px;color:var(--ink-2)">母题 = 一类题的"根"。每道母题配"解题思路+关键+口诀"，学透方法再举一反三！🎯</div>' +
         '<div class="muti-row">';
       if (window.THINK && THINK.MUTI) {
-        THINK.MUTI.forEach(function (m) {
+        THINK.MUTI.filter(function (m) { return lvAllowed(m.level); }).forEach(function (m) {
           html += '<button class="muti-chip" data-muti="' + m.id + '"><span>' + m.icon + '</span><span>' + esc(m.name) + '</span></button>';
         });
       }
@@ -17576,7 +18397,7 @@ window.STATS = (function () {
     }
 
     /* ===== 区块二：思维训练营 ===== */
-    html += '<button class="collapse-head" data-collapse="train" style="background:#f3ecff">' + arrow(!thinkCollapse.train) + '<span class="bar" style="background:#8338ec"></span>② 思维训练营 · 广练习 <span class="collapse-count">' + THINK.topics.length + ' 个主题</span></button>';
+    html += '<button class="collapse-head" data-collapse="train" style="background:#f3ecff">' + arrow(!thinkCollapse.train) + '<span class="bar" style="background:#8338ec"></span>② 思维训练营 · 广练习 <span class="collapse-count">' + THINK.topics.filter(function(t){return lvAllowed(t.level);}).length + ' 个适合本年级的主题</span></button>';
     if (!thinkCollapse.train) {
       html += '<div class="collapse-body">' +
         '<input class="answer-input" id="thinkSearchInput" placeholder="🔍 搜索思维主题（如：鸡兔、规律、和差）" value="' + esc(thinkSearch) + '" style="margin-bottom:10px">' +
@@ -17589,6 +18410,7 @@ window.STATS = (function () {
       var shown = 0;
       var kw = thinkSearch.trim();
       THINK.topics.forEach(function (t) {
+        if (!lvAllowed(t.level)) return;
         if (thinkLv !== "all" && t.level !== thinkLv) return;
         if (thinkSkill !== "all" && SKILL_OF[t.id] !== thinkSkill) return;
         if (kw && t.name.indexOf(kw) === -1 && (t.desc || "").indexOf(kw) === -1) return;
@@ -17606,9 +18428,13 @@ window.STATS = (function () {
       html += '</div>';
     }
 
-    /* ===== 区块三：奥数专题 ===== */
-    html += '<button class="collapse-head" data-collapse="olympiad" style="background:#ffecec">' + arrow(!thinkCollapse.olympiad) + '<span class="bar" style="background:#d63031"></span>③ 奥数专题 · 高难度 <span class="collapse-count">' + (window.OLYMPIAD ? OLYMPIAD.topics.length : 0) + ' 个专题</span></button>';
-    if (!thinkCollapse.olympiad) {
+    /* ===== 区块三：奥数专题（五年级以上开放） ===== */
+    if (!olympiadAllowed()) {
+      html += '<div class="card" style="font-size:12.5px;color:#8a5a20;background:#fff8ef;border:1px dashed #ffd9a8">'
+        + '🔒 <b>奥数专题</b>涉及数论、组合、同余等超出本年级范围的内容，五年级后自动开放。当前年级可先练上方「思维训练营」里的主题。</div>';
+    } else
+    html += '<button class="collapse-head" data-collapse="olympiad" style="background:#ffecec">' + arrow(!thinkCollapse.olympiad) + '<span class="bar" style="background:#d63031"></span>③ 奥数专题 · 高难度 <span class="collapse-count">' + (window.OLYMPIAD ? OLYMPIAD.topics.length : 0) + ' 个专题（五年级+）</span></button>';
+    if (olympiadAllowed() && !thinkCollapse.olympiad) {
       html += '<div class="collapse-body">' +
         '<div class="card" style="font-size:13px;color:var(--ink-2)">数论、组合、几何变换、逻辑推理……挑战更高难度的数学思维！🏆</div>';
       if (window.OLYMPIAD && OLYMPIAD.topics) {
@@ -17720,6 +18546,11 @@ window.STATS = (function () {
 
   /* 奥数专题独立首页（从首页直达） */
   function renderOlympiadHome() {
+    if (!olympiadAllowed()) {
+      switchTab("think"); renderThinkHome();
+      toast("奥数专题五年级以上开放，先练思维训练营吧～");
+      return;
+    }
     $("#thinkHome").classList.add("hidden");
     $("#thinkDetail").classList.add("hidden");
     var el = $("#olympiadHome");
